@@ -13,7 +13,7 @@
 # or
 # ./dockerdb.sh sqlsrv
 
-# NOTE: For mssql you need to have sqltools
+# NOTE: For sqlsrv you need to have sqltools
 # https://docs.microsoft.com/en-gb/sql/linux/sql-server-linux-setup-tools#ubuntu
 
 #####################################################
@@ -48,9 +48,9 @@ cat << EOF
 # or
 # ./dockerdb.sh oracle
 # or
-# ./dockerdb.sh mssql
+# ./dockerdb.sh sqlsrv
 
-# NOTE: For mssql you need to have sqltools
+# NOTE: For sqlsrv you need to have sqltools
 # https://docs.microsoft.com/en-gb/sql/linux/sql-server-linux-setup-tools#ubuntu
 #################################################################################
 EOF
@@ -102,7 +102,7 @@ elif [ "${1}" == "sqlsrv" ]; then
     echo "Starting Sqlsrv instance"
     docker run -e ACCEPT_EULA=Y -e SA_PASSWORD=Passw0rd! --name sqlsrv -d microsoft/mssql-server-linux
 
-    # Wait for 20 seconds to ensure we have mssql  docker initialized.
+    # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
     sleep 20
     DBHOST=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" sqlsrv)
     # Check if sqlsrv is ready.
