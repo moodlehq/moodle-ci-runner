@@ -100,7 +100,7 @@ elif [ "${1}" == "mariadb" ]; then
 # SQLSRV
 elif [ "${1}" == "sqlsrv" ]; then
     echo "Starting Sqlsrv instance"
-    docker run -e ACCEPT_EULA=Y -e SA_PASSWORD=Passw0rd! --name sqlsrv -d microsoft/mssql-server-linux
+    docker run -e ACCEPT_EULA=Y -e SA_PASSWORD=Passw0rd! --name sqlsrv -p 1433:1433 -d microsoft/mssql-server-linux
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
     sleep 20
