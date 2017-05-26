@@ -106,7 +106,7 @@ elif [ "${1}" == "sqlsrv" ]; then
     sleep 20
     DBHOST=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" sqlsrv)
     # Check if sqlsrv is ready.
-    sqlcmd -S $DBHOST -U SA -P 'Passw0rd!' -Q "select top(3) name from sys.objects" > /dev/null 2>&1
+    docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd!' -Q "select top(3) name from sys.objects" > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "Sqlsrv is not ready. Please check sqlcmd is installed."
         exit 1
@@ -114,17 +114,10 @@ elif [ "${1}" == "sqlsrv" ]; then
 
     # Create dbs.
     for db in "${dbs[@]}"; do
-        sqlcmd -S $DBHOST -U SA -P 'Passw0rd!' <<EOF
-CREATE DATABASE ${db} COLLATE LATIN1_GENERAL_CS_AS;
-GO
-USE ${db};
-GO
-ALTER DATABASE ${db} SET ANSI_NULLS ON;
-ALTER DATABASE ${db} SET QUOTED_IDENTIFIER ON;
-ALTER DATABASE ${db} SET READ_COMMITTED_SNAPSHOT ON;
-GO
-QUIT
-EOF
+        docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd!' -Q "CREATE DATABASE ${db} COLLATE LATIN1_GENERAL_CS_AS"
+        docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd!' -Q "ALTER DATABASE ${db} SET ANSI_NULLS ON"
+        docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd!' -Q "ALTER DATABASE ${db} SET QUOTED_IDENTIFIER ON"
+        docker exec sqlsrv /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Passw0rd!' -Q "ALTER DATABASE ${db} SET READ_COMMITTED_SNAPSHOT ON"
     done
 
 # Mysql
