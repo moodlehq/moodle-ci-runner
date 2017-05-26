@@ -19,10 +19,6 @@
 #####################################################
 
 dbs=(\
-"behat_whole_suite_m30_phpunit" \
-"behat_whole_suite_m30_parallel" \
-"behat_whole_suite_m30_chrome" \
-"behat_whole_suite_m30_phantomjs" \
 "behat_whole_suite_m31_phpunit" \
 "behat_whole_suite_m31_parallel" \
 "behat_whole_suite_m31_chrome" \
@@ -32,6 +28,11 @@ dbs=(\
 "behat_whole_suite_m32_chrome" \
 "behat_whole_suite_m32_phantomjs" \
 "behat_whole_suite_m32_parallel_clean" \
+"behat_whole_suite_m33_phpunit" \
+"behat_whole_suite_m33_parallel" \
+"behat_whole_suite_m33_chrome" \
+"behat_whole_suite_m33_phantomjs" \
+"behat_whole_suite_m33_parallel_clean" \
 "behat_whole_suite_m_phpunit" \
 "behat_whole_suite_m" \
 "behat_whole_suite_m_parallel" \
