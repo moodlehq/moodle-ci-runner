@@ -19,10 +19,6 @@
 #####################################################
 
 dbs=(\
-"behat_whole_suite_m31_phpunit" \
-"behat_whole_suite_m31_parallel" \
-"behat_whole_suite_m31_chrome" \
-"behat_whole_suite_m31_phantom" \
 "behat_whole_suite_m32_phpunit" \
 "behat_whole_suite_m32_parallel" \
 "behat_whole_suite_m32_chrome" \
