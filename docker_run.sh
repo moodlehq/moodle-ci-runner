@@ -133,7 +133,16 @@ else
         fi
     fi
 fi
-if [ ! -d "$MAP_FAILDUMP" ]; then mkdir -p $MAP_FAILDUMP; chmod 777 $MAP_FAILDUMP; fi
+
+if [ ! -z "$MAP_FAILDUMP" ]
+then
+  if [ ! -d "$MAP_FAILDUMP" ]
+  then
+    mkdir -p $MAP_FAILDUMP
+    chmod 777 $MAP_FAILDUMP
+  fi
+fi
+
 # If db is oci or mssql then use old version.
 if [ "$DBTYPE" == "mssql" ] || [ "$DBTYPE" == "oci" ]; then
   if [ "$PHP_SERVER_DOCKER" == "rajeshtaneja/php:7.0" ]; then
