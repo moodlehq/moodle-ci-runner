@@ -73,7 +73,7 @@ fi
 # Start docker instance.
 if [ "${1}" == "oracle" ]; then
     echo "Starting oracle instance"
-    docker run -d --name oracle -p 49160:22 -p 1521:1521 -e ORACLE_ALLOW_REMOTE=true rajeshtaneja/oracle-xe-11g
+    docker run -d --name oracle -p 49160:22 -p 1521:1521 danpoltawski/moodle-db-oracle
     sleep 20
 
 # MARIADB
