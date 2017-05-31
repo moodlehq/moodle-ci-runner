@@ -7,6 +7,7 @@
 #!# BehatConfigFile=behat_config_local.php.template
 #!# DbUser=moodle
 #!# DbPwd=moodle
+#!# DbPort=
 #########################################
 # Optional Params.
 if [ -z ${DbName} ]; then
@@ -79,6 +80,7 @@ replacements="%%DbType%%#${DbType}
 %%SiteId%%#${SiteId}
 %%DbUser%%#${DbUser}
 %%DbPwd%%#${DbPwd}
+%%DbPort%%#${DbPort}
 %%DbName%%#${DbName}
 %%DataDir%%#${moodledatadir}
 %%SiteDbPrefix%%#${SiteDbPrefix}
