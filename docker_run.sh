@@ -208,13 +208,47 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
     NAME_OF_DOCKER_CONTAINER=$(echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1')
     cmd="docker run -i --rm --user=rajesh --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --process=${RUN} --processes=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop"
     #echo $cmd
-    docker run -i --rm --user=jenkins --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --run=${RUN} --totalruns=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop
+    docker run \
+      -i \
+      --rm \
+      --user=jenkins \
+      --name ${NAME_OF_DOCKER_CONTAINER} \
+      -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
+      -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} \
+      --entrypoint /behat ${PHP_SERVER_DOCKER} \
+      --dbtype=${DBTYPE} \
+      --dbhost=${DBHOST} \
+      --dbname=${DBNAME} \
+      --behatdbprefix=${DBPREFIX} \
+      --dbuser=${DBUSER} \
+      --dbpass=${DBPASS} \
+      --profile=${PROFILE} \
+      --run=${RUN} \
+      --totalruns=${TOTAL_RUNS} \
+      $SELENIUMURL \
+      $EXTRA_OPT \
+      $DBPORT \
+      --forcedrop
     EXITCODE=$?
     # Remove used directory.
     sudo rm -r ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/*
     cd $whereami
 else
-    docker run -i --rm --user=jenkins --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} --entrypoint /phpunit ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --phpunitdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} $EXTRA_OPT --dbport=${DBPORT} --forcedrop
+    docker run \
+      -i \
+      --rm \
+      --user=jenkins \
+      --name ${NAME_OF_DOCKER_CONTAINER} \
+      -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
+      --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
+      --dbtype=${DBTYPE} \
+      --dbhost=${DBHOST} \
+      --dbname=${DBNAME} \
+      --phpunitdbprefix=${DBPREFIX} \
+      --dbuser=${DBUSER} \
+      --dbpass=${DBPASS} $EXTRA_OPT \
+      --dbport=${DBPORT} \
+      --forcedrop
     EXITCODE=$?
 fi
 
