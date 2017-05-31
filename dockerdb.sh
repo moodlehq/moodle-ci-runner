@@ -58,6 +58,12 @@ if [ -z "${1}" ] ; then
     exit 1
 fi
 
+docker network list  --filter name=nightly | grep nightly
+if [ $? -ne 0 ]
+then
+    docker network create nightly
+fi
+
 # Check if we have old instance running/exit state.
 docker inspect ${1} > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -76,6 +82,7 @@ if [ "${1}" == "oracle" ]; then
     docker run \
       --detach \
       --name oracle \
+      --network nightly \
       -p 49160:22 \
       -p 1521:1521 \
       danpoltawski/moodle-db-oracle
@@ -86,6 +93,7 @@ elif [ "${1}" == "mariadb" ]; then
     echo "Starting mariadb instance"
     docker run \
       --name mariadb \
+      --network nightly \
       -e MYSQL_ROOT_PASSWORD=moodle \
       -e MYSQL_DATABASE=moodle \
       -e MYSQL_USER=moodle \
@@ -111,6 +119,7 @@ elif [ "${1}" == "sqlsrv" ]; then
     docker run \
       --detach \
       --name sqlsrv \
+      --network nightly \
       -e ACCEPT_EULA=Y \
       -e SA_PASSWORD=Passw0rd! \
       -p 1433:1433 \
@@ -140,6 +149,7 @@ elif [ "${1}" == "mysql" ]; then
     docker run \
       --detach \
       --name mysql \
+      --network nightly \
       -e MYSQL_ROOT_PASSWORD=moodle \
       -e MYSQL_DATABASE=moodle \
       -e MYSQL_USER=moodle \
@@ -165,6 +175,7 @@ elif [ "${1}" == "pgsql" ]; then
     docker run \
       --detach \
       --name pgsql \
+      --network nightly \
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
       -e POSTGRES_DB=moodle \
