@@ -44,12 +44,6 @@
 ###################################################
 # Optional Params.
 
-docker network list  --filter name=nightly | grep nightly > /dev/null
-if [ $? -ne 0 ]
-then
-    docker network create nightly
-fi
-
 # Select db to use today.
 if [ -n "$dbtorun" ]; then
     dbtorun=(`echo ${dbtorun}`);
@@ -194,9 +188,9 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
 
     # Start phantomjs instance.
     if [[ $SELENIUM_DOCKER == *"rajeshtaneja"* ]]; then
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP --network nightly -v ${MOODLE_PATH}/:/var/www/html/moodle --entrypoint /init.sh $SELENIUM_DOCKER $PROFILE)
+        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle --entrypoint /init.sh $SELENIUM_DOCKER $PROFILE)
     else
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP --network nightly -v ${MOODLE_PATH}/:/var/www/html/moodle $SELENIUM_DOCKER)
+        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle $SELENIUM_DOCKER)
     fi
 
     LINK_SELENIUM="--link ${DOCKER_SELENIUM_INSTANCE}:SELENIUM_DOCKER"
@@ -213,14 +207,13 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
 
     # Start moodle test.
     NAME_OF_DOCKER_CONTAINER=$(echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1')
-    cmd="docker run -i --rm --user=rajesh --name ${NAME_OF_DOCKER_CONTAINER} --network nightly -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --process=${RUN} --processes=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop"
+    cmd="docker run -i --rm --user=rajesh --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --process=${RUN} --processes=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop"
     #echo $cmd
     docker run \
       -i \
       --rm \
       --user=jenkins \
       --name ${NAME_OF_DOCKER_CONTAINER} \
-      --network nightly \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
       -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} \
       --entrypoint /behat ${PHP_SERVER_DOCKER} \
@@ -247,7 +240,6 @@ else
       --rm \
       --user=jenkins \
       --name ${NAME_OF_DOCKER_CONTAINER} \
-      --network nightly \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
       --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
