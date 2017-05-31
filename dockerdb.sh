@@ -99,6 +99,7 @@ elif [ "${1}" == "mariadb" ]; then
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
       -p 3307:3306 \
+      --tmpfs /var/lib/mysql:rw \
       -d mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
@@ -123,6 +124,7 @@ elif [ "${1}" == "sqlsrv" ]; then
       -e ACCEPT_EULA=Y \
       -e SA_PASSWORD=Passw0rd! \
       -p 1433:1433 \
+      --tmpfs /var/opt/mssql:rw \
       microsoft/mssql-server-linux
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
@@ -179,6 +181,7 @@ elif [ "${1}" == "pgsql" ]; then
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
       -e POSTGRES_DB=moodle \
+      --tmpfs /var/lib/postgresql/data:rw \
       -p 5532:5432 \
       postgres
     # Wait few sec, before executing commands.
