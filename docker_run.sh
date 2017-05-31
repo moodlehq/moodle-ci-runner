@@ -214,7 +214,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
     sudo rm -r ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/*
     cd $whereami
 else
-    docker run -i --rm --user=jenkins --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} --entrypoint /phpunit ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --phpunitdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} $EXTRA_OPT --forcedrop
+    docker run -i --rm --user=jenkins --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} --entrypoint /phpunit ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --phpunitdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} $EXTRA_OPT --dbport=${DBPORT} --forcedrop
     EXITCODE=$?
 fi
 
