@@ -181,6 +181,7 @@ elif [ "${1}" == "pgsql" ]; then
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
       -e POSTGRES_DB=moodle \
+      -v /store/scripts/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
       -p 5532:5432 \
       postgres
