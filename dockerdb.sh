@@ -73,7 +73,12 @@ fi
 # Start docker instance.
 if [ "${1}" == "oracle" ]; then
     echo "Starting oracle instance"
-    docker run -d --name oracle -p 49160:22 -p 1521:1521 danpoltawski/moodle-db-oracle
+    docker run \
+      --detach \
+      --name oracle \
+      -p 49160:22 \
+      -p 1521:1521 \
+      danpoltawski/moodle-db-oracle
     sleep 20
 
 # MARIADB
@@ -86,7 +91,6 @@ elif [ "${1}" == "mariadb" ]; then
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
       -p 3307:3306 \
-      --tmpfs /var/lib/mysql:rw \
       -d mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
@@ -104,7 +108,13 @@ elif [ "${1}" == "mariadb" ]; then
 # SQLSRV
 elif [ "${1}" == "sqlsrv" ]; then
     echo "Starting Sqlsrv instance"
-    docker run -e ACCEPT_EULA=Y -e SA_PASSWORD=Passw0rd! --name sqlsrv -p 1433:1433 -d microsoft/mssql-server-linux
+    docker run \
+      --detach \
+      --name sqlsrv \
+      -e ACCEPT_EULA=Y \
+      -e SA_PASSWORD=Passw0rd! \
+      -p 1433:1433 \
+      microsoft/mssql-server-linux
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
     sleep 20
@@ -127,7 +137,15 @@ elif [ "${1}" == "sqlsrv" ]; then
 # Mysql
 elif [ "${1}" == "mysql" ]; then
     echo "Starting mysql instance"
-    docker run --name mysql -e MYSQL_ROOT_PASSWORD=moodle -e MYSQL_DATABASE=moodle -e MYSQL_USER=moodle -e MYSQL_PASSWORD=moodle -p 3306:3306 -d mysql/mysql-server:latest
+    docker run \
+      --detach \
+      --name mysql \
+      -e MYSQL_ROOT_PASSWORD=moodle \
+      -e MYSQL_DATABASE=moodle \
+      -e MYSQL_USER=moodle \
+      -e MYSQL_PASSWORD=moodle \
+      -p 3306:3306 \
+      mysql/mysql-server:latest
     # Wait few sec, before executing commands.
     sleep 20
     docker exec -d mysql /usr/bin/mysql -uroot -pmoodle -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
@@ -144,7 +162,14 @@ elif [ "${1}" == "mysql" ]; then
 #Pgsql
 elif [ "${1}" == "pgsql" ]; then
     echo "Starting pgsql instance"
-    docker run -e POSTGRES_USER=moodle -e POSTGRES_PASSWORD=moodle -e POSTGRES_DB=moodle --name pgsql -p 5432:5432 -d postgres
+    docker run \
+      --detach \
+      --name pgsql \
+      -e POSTGRES_USER=moodle \
+      -e POSTGRES_PASSWORD=moodle \
+      -e POSTGRES_DB=moodle \
+      -p 5532:5432 \
+      postgres
     # Wait few sec, before executing commands.
     sleep 20
 
