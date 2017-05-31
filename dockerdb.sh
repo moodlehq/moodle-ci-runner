@@ -100,6 +100,7 @@ elif [ "${1}" == "mariadb" ]; then
       -e MYSQL_PASSWORD=moodle \
       -p 3307:3306 \
       --tmpfs /var/lib/mysql:rw \
+      -v /store/scripts/mysql.d:/etc/mysql/conf.d \
       -d mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
