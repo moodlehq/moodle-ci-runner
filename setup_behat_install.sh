@@ -135,6 +135,7 @@ replacements="%%DbType%%#${DbType}
 %%SiteId%%#${SiteId}
 %%DbUser%%#${DbUser}
 %%DbPwd%%#${DbPwd}
+%%DbPort%%#${DbPort}
 %%DbName%%#${DbName}
 %%DataDir%%#${moodledatadir}
 %%FailDumpDir%%#${faildumpdir}
