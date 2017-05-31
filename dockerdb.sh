@@ -58,7 +58,7 @@ if [ -z "${1}" ] ; then
     exit 1
 fi
 
-docker network list  --filter name=nightly | grep nightly
+docker network list  --filter name=nightly | grep nightly > /dev/null
 if [ $? -ne 0 ]
 then
     docker network create nightly
