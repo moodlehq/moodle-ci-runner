@@ -17,8 +17,8 @@ $CFG->dboptions = array (
   'dbport' => '%%DbPort%%',
 );
 
-// Skip language upgrade as this is failing with new.
-$CFG->skiplangupgrade = true;
+// Skip language upgrade during the on-sync period.
+// $CFG->skiplangupgrade = true;
 
 $CFG->wwwroot   = 'http://nightly.test.in.moodle.com/%%SiteId%%';
 $CFG->dataroot  = '%%DataDir%%/%%SiteId%%';

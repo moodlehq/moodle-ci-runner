@@ -17,6 +17,9 @@ $CFG->dboptions = array (
   'dbport' => '%%DbPort%%',
 );
 
+// Skip language upgrade during the on-sync period.
+// $CFG->skiplangupgrade = true;
+
 $CFG->wwwroot   = 'http://nightly.test.in.moodle.com/%%SiteId%%';
 $CFG->dataroot  = '%%DataDir%%/%%SiteId%%';
 $CFG->admin     = 'admin';
@@ -181,7 +184,6 @@ $CFG->behat_config = array(
 $CFG->directorypermissions = 0777;
 
 $CFG->passwordsaltmain = 'u`?bRqPnWoCNYl@BMXxuWr;JVxwdx&u';
-//$CFG->skiplangupgrade = 1; 
 
 // Solr unit test setup.
 define('TEST_SEARCH_SOLR_HOSTNAME', '127.0.0.1');

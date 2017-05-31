@@ -17,8 +17,8 @@ $CFG->dboptions = array (
   'dbport' => '%%DbPort%%',
 );
 
-// Skip language upgrade as this is failing with new.
-$CFG->skiplangupgrade = true;
+// Skip language upgrade during the on-sync period.
+// $CFG->skiplangupgrade = true;
 
 $CFG->wwwroot   = 'http://nightly.test.in.moodle.com/%%SiteId%%';
 $CFG->dataroot  = '%%DataDir%%/%%SiteId%%';
@@ -221,7 +221,6 @@ $CFG->behat_config = array(
 $CFG->directorypermissions = 0777;
 
 $CFG->passwordsaltmain = 'u`?bRqPnWoCNYl@BMXxuWr;JVxwdx&u';
-$CFG->skiplangupgrade = 1; 
 require_once(dirname(__FILE__) . '/lib/setup.php');
 
 // There is no php closing tag in this file,
