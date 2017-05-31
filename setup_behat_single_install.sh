@@ -52,6 +52,7 @@ mssql=(`echo ${mssql}`);
 # Find which db to run today.
 dayoftheweek=`date +"%u"`
 dbtouse=${dbtorun[ $(( ${dayoftheweek} - 1 )) ]}
+echo "Running against ${dbtouse}"
 
 #### Set DbName for oracle ####
 if [[ ${DbName} == ${SiteId} && "${dbtouse}" == "oracle" ]]; then

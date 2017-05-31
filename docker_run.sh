@@ -65,6 +65,7 @@ if [ -n "$dbtorun" ]; then
     else
         dbtouse=${dbtorun[ $(( ${dayoftheweek} - 1 )) ]}
     fi
+    echo "Running against ${dbtouse}"
 
     eval dbtousedetails="(\"\${$dbtouse[@]}\")"
 
