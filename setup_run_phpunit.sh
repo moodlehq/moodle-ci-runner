@@ -34,7 +34,7 @@ if [[ ${DbName} == ${SiteId} && "${DbType}" == "oci" ]]; then
 fi
 
 #### Set DbName for mssql ####
-if [[ ${DbName} == ${SiteId} && "${DbType}" == "mssql" ]]; then
+if [[ ${DbName} == ${SiteId} && "${DbType}" == "mssql" && "${DbHost}" == "mssql"* ]]; then
     str=$(hostname)
     echo "Using moodle for testing mssql"
     DbName=moodle
