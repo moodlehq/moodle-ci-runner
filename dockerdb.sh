@@ -159,7 +159,7 @@ elif [ "${1}" == "mysql" ]; then
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
       -p 3306:3306 \
-      mysql/mysql-server:latest
+      mysql:5
     # Wait few sec, before executing commands.
     sleep 20
     docker exec -e MYSQL_PWD=moodle -d mysql /usr/bin/mysql -uroot -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
