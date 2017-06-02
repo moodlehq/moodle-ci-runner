@@ -105,15 +105,15 @@ elif [ "${1}" == "mariadb" ]; then
       -d mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
-    docker exec -d mariadb /usr/bin/mysql -uroot -pmoodle -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
+    docker exec -e MYSQL_PWD=moodle -d mariadb /usr/bin/mysql -uroot -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
 
     # Create dbs.
     for db in "${dbs[@]}"; do
         echo "Creating database: ${db}"
         createdbsql="create database ${db} default character set utf8 COLLATE utf8_bin;"
-        docker exec mariadb /usr/bin/mysql -uroot -pmoodle -e "$createdbsql"
+        docker exec -e MYSQL_PWD=moodle mariadb /usr/bin/mysql -uroot -e "$createdbsql"
         grantdbsql="grant all privileges on ${db}.*  to 'moodle'@'%' identified by 'moodle';flush privileges;"
-        docker exec mariadb /usr/bin/mysql -uroot -pmoodle -e "$grantdbsql"
+        docker exec -e MYSQL_PWD=moodle mariadb /usr/bin/mysql -uroot -e "$grantdbsql"
     done
 
 # SQLSRV
@@ -161,15 +161,15 @@ elif [ "${1}" == "mysql" ]; then
       mysql/mysql-server:latest
     # Wait few sec, before executing commands.
     sleep 20
-    docker exec -d mysql /usr/bin/mysql -uroot -pmoodle -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
+    docker exec -e MYSQL_PWD=moodle -d mysql /usr/bin/mysql -uroot -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
 
     # Create dbs.
     for db in "${dbs[@]}"; do
         echo "Creating database: ${db}"
         createdbsql="create database ${db} default character set utf8 COLLATE utf8_bin;"
-        docker exec mysql /usr/bin/mysql -uroot -pmoodle -e "$createdbsql"
+        docker exec -e MYSQL_PWD=moodle mysql /usr/bin/mysql -uroot -e "$createdbsql"
         grantdbsql="grant all privileges on ${db}.*  to 'moodle'@'%' identified by 'moodle';flush privileges;"
-        docker exec mysql /usr/bin/mysql -uroot -pmoodle -e "$grantdbsql"
+        docker exec -e MYSQL_PWD=moodle mysql /usr/bin/mysql -uroot -e "$grantdbsql"
     done
 
 #Pgsql
