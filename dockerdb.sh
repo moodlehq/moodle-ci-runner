@@ -159,6 +159,8 @@ elif [ "${1}" == "mysql" ]; then
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
       -p 3306:3306 \
+      --tmpfs /var/lib/mysql:rw \
+      -v /store/scripts/mysql.d:/etc/mysql/conf.d \
       mysql:5
     # Wait few sec, before executing commands.
     sleep 20
