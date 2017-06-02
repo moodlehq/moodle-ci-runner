@@ -10,16 +10,10 @@ character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
 skip-character-set-client-handshake
 
-key_buffer = 16M
-max_allowed_packet = 16M
-thread_stack = 192K
-thread_cache_size = 8
-
-query_cache_limit = 1M
-query_cache_size = 16M
-
-expire_logs_days = 10
-max_binlog_size = 100M
+key_buffer_size = 768M
+table_open_cache = 12000
+sort_buffer_size = 4M
+read_buffer_size = 1M
 
 [mysql]
 default-character-set = utf8mb4
