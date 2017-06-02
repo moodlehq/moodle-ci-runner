@@ -34,8 +34,8 @@ dbs=(\
 "behat_whole_suite_m_parallel" \
 "behat_whole_suite_m_chrome" \
 "behat_whole_suite_m_phantomjs" \
-"behat_whole_suite_m_parallel_boost"\
-"behat_whole_suite_m_phpunit_php7"\
+"behat_whole_suite_m_parallel_boost" \
+"behat_whole_suite_m_phpunit_php7" \
 )
 
 function usage() {
