@@ -93,6 +93,7 @@ if [ "${1}" == "oracle" ]; then
 elif [ "${1}" == "mariadb" ]; then
     echo "Starting mariadb instance"
     docker run \
+      --detach \
       --name mariadb \
       --network nightly \
       -e MYSQL_ROOT_PASSWORD=moodle \
@@ -102,7 +103,7 @@ elif [ "${1}" == "mariadb" ]; then
       -p 3307:3306 \
       --tmpfs /var/lib/mysql:rw \
       -v /store/scripts/mysql.d:/etc/mysql/conf.d \
-      -d mariadb:latest
+      mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
     docker exec -e MYSQL_PWD=moodle -d mariadb /usr/bin/mysql -uroot -e 'SET GLOBAL innodb_file_per_table=1;SET GLOBAL innodb_file_format=Barracuda;ALTER DATABASE moodle DEFAULT CHARACTER SET utf8 COLLATE utf8_bin;'
