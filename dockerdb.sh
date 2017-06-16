@@ -65,6 +65,10 @@ then
     docker network create nightly
 fi
 
+pushd `dirname $0` > /dev/null
+SCRIPTPATH=`pwd`
+popd > /dev/null
+
 # Check if we have old instance running/exit state.
 docker inspect ${1} > /dev/null 2>&1
 if [ $? -eq 0 ]; then
@@ -86,6 +90,8 @@ if [ "${1}" == "oracle" ]; then
       --network nightly \
       -p 49160:22 \
       -p 1521:1521 \
+      -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
+      --tmpfs /var/lib/oracle \
       danpoltawski/moodle-db-oracle
     sleep 20
 
@@ -102,7 +108,7 @@ elif [ "${1}" == "mariadb" ]; then
       -e MYSQL_PASSWORD=moodle \
       -p 3307:3306 \
       --tmpfs /var/lib/mysql:rw \
-      -v /store/scripts/mysql.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
       mariadb:latest
     # Wait few sec, before executing commands.
     sleep 20
@@ -160,7 +166,7 @@ elif [ "${1}" == "mysql" ]; then
       -e MYSQL_PASSWORD=moodle \
       -p 3306:3306 \
       --tmpfs /var/lib/mysql:rw \
-      -v /store/scripts/mysql.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
       mysql:5
     # Wait few sec, before executing commands.
     sleep 20
@@ -185,7 +191,7 @@ elif [ "${1}" == "pgsql" ]; then
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
       -e POSTGRES_DB=moodle \
-      -v /store/scripts/pgsql.d:/docker-entrypoint-initdb.d \
+      -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
       -p 5532:5432 \
       postgres
