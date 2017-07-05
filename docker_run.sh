@@ -169,6 +169,17 @@ fi
 # Start moodle test.
 NAME_OF_DOCKER_CONTAINER=`echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1'`
 
+echo "============================================================================"
+echo "== Job summary:"
+echo "== Container: {$NAME_OF_DOCKER_CONTAINER}"
+echo "== DBTYPE: ${DBTYPE}"
+echo "== DBHOST: ${DBHOST}"
+echo "== DBPORT: ${DBPORT}"
+echo "== DBUSER: ${DBUSER}"
+echo "== DBPASS: ${DBPASS}"
+echo "== DBNAME: ${DBNAME}"
+echo "============================================================================"
+
 whereami="${PWD}"
 cd $MOODLE_PATH
 
