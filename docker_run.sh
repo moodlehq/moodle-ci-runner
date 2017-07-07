@@ -234,6 +234,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
     cd $whereami
 else
     docker run \
+      --network nightly \
       -i \
       --rm \
       --user=jenkins \
