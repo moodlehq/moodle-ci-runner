@@ -177,23 +177,33 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
         SHMMAP=''
     fi
 
+    SELNAME="${UUID}_selenium"
+
     # Start phantomjs instance.
     if [[ $SELENIUM_DOCKER == *"rajeshtaneja"* ]]; then
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle --entrypoint /init.sh $SELENIUM_DOCKER $PROFILE)
+        docker run \
+            --network nightly \
+            --name ${SELNAME} \
+            -d $SHMMAP \
+            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            --entrypoint /init.sh \
+            $SELENIUM_DOCKER $PROFILE
     else
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle $SELENIUM_DOCKER)
+        docker run \
+            --network nightly \
+            --name ${SELNAME} \
+            -d $SHMMAP \
+            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            --entrypoint /init.sh \
+            $SELENIUM_DOCKER
     fi
-
-    LINK_SELENIUM="--link ${DOCKER_SELENIUM_INSTANCE}:SELENIUM_DOCKER"
 
     # Wait for 5 seconds before starting behat run.
     sleep 5
-    # Get selenium docker instance ip.
-    SELENIUMIP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $DOCKER_SELENIUM_INSTANCE)
     if [ "$PROFILE" == "phantomjs" ]; then
-        SELENIUMURL="--phantomjsurl=${SELENIUMIP}:4443"
+        SELENIUMURL="--phantomjsurl=${SELNAME}:4443"
     else
-        SELENIUMURL="--seleniumurl=${SELENIUMIP}:4444"
+        SELENIUMURL="--seleniumurl=${SELNAME}:4444"
     fi
 
     # Start moodle test.
@@ -247,8 +257,8 @@ fi
 function finish {
     if [ -n "$LINK_SELENIUM" ]; then
         echo "Stopping docker images..."
-        docker stop $DOCKER_SELENIUM_INSTANCE
-        docker rm -f $DOCKER_SELENIUM_INSTANCE
+        docker stop $SELNAME
+        docker rm -f $SELNAME
     fi
 }
 
