@@ -152,11 +152,13 @@ else
 fi
 
 # Start moodle test.
-NAME_OF_DOCKER_CONTAINER=`echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1'`
+UUID=$(uuid | sha1sum | awk '{print $1}')
+UUID=${UUID:0:16}
 
 echo "============================================================================"
 echo "== Job summary:"
-echo "== Container: {$NAME_OF_DOCKER_CONTAINER}"
+echo "== Container prefix: {$UUID}"
+echo "== UUID: {$UUID}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
 echo "== DBPORT: ${DBPORT}"
@@ -209,7 +211,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       -i \
       --rm \
       --user=jenkins \
-      --name ${NAME_OF_DOCKER_CONTAINER} \
+      --name ${UUID}_run \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
       -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} \
       --entrypoint /behat ${PHP_SERVER_DOCKER} \
@@ -235,7 +237,7 @@ else
       -i \
       --rm \
       --user=jenkins \
-      --name ${NAME_OF_DOCKER_CONTAINER} \
+      --name ${UUID}_run \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
       --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
