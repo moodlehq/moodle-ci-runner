@@ -144,13 +144,6 @@ then
   fi
 fi
 
-# Create a mapping of moodle directory if not available
-if [ "$TEST_TO_RUN" == "behat" ]; then
-    RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${PROFILE}_${RUN}"
-else
-    RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${DBTYPE}"
-fi
-
 # Start moodle test.
 UUID=$(uuid | sha1sum | awk '{print $1}')
 UUID=${UUID:0:16}
