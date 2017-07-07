@@ -205,6 +205,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
 
     # Start moodle test.
     docker run \
+      --network nightly \
       -i \
       --rm \
       --user=jenkins \
