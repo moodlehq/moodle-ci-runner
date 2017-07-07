@@ -204,9 +204,6 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
     fi
 
     # Start moodle test.
-    NAME_OF_DOCKER_CONTAINER=$(echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1')
-    cmd="docker run -i --rm --user=rajesh --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --process=${RUN} --processes=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop"
-    #echo $cmd
     docker run \
       -i \
       --rm \
