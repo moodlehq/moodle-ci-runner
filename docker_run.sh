@@ -144,31 +144,12 @@ then
   fi
 fi
 
-# If db is oci or mssql then use old version.
-# This does not work anymore for Moodle 3.4 and up.
-# where we are requiring php 7.0. mssql is dead there
-# (only sqlsrv can be used) and oci supported.
-# So, commenting the next block of code. No exceptions.
-#if [ "$DBTYPE" == "mssql" ] || [ "$DBTYPE" == "oci" ]; then
-#  if [ "$PHP_SERVER_DOCKER" == "rajeshtaneja/php:7.0" ]; then
-#    #PHP_SERVER_DOCKER='rajeshtaneja/php:5.4.45'
-#    PHP_SERVER_DOCKER='rajeshtaneja/php:5.6'
-#  fi
-#fi
-
 # Create a mapping of moodle directory if not available
 if [ "$TEST_TO_RUN" == "behat" ]; then
     RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${PROFILE}_${RUN}"
 else
     RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${DBTYPE}"
 fi
-
-#if [ ! -d "$RUN_DIR_MAP" ]; then
-#    echo "Creating the Overlay directory for Run $RUN at $RUN_DIR_MAP"
-#    mkdir -p $RUN_DIR_MAP
-#    chmod 777 $RUN_DIR_MAP
-#    sudo mount -t aufs -o br=${RUN_DIR_MAP}=rw:${MOODLE_PATH}=ro none ${RUN_DIR_MAP}
-#fi
 
 # Start moodle test.
 NAME_OF_DOCKER_CONTAINER=`echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1'`
