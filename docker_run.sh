@@ -145,12 +145,16 @@ then
 fi
 
 # If db is oci or mssql then use old version.
-if [ "$DBTYPE" == "mssql" ] || [ "$DBTYPE" == "oci" ]; then
-  if [ "$PHP_SERVER_DOCKER" == "rajeshtaneja/php:7.0" ]; then
-    #PHP_SERVER_DOCKER='rajeshtaneja/php:5.4.45'
-    PHP_SERVER_DOCKER='rajeshtaneja/php:5.6'
-  fi
-fi
+# This does not work anymore for Moodle 3.4 and up.
+# where we are requiring php 7.0. mssql is dead there
+# (only sqlsrv can be used) and oci supported.
+# So, commenting the next block of code. No exceptions.
+#if [ "$DBTYPE" == "mssql" ] || [ "$DBTYPE" == "oci" ]; then
+#  if [ "$PHP_SERVER_DOCKER" == "rajeshtaneja/php:7.0" ]; then
+#    #PHP_SERVER_DOCKER='rajeshtaneja/php:5.4.45'
+#    PHP_SERVER_DOCKER='rajeshtaneja/php:5.6'
+#  fi
+#fi
 
 # Create a mapping of moodle directory if not available
 if [ "$TEST_TO_RUN" == "behat" ]; then
