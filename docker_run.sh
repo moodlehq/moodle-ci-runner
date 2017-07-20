@@ -204,7 +204,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --network nightly \
       -i \
       --rm \
-      --user=jenkins \
+      --user=$UID \
       --name ${UUID}_run \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
@@ -232,7 +232,7 @@ else
       --network nightly \
       -i \
       --rm \
-      --user=jenkins \
+      --user=$UID \
       --name ${UUID}_run \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
