@@ -163,13 +163,6 @@ echo "==========================================================================
 whereami="${PWD}"
 cd $MOODLE_PATH
 
-if [ ! -f "$MOODLE_PATH/composer.phar" ]; then
-    curl -s https://getcomposer.org/installer | php
-fi
-
-php composer.phar install --prefer-dist --no-interaction
-cd $whereami
-
 if [ "$TEST_TO_RUN" == "behat" ]; then
     if [ "$PROFILE" == "chrome" ]; then
         SHMMAP="-v /dev/shm:/dev/shm"
