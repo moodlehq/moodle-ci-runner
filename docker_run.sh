@@ -225,7 +225,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --forcedrop
     EXITCODE=$?
     # Remove used directory.
-    sudo rm -r ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/*
+    sudo rm -rf ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/* > /dev/null 2>&1
     cd $whereami
 else
     docker run \
