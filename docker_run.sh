@@ -144,19 +144,14 @@ then
   fi
 fi
 
-# Create a mapping of moodle directory if not available
-if [ "$TEST_TO_RUN" == "behat" ]; then
-    RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${PROFILE}_${RUN}"
-else
-    RUN_DIR_MAP="${MOODLE_PATH}${TEST_TO_RUN}_${MOODLE_BRANCH}_${DBTYPE}"
-fi
-
 # Start moodle test.
-NAME_OF_DOCKER_CONTAINER=`echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1'`
+UUID=$(uuid | sha1sum | awk '{print $1}')
+UUID=${UUID:0:16}
 
 echo "============================================================================"
 echo "== Job summary:"
-echo "== Container: {$NAME_OF_DOCKER_CONTAINER}"
+echo "== Container prefix: {$UUID}"
+echo "== UUID: {$UUID}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
 echo "== DBPORT: ${DBPORT}"
@@ -168,13 +163,6 @@ echo "==========================================================================
 whereami="${PWD}"
 cd $MOODLE_PATH
 
-if [ ! -f "$MOODLE_PATH/composer.phar" ]; then
-    curl -s https://getcomposer.org/installer | php
-fi
-
-php composer.phar install --prefer-dist --no-interaction
-cd $whereami
-
 if [ "$TEST_TO_RUN" == "behat" ]; then
     if [ "$PROFILE" == "chrome" ]; then
         SHMMAP="-v /dev/shm:/dev/shm"
@@ -182,34 +170,43 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
         SHMMAP=''
     fi
 
+    SELNAME="${UUID}_selenium"
+
     # Start phantomjs instance.
     if [[ $SELENIUM_DOCKER == *"rajeshtaneja"* ]]; then
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle --entrypoint /init.sh $SELENIUM_DOCKER $PROFILE)
+        docker run \
+            --network nightly \
+            --name ${SELNAME} \
+            -d $SHMMAP \
+            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            --entrypoint /init.sh \
+            $SELENIUM_DOCKER $PROFILE
     else
-        DOCKER_SELENIUM_INSTANCE=$(docker run -d $SHMMAP -v ${MOODLE_PATH}/:/var/www/html/moodle $SELENIUM_DOCKER)
+        docker run \
+            --network nightly \
+            --name ${SELNAME} \
+            -d $SHMMAP \
+            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            --entrypoint /init.sh \
+            $SELENIUM_DOCKER
     fi
-
-    LINK_SELENIUM="--link ${DOCKER_SELENIUM_INSTANCE}:SELENIUM_DOCKER"
 
     # Wait for 5 seconds before starting behat run.
     sleep 5
-    # Get selenium docker instance ip.
-    SELENIUMIP=$(docker inspect -f "{{ .NetworkSettings.IPAddress }}" $DOCKER_SELENIUM_INSTANCE)
     if [ "$PROFILE" == "phantomjs" ]; then
-        SELENIUMURL="--phantomjsurl=${SELENIUMIP}:4443"
+        SELENIUMURL="--phantomjsurl=${SELNAME}:4443"
     else
-        SELENIUMURL="--seleniumurl=${SELENIUMIP}:4444"
+        SELENIUMURL="--seleniumurl=${SELNAME}:4444"
     fi
 
     # Start moodle test.
-    NAME_OF_DOCKER_CONTAINER=$(echo "$RUN_DIR_MAP" | sed 's,/,_,g' | sed 's/_//1')
-    cmd="docker run -i --rm --user=rajesh --name ${NAME_OF_DOCKER_CONTAINER} -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} --entrypoint /behat ${PHP_SERVER_DOCKER} --dbtype=${DBTYPE} --dbhost=${DBHOST} --dbname=${DBNAME} --behatdbprefix=${DBPREFIX} --dbuser=${DBUSER} --dbpass=${DBPASS} --profile=${PROFILE} --process=${RUN} --processes=${TOTAL_RUNS} $SELENIUMURL $EXTRA_OPT $DBPORT --forcedrop"
-    #echo $cmd
     docker run \
+      --network nightly \
       -i \
       --rm \
-      --user=jenkins \
-      --name ${NAME_OF_DOCKER_CONTAINER} \
+      --user=$UID \
+      --name ${UUID}_run \
+      -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
       -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} \
       --entrypoint /behat ${PHP_SERVER_DOCKER} \
@@ -228,14 +225,16 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --forcedrop
     EXITCODE=$?
     # Remove used directory.
-    sudo rm -r ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/*
+    sudo rm -rf ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/* > /dev/null 2>&1
     cd $whereami
 else
     docker run \
+      --network nightly \
       -i \
       --rm \
-      --user=jenkins \
-      --name ${NAME_OF_DOCKER_CONTAINER} \
+      --user=$UID \
+      --name ${UUID}_run \
+      -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
       --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
@@ -253,8 +252,8 @@ fi
 function finish {
     if [ -n "$LINK_SELENIUM" ]; then
         echo "Stopping docker images..."
-        docker stop $DOCKER_SELENIUM_INSTANCE
-        docker rm -f $DOCKER_SELENIUM_INSTANCE
+        docker stop $SELNAME
+        docker rm -f $SELNAME
     fi
 }
 
