@@ -41,6 +41,7 @@ dbs=(\
 "behat_whole_suite_m_phantomjs" \
 "behat_whole_suite_m_parallel_boost" \
 "behat_whole_suite_m_phpunit_php7" \
+"t01"
 )
 
 function usage() {
