@@ -149,8 +149,8 @@ UUID=${UUID:0:16}
 
 echo "============================================================================"
 echo "== Job summary:"
-echo "== Container prefix: {$UUID}"
-echo "== UUID: {$UUID}"
+echo "== Container prefix: ${UUID}"
+echo "== UUID: ${UUID}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
 echo "== DBPORT: ${DBPORT}"
@@ -158,6 +158,14 @@ echo "== DBUSER: ${DBUSER}"
 echo "== DBPASS: ${DBPASS}"
 echo "== DBNAME: ${DBNAME}"
 echo "============================================================================"
+
+# Setup the image cleanup.
+function finish {
+        echo "Stopping all docker images for ${UUID}"
+        docker stop $(docker ps -a -q --filter name=${UUID})
+        docker rm $(docker ps -a -q --filter name=${UUID})
+}
+trap finish EXIT
 
 whereami="${PWD}"
 cd $MOODLE_PATH
@@ -207,7 +215,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --name ${UUID}_run \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
-      -v ${MAP_FAILDUMP}:/shared ${LINK_SELENIUM} \
+      -v ${MAP_FAILDUMP}:/shared \
       --entrypoint /behat ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
       --dbhost=${DBHOST} \
@@ -232,7 +240,7 @@ else
       --user=$UID \
       --name ${UUID}_run \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
-      -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} ${LINK_SELENIUM} \
+      -v ${MOODLE_PATH}:${DOCKER_MOODLE_PATH} \
       --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
       --dbhost=${DBHOST} \
@@ -244,17 +252,5 @@ else
       --forcedrop
     EXITCODE=$?
 fi
-
-# Cleanup all the docker images here.
-function finish {
-    if [ -n "$LINK_SELENIUM" ]; then
-        echo "Stopping docker images..."
-        docker stop $SELNAME
-        docker rm -f $SELNAME
-    fi
-}
-
-trap finish EXIT
-
 
 exit $EXITCODE
