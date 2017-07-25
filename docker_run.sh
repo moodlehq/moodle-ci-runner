@@ -157,6 +157,7 @@ echo "== DBPORT: ${DBPORT}"
 echo "== DBUSER: ${DBUSER}"
 echo "== DBPASS: ${DBPASS}"
 echo "== DBNAME: ${DBNAME}"
+echo "== PREFIX: ${DBPREFIX}"
 echo "============================================================================"
 
 # Setup the image cleanup.
