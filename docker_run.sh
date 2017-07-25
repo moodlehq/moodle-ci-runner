@@ -35,7 +35,6 @@
 ##PHP_SERVER_DOCKER='rajeshtaneja/php:5.5.9'
 ##PHP_SERVER_DOCKER='rajeshtaneja/php:5.6.22'
 
-#MOODLE_BRANCH='30'
 #TEST_TO_RUN='behat'
 #EXTRA_OPT='--tags=@mod_quiz&&@javascript'
 #PROFILE='chrome'
@@ -224,8 +223,6 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       $DBPORT \
       --forcedrop
     EXITCODE=$?
-    # Remove used directory.
-    sudo rm -rf ${MAP_FAILDUMP}/moodledata/${MOODLE_BRANCH}/${DBTYPE}/* > /dev/null 2>&1
     cd $whereami
 else
     docker run \
