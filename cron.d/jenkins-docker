@@ -1,9 +1,3 @@
 # Note: It's safest to copy this file into /etc/cron.d rather than
 # symlinking it as cron is strict about ownership of the cron.d files.
-
-@reboot jenkins [ -x /store/scripts/dockercleaner.sh ] && /store/scripts/dockercleaner.sh > /var/lib/jenkins/logs/dockercleaner.sh
-@reboot jenkins && sleep 30  && /store/scripts/dockerdb.sh pgsql > /var/lib/jenkins/logs/dockerdb-pgsql.log
-@reboot jenkins && sleep 60  && /store/scripts/dockerdb.sh mariadb > /var/lib/jenkins/logs/dockerdb-mariadb.log
-@reboot jenkins && sleep 90  && /store/scripts/dockerdb.sh mysql > /var/lib/jenkins/logs/dockerdb-mysql.log
-@reboot jenkins && sleep 120 && /store/scripts/dockerdb.sh sqlsrv > /var/lib/jenkins/logs/dockerdb-sqlsrv.log
-@reboot jenkins && sleep 150 && /store/scripts/dockerdb.sh oracle > /var/lib/jenkins/logs/dockerdb-oracle.log
+@reboot jenkins [ -x /store/scripts/cron.d/jenkins-docker.sh ] && /store/scripts/cron.d/jenkins-docker.sh
