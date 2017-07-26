@@ -174,31 +174,36 @@ whereami="${PWD}"
 cd $MOODLE_PATH
 
 if [ "$TEST_TO_RUN" == "behat" ]; then
+    SELNAME="${UUID}_selenium"
     if [ "$PROFILE" == "chrome" ]; then
         SHMMAP="-v /dev/shm:/dev/shm"
+
+        docker run \
+            --network nightly \
+            --name ${SELNAME} \
+            -d $SHMMAP \
+            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            selenium/standalone-chrome
     else
         SHMMAP=''
-    fi
-
-    SELNAME="${UUID}_selenium"
-
-    # Start phantomjs instance.
-    if [[ $SELENIUM_DOCKER == *"rajeshtaneja"* ]]; then
-        docker run \
-            --network nightly \
-            --name ${SELNAME} \
-            -d $SHMMAP \
-            -v ${MOODLE_PATH}/:/var/www/html/moodle \
-            --entrypoint /init.sh \
-            $SELENIUM_DOCKER $PROFILE
-    else
-        docker run \
-            --network nightly \
-            --name ${SELNAME} \
-            -d $SHMMAP \
-            -v ${MOODLE_PATH}/:/var/www/html/moodle \
-            --entrypoint /init.sh \
-            $SELENIUM_DOCKER
+        # Start phantomjs instance.
+        if [[ $SELENIUM_DOCKER == *"rajeshtaneja"* ]]; then
+            docker run \
+                --network nightly \
+                --name ${SELNAME} \
+                -d $SHMMAP \
+                -v ${MOODLE_PATH}/:/var/www/html/moodle \
+                --entrypoint /init.sh \
+                $SELENIUM_DOCKER $PROFILE
+        else
+            docker run \
+                --network nightly \
+                --name ${SELNAME} \
+                -d $SHMMAP \
+                -v ${MOODLE_PATH}/:/var/www/html/moodle \
+                --entrypoint /init.sh \
+                $SELENIUM_DOCKER
+        fi
     fi
 
     # Wait for 5 seconds before starting behat run.
