@@ -19,6 +19,25 @@
 #####################################################
 
 dbs=(\
+"m31_01" \
+"m31_02" \
+"m31_03" \
+"m31_03" \
+"m31_05" \
+"m31_06" \
+"m32_01" \
+"m32_02" \
+"m32_03" \
+"m32_03" \
+"m32_05" \
+"m32_06" \
+"m33_01" \
+"m33_02" \
+"m33_03" \
+"m33_03" \
+"m33_05" \
+"m33_06" \
+"t01" \
 "behat_whole_suite_m31_phpunit" \
 "behat_whole_suite_m31_parallel" \
 "behat_whole_suite_m31_chrome" \
@@ -40,8 +59,7 @@ dbs=(\
 "behat_whole_suite_m_chrome" \
 "behat_whole_suite_m_phantomjs" \
 "behat_whole_suite_m_parallel_boost" \
-"behat_whole_suite_m_phpunit_php7" \
-"t01"
+"behat_whole_suite_m_phpunit_php7"
 )
 
 function usage() {
