@@ -163,8 +163,10 @@ echo "==========================================================================
 # Setup the image cleanup.
 function finish {
         echo "Stopping all docker images for ${UUID}"
-        docker stop $(docker ps -a -q --filter name=${UUID})
-        docker rm $(docker ps -a -q --filter name=${UUID})
+        for image in `docker ps -a -q --filter name=${UUID}`
+        do
+            docker stop $image
+        done
 }
 trap finish EXIT
 
