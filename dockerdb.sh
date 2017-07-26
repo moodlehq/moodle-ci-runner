@@ -46,16 +46,21 @@ dbs=(\
 
 function usage() {
 cat << EOF
-##################################### Usage ####################################
-# ./dockerdb.sh mariadb
-# or
-# ./dockerdb.sh oracle
-# or
-# ./dockerdb.sh sqlsrv
 
-# NOTE: For sqlsrv you need to have sqltools
-# https://docs.microsoft.com/en-gb/sql/linux/sql-server-linux-setup-tools#ubuntu
-#################################################################################
+Usage:  dockerdb.sh DATABASE
+
+A tool to bring up database images for the nightly testing infrastructure.
+
+Please note that this will stop any currently running instane of that
+database.
+
+Databases:
+  pgsql     Postgres        9
+  mariadb   MariaDB         11.1
+  mysql     MySQL           5
+  oracle    Oracle          11g
+  sqlsrv    MS SQL Server   CTP-2.1
+
 EOF
 }
 
