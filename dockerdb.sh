@@ -205,7 +205,7 @@ elif [ "${1}" == "pgsql" ]; then
       -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
       -p 5532:5432 \
-      postgres
+      postgres:9
     # Wait few sec, before executing commands.
     sleep 20
 
