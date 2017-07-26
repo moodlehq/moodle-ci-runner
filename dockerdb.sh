@@ -139,7 +139,7 @@ elif [ "${1}" == "sqlsrv" ]; then
       -e ACCEPT_EULA=Y \
       -e SA_PASSWORD=Passw0rd! \
       -p 1433:1433 \
-      microsoft/mssql-server-linux
+      microsoft/mssql-server-linux:ctp2-1
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
     sleep 20
