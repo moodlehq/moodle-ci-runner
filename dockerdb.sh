@@ -107,8 +107,6 @@ if [ "${1}" == "oracle" ]; then
       --detach \
       --name oracle \
       --network nightly \
-      -p 49160:22 \
-      -p 1521:1521 \
       -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
       --tmpfs /var/lib/oracle \
       danpoltawski/moodle-db-oracle
@@ -125,7 +123,6 @@ elif [ "${1}" == "mariadb" ]; then
       -e MYSQL_DATABASE=moodle \
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
-      -p 3307:3306 \
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
       mariadb:10.1
@@ -151,7 +148,6 @@ elif [ "${1}" == "sqlsrv" ]; then
       --network nightly \
       -e ACCEPT_EULA=Y \
       -e SA_PASSWORD=Passw0rd! \
-      -p 1433:1433 \
       microsoft/mssql-server-linux:ctp2-1
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
@@ -183,7 +179,6 @@ elif [ "${1}" == "mysql" ]; then
       -e MYSQL_DATABASE=moodle \
       -e MYSQL_USER=moodle \
       -e MYSQL_PASSWORD=moodle \
-      -p 3306:3306 \
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
       mysql:5
@@ -212,7 +207,6 @@ elif [ "${1}" == "pgsql" ]; then
       -e POSTGRES_DB=moodle \
       -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
-      -p 5532:5432 \
       postgres:9
     # Wait few sec, before executing commands.
     sleep 20
