@@ -19,7 +19,15 @@ dbs=(\
 "m33_04" \
 "m33_05" \
 "m33_06" \
+"m_01" \
+"m_02" \
+"m_03" \
+"m_04" \
+"m_05" \
+"m_06" \
 "t01" \
+"t02" \
+"t03" \
 "behat_whole_suite_m31_phpunit" \
 "behat_whole_suite_m31_parallel" \
 "behat_whole_suite_m31_chrome" \
