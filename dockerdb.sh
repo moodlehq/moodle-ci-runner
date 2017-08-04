@@ -1,23 +1,5 @@
 #!/bin/bash
 
-######################################################
-# We use mariadb and oracle db docker for some of our
-# jobs as mariadb01.test.in.moodle.com won't suffice
-# for all jobs. So here is a script to start a new
-# Mariadb instance
-#####################################################
-
-# ./dockerdb.sh mariadb
-# or
-# ./dockerdb.sh oracle
-# or
-# ./dockerdb.sh sqlsrv
-
-# NOTE: For sqlsrv you need to have sqltools
-# https://docs.microsoft.com/en-gb/sql/linux/sql-server-linux-setup-tools#ubuntu
-
-#####################################################
-
 dbs=(\
 "m31_01" \
 "m31_02" \
