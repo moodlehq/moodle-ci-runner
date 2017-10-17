@@ -110,7 +110,7 @@ if [ "${1}" == "oracle" ]; then
       --network nightly \
       -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
       --tmpfs /var/lib/oracle \
-      danpoltawski/moodle-db-oracle
+      moodlehq/moodle-db-oracle
     sleep 20
 
 # MARIADB
