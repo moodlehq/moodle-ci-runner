@@ -5,4 +5,4 @@
 # instances which have existed but not removed
 #############################################
 
-docker rm $(docker ps -a --filter 'exited=0' -q)
+docker rm $(docker ps -a --filter 'status=exited' -q)
