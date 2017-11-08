@@ -68,7 +68,7 @@ Databases:
   mariadb   MariaDB         11.1
   mysql     MySQL           5
   oracle    Oracle          11g
-  sqlsrv    MS SQL Server   CTP-2.1
+  sqlsrv    MS SQL Server   2017-GA
 
 EOF
 }
@@ -149,7 +149,7 @@ elif [ "${1}" == "sqlsrv" ]; then
       --network nightly \
       -e ACCEPT_EULA=Y \
       -e SA_PASSWORD=Passw0rd! \
-      microsoft/mssql-server-linux:ctp2-1
+      microsoft/mssql-server-linux:2017-GA
 
     # Wait for 20 seconds to ensure we have sqlsrv  docker initialized.
     sleep 20
