@@ -182,7 +182,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
             --network nightly \
             --name ${SELNAME} \
             -d $SHMMAP \
-            -v ${MOODLE_PATH}/:/var/www/html/moodle \
+            -v "${MOODLE_PATH}":/var/www/html/moodle \
             selenium/standalone-chrome
     else
         SHMMAP=''
@@ -192,7 +192,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
                 --network nightly \
                 --name ${SELNAME} \
                 -d $SHMMAP \
-                -v "${MOODLE_PATH}"/:/var/www/html/moodle \
+                -v "${MOODLE_PATH}":/var/www/html/moodle \
                 --entrypoint /init.sh \
                 $SELENIUM_DOCKER $PROFILE
         else
@@ -223,7 +223,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --name ${UUID}_run \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v "${MOODLE_PATH}":${DOCKER_MOODLE_PATH} \
-      -v ${MAP_FAILDUMP}:/shared \
+      -v "${MAP_FAILDUMP}":/shared \
       --entrypoint /behat ${PHP_SERVER_DOCKER} \
       --dbtype=${DBTYPE} \
       --dbhost=${DBHOST} \
