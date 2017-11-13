@@ -239,7 +239,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       $DBPORT \
       --forcedrop
     EXITCODE=$?
-    cd "$whereami"t
+    cd "$whereami"
 else
     docker run \
       --network nightly \
