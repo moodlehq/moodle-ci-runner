@@ -23,6 +23,9 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
+// Skip language upgrade during the on-sync period.
+$CFG->skiplangupgrade = true;
+
 /** Moodle Site config */
 $CFG->dbtype    = '%%DbType%%';
 $CFG->dblibrary = 'native';
