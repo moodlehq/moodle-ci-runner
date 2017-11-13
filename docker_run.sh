@@ -138,8 +138,8 @@ if [ ! -z "$MAP_FAILDUMP" ]
 then
   if [ ! -d "$MAP_FAILDUMP" ]
   then
-    mkdir -p $MAP_FAILDUMP
-    chmod 777 $MAP_FAILDUMP
+    mkdir -p "$MAP_FAILDUMP"
+    chmod 777 "$MAP_FAILDUMP"
   fi
 fi
 
