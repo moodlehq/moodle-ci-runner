@@ -171,7 +171,7 @@ function finish {
 trap finish EXIT
 
 whereami="${PWD}"
-cd $MOODLE_PATH
+cd "$MOODLE_PATH"
 
 if [ "$TEST_TO_RUN" == "behat" ]; then
     SELNAME="${UUID}_selenium"
@@ -192,7 +192,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
                 --network nightly \
                 --name ${SELNAME} \
                 -d $SHMMAP \
-                -v ${MOODLE_PATH}/:/var/www/html/moodle \
+                -v "${MOODLE_PATH}"/:/var/www/html/moodle \
                 --entrypoint /init.sh \
                 $SELENIUM_DOCKER $PROFILE
         else
@@ -200,7 +200,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
                 --network nightly \
                 --name ${SELNAME} \
                 -d $SHMMAP \
-                -v ${MOODLE_PATH}/:/var/www/html/moodle \
+                -v "${MOODLE_PATH}"/:/var/www/html/moodle \
                 --entrypoint /init.sh \
                 $SELENIUM_DOCKER
         fi
@@ -239,7 +239,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       $DBPORT \
       --forcedrop
     EXITCODE=$?
-    cd $whereami
+    cd "$whereami"t
 else
     docker run \
       --network nightly \
