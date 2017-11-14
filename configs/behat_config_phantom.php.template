@@ -221,6 +221,9 @@ $CFG->behat_config = array(
 $CFG->directorypermissions = 0777;
 
 $CFG->passwordsaltmain = 'u`?bRqPnWoCNYl@BMXxuWr;JVxwdx&u';
+
+define(TEST_EXTERNAL_FILES_HTTP_URL, 'http://exttests');
+
 require_once(dirname(__FILE__) . '/lib/setup.php');
 
 // There is no php closing tag in this file,

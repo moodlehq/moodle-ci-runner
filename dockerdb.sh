@@ -228,6 +228,14 @@ elif [ "${1}" == "pgsql" ]; then
         docker exec pgsql psql -U postgres -c "CREATE DATABASE ${db} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
     done
 
+elif [ "${1}" == "exttests" ]; then
+    echo "Starting exttests instance"
+    docker run \
+      --detach \
+      --name exttests \
+      --network nightly \
+      moodlehq/moodle-exttests-apache:latest
+
 else
     echo "You should not have reached here...Check db passed"
     usage

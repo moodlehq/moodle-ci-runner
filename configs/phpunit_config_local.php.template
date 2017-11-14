@@ -194,6 +194,8 @@ define('TEST_SEARCH_SOLR_INDEXNAME', 'phpunit');
 define('TEST_SESSION_REDIS_HOST', '127.0.0.1');
 define('PHPUNIT_LONGTEST', true);
 
+define(TEST_EXTERNAL_FILES_HTTP_URL, 'http://exttests');
+
 require_once(dirname(__FILE__) . '/lib/setup.php');
 
 // There is no php closing tag in this file,
