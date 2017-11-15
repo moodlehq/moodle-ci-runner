@@ -19,12 +19,6 @@ export TESTTORUN="${TESTTORUN:-phpunit}"
 # Default DB settings.
 # Todo: Tidy this up properly.
 export DBTYPE="${DBTYPE:-pgsql}"
-export DBUSER="${DBUSER:-moodle}"
-export DBPASS="${DBPASS:-moodle}"
-export DBHOST="${DBHOST:-${DBTYPE}}"
-export DBPORT="${DBPORT:-}"
-export DBNAME="${DBNAME:-}"
-export DBPREFIX="${DBPREFIX:-}"
 export DBTORUN="${DBTORUN:-}"
 
 # Test defaults
@@ -37,90 +31,40 @@ rm -f "${ENVIROPATH}"
 touch "${ENVIROPATH}"
 
 # Select db to use today.
-# TODO Change this.
-if [ -n "$DBTORUN" ]; then
-    DBTORUN=(`echo ${DBTORUN}`);
-    # Find which db to run today.
-    dayoftheweek=`date +"%u"`
-    if [[ -z ${DBTORUN} ]]; then
-        dbtouse=pgsql
-    else
-        dbtouse=${DBTORUN[ $(( ${dayoftheweek} - 1 )) ]}
-    fi
-    echo "Running against ${dbtouse}"
-
-    eval dbtousedetails="(\"\${$dbtouse[@]}\")"
-
-    # Set db values.
-    for dbtouse in ${dbtousedetails[@]}
-      do
-      KEY=${dbtouse%%:*}
-      VALUE=${dbtouse#*:}
-      eval ${KEY}=${VALUE}
-    done
-
-    # Get total runs.
-    if [[ -z ${PROCESS} ]]; then
-        if [ -z "$RUN" ]; then
-            RUN=1
-        fi
-
-        if [ -z "$TOTAL_RUN" ]; then
-            TOTAL_RUNS=1
-        fi
-    else
-        RUN=`echo $PROCESS | cut -d '/' -f 1`
-        TOTAL_RUNS=`echo $PROCESS | cut -d '/' -f 2`
-    fi
-
-    # Dbtype and dbhost can't be guessed. enure we have one.
-    if [ -z "$dbtype" ] || [ -z "$dbhost" ]; then
-        echo "Dbtype or dbhost is not set."
-        exit 1
-    fi
-    DBTYPE=${dbtype}
-    DBHOST=${dbhost}
-    if [[ -z ${dbname} ]]; then
-        DBNAME=${SiteId}
-    else
-        DBNAME=${dbname}
-    fi
-    if [[ -z ${dbuser} ]]; then
-        DBUSER=moodle
-    else
-        DBUSER=${dbuser}
-    fi
-    if [[ -z ${dbpass} ]]; then
-        DBPASS=moodle
-    else
-        DBPASS=${dbpass}
-    fi
-    if [[ -z ${dbprefix} ]]; then
-        if [ "$TESTTORUN" == "phpunit" ]; then
-            DBPREFIX=t_
-        else
-            DBPREFIX=b_
-        fi
-    else
-        DBPREFIX=${dbprefix}
-    fi
-
-    if [ -n "$dbport" ]; then
-        DBPORT="--dbport=${dbport}"
-    else
-        DBPORT=''
-    fi
-else
-    if [ -z "$DBPREFIX" ]
-    then
-        if [ "$TESTTORUN" == "phpunit" ]
-        then
-          DBPREFIX=t_
-        else
-          DBPREFIX=b_
-        fi
-    fi
+if [ -n "$DBTORUN" ]
+then
+  DBTORUN=(`echo ${DBTORUN}`);
+  # Find which db to run today.
+  dayoftheweek=`date +"%u"`
+  if [[ -z ${DBTORUN} ]]; then
+    dbtouse=pgsql
+  else
+    dbtouse=${DBTORUN[ $(( ${dayoftheweek} - 1 )) ]}
+  fi
+  echo "Running against ${dbtouse}"
 fi
+
+if [ "${DBTYPE}" == "oci" ]
+then
+  export DBHOST="oracle:1521/xe"
+  export DBUSER="system"
+  export DBPASS="oracle"
+  export DBPREFIX="${DBNAME}"
+  export DBNAME="xe"
+elif [ "${DBTYPE}" == "mssql" ]
+then
+  export DBHOST="sqlsrv"
+  export DBUSER="sa"
+  export DBPASS="Passw0rd!"
+fi
+
+export DBTYPE="${DBTYPE:-pgsql}"
+export DBUSER="${DBUSER:-moodle}"
+export DBPASS="${DBPASS:-moodle}"
+export DBHOST="${DBHOST:-${DBTYPE}}"
+export DBPORT="${DBPORT:-}"
+export DBNAME="${DBNAME:-}"
+export DBPREFIX="${DBPREFIX:-}"
 
 if [ -z "$DBNAME" ]
 then
