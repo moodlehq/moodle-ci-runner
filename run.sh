@@ -44,6 +44,12 @@ then
   echo "Running against ${dbtouse}"
 fi
 
+if [ -z "$DBNAME" ]
+then
+  echo "No database name specified"
+  exit 1
+fi
+
 if [ "${DBTYPE}" == "oci" ]
 then
   export DBHOST="oracle:1521/xe"
@@ -65,12 +71,6 @@ export DBHOST="${DBHOST:-${DBTYPE}}"
 export DBPORT="${DBPORT:-}"
 export DBNAME="${DBNAME:-}"
 export DBPREFIX="${DBPREFIX:-}"
-
-if [ -z "$DBNAME" ]
-then
-  echo "No database name specified"
-  exit 1
-fi
 
 
 # Setup Environment
@@ -136,7 +136,7 @@ then
       $SHMMAP \
       -v "${CODEDIR}":/var/www/html \
       -p 5900:5900 \
-      selenium/standalone-chrome-debug
+      selenium/standalone-chrome
   else
     SHMMAP=''
     docker run \
