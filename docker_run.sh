@@ -221,6 +221,7 @@ if [ "$TEST_TO_RUN" == "behat" ]; then
       --rm \
       --user=$UID \
       --name ${UUID}_run \
+      -v /store/scripts/configs:/config:ro \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v "${MOODLE_PATH}":${DOCKER_MOODLE_PATH} \
       -v "${MAP_FAILDUMP}":/shared \
@@ -247,6 +248,7 @@ else
       --rm \
       --user=$UID \
       --name ${UUID}_run \
+      -v /store/scripts/configs:/config:ro \
       -v /var/lib/jenkins/.composer:/home/rajesh/.composer:rw \
       -v "${MOODLE_PATH}":${DOCKER_MOODLE_PATH} \
       --entrypoint /phpunit ${PHP_SERVER_DOCKER} \
