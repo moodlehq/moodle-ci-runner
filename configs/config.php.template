@@ -23,9 +23,6 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-// Skip language upgrade during the on-sync period.
-$CFG->skiplangupgrade = true;
-
 /** Moodle Site config */
 $CFG->dbtype    = '%%DbType%%';
 $CFG->dblibrary = 'native';
@@ -39,6 +36,9 @@ $CFG->dboptions = array (
   'dbsocket' => 0,
   'dbport' => '%%DbPort%%'
 );
+
+// Skip language upgrade during the on-sync period.
+$CFG->skiplangupgrade = false;
 
 $CFG->wwwroot   = 'http://%%DockerContainerIp%%/moodle';
 $CFG->dataroot  = '%%DataDir%%';

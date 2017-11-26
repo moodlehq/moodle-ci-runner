@@ -23,10 +23,6 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-// Skip language upgrade during the on-sync period.
-$CFG->skiplangupgrade = true;
-
-
 /** Moodle Site config */
 $CFG->dbtype    = '%%DbType%%';
 $CFG->dblibrary = 'native';
@@ -40,6 +36,9 @@ $CFG->dboptions = array (
   'dbsocket' => 0,
   'dbport' => '%%DbPort%%'
 );
+
+// Skip language upgrade during the on-sync period.
+$CFG->skiplangupgrade = false;
 
 // Set this as this is needed to avoid an extra dbquery to find collation.
 // If you want to change it for your setup then add this to docker_env.php

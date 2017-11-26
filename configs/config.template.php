@@ -13,6 +13,9 @@ $CFG->dbpass    = getenv('DBPASS');
 $CFG->prefix    = 'm_';
 $CFG->dboptions = ['dbcollation' => getenv('DBCOLLATION')];
 
+// Skip language upgrade during the on-sync period.
+$CFG->skiplangupgrade = false;
+
 $CFG->wwwroot   = 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
