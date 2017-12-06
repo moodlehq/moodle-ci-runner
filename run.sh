@@ -229,6 +229,11 @@ then
   else
     if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
     then
+
+      echo "============================================================================"
+      echo "== Exit code: ${EXITCODE}"
+      echo "== Test result: Rerunning"
+      echo "============================================================================"
       if [ "$MOODLE_VERSION" -ge "32" ]
       then
         CONFIGPATH="/var/www/behatdata/behatrun/behat/behat.yml"
