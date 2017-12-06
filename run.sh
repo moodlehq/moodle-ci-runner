@@ -234,10 +234,10 @@ then
       echo "== Exit code: ${EXITCODE}"
       echo "== Test result: Rerunning"
       echo "============================================================================"
-      if [ "$MOODLE_VERSION" -ge "32" ]
+
+      CONFIGPATH="/var/www/behatdata/behatrun/behat/behat.yml"
+      if [ "$MOODLE_VERSION" -lt "32" ]
       then
-        CONFIGPATH="/var/www/behatdata/behatrun/behat/behat.yml"
-      else
         CONFIGPATH="/var/www/behatdata/behat/behat.yml"
       fi
 
@@ -265,10 +265,9 @@ then
           continue
         fi
 
-        if [ "$MOODLE_VERSION" -ge "32" ]
+        CONFIGPATH="/var/www/behatdata/behatrun${RUN}/behat/behat.yml"
+        if [ "$MOODLE_VERSION" -lt "32" ]
         then
-          CONFIGPATH="/var/www/behatdata/behatrun${RUN}/behat/behat.yml"
-        else
           CONFIGPATH="/var/www/behatdata${RUN}/behat/behat.yml"
         fi
 
