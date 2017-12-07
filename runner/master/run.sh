@@ -123,7 +123,7 @@ then
     --innodb_file_per_table=On \
     --innodb_large_prefix=On
 
-  export DBCOLLATION=utf8mb4_unicode_ci
+  export DBCOLLATION=utf8mb4_bin
 
   # Wait few sec, before executing commands.
   sleep 20
@@ -147,7 +147,7 @@ then
       --innodb_file_per_table=On \
       --innodb_large_prefix=On
 
-  export DBCOLLATION=utf8mb4_unicode_ci
+  export DBCOLLATION=utf8mb4_bin
 
   # Wait few sec, before executing commands.
   sleep 20
