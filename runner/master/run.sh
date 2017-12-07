@@ -95,6 +95,7 @@ function finish {
 trap finish EXIT
 
 function ctrl_c() {
+  echo
   echo "============================================================================"
   echo "Job was cancelled at user request"
   echo "============================================================================"
@@ -102,8 +103,10 @@ function ctrl_c() {
 }
 trap ctrl_c INT
 
+echo
 echo "============================================================================"
 echo "Starting database server"
+echo ">>> startsection <<<"
 echo "============================================================================"
 
 if [ "${DBTYPE}" == "mysqli" ]
@@ -224,9 +227,16 @@ fi
 echo "============================================================================"
 echo "Database server started"
 echo "============================================================================"
+echo ">>> stopsection <<<"
+echo
 
 if [ "$TESTTORUN" == "behat" ]
 then
+  echo
+  echo "============================================================================"
+  echo ">>> startsection <<<"
+  echo "Starting selenium server"
+  echo "============================================================================"
   SELNAME=sel"${UUID}"
   if [ "$BROWSER" == "chrome" ]
   then
@@ -251,11 +261,20 @@ then
       selenium/standalone-firefox:2.53.1
   fi
 
+  docker logs ${SELNAME}
+
   export SELENIUMURL="http://${SELNAME}:4444"
   echo SELENIUMURL >> "${ENVIROPATH}"
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
 fi
 
 # Start the test server.
+echo
+echo "============================================================================"
+echo "Starting web server"
+echo ">>> startsection <<<"
+echo "============================================================================"
 export WEBSERVER=run"${UUID}"
 docker run \
   --network nightly \
@@ -267,12 +286,24 @@ docker run \
   ${PHP_SERVER_DOCKER}
 
 # Copy code in place.
+echo "== Copying code in place"
 docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
 
 # Copy the config.php in place
+echo "== Copying configuration"
 docker cp "${SCRIPTPATH}/config.template.php" "${WEBSERVER}":/var/www/html/config.php
 
+echo "============================================================================"
+docker logs "${WEBSERVER}"
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
 # Setup the DB.
+echo
+echo "============================================================================"
+echo "Initialising test environment"
+echo ">>> startsection <<<"
+echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
   docker exec -t "${WEBSERVER}" \
@@ -283,13 +314,19 @@ else
     php admin/tool/phpunit/cli/init.php \
       --force
 fi
+echo "============================================================================"
+echo ">>> stopsection <<<"
 
 # Run the test.
-echo "============================================================================"
-echo "== Starting the test run at $(date)"
-echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
+
+  echo
+  echo "============================================================================"
+  echo "== Starting behat test run at $(date)"
+  echo ">>> startsection <<<"
+  echo "============================================================================"
+
   BEHAT_FORMAT_DOTS="--format=moodle_progress --out=std"
   BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty{runprocess}.txt --replace={runprocess}"
   BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
@@ -312,6 +349,8 @@ then
       ${BEHAT_FORMAT_JUNIT} \
       ${BEHAT_RUN_SUITE}
   EXITCODE=$?
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
 
   # Re-run failed scenarios, to ensure they are true fails.
   # If we are running a single, we don't need to check for each run.
@@ -387,14 +426,25 @@ then
   fi
 
 else
+
+  echo
+  echo "============================================================================"
+  echo "== Starting phpunit test run at $(date)"
+  echo ">>> startsection <<<"
+  echo "============================================================================"
+
   docker exec -t "${WEBSERVER}" \
     php vendor/bin/phpunit \
       --log-junit "/shared/log.junit" \
       --verbose
   EXITCODE=$?
 
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
+
 fi
 
+echo
 echo "============================================================================"
 echo "== Exit summary":
 echo "== Exit code: ${EXITCODE}"
