@@ -275,17 +275,6 @@ docker cp "${SCRIPTPATH}/config.template.php" "${WEBSERVER}":/var/www/html/confi
 # Setup the DB.
 if [ "$TESTTORUN" == "behat" ]
 then
-  # Setup Composer
-  docker exec -t "${WEBSERVER}" \
-    php admin/tool/behat/cli/init.php
-
-  docker exec -t "${WEBSERVER}" \
-    php admin/tool/behat/cli/util.php --drop
-
-  docker exec -t "${WEBSERVER}" \
-    php admin/tool/behat/cli/util.php --drop -j=10
-
-  # Init tables.
   docker exec -t "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
       -j="${BEHAT_TOTAL_RUNS}"
