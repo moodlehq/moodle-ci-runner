@@ -74,6 +74,8 @@ echo "== Build Id: ${BUILD_ID}"
 echo "== Output directory: ${OUTPUTDIR}"
 echo "== UUID: ${UUID}"
 echo "== Container prefix: ${UUID}"
+echo "== PHP Version: ${PHP_VERSION}"
+echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
 echo "== DBUSER: ${DBUSER}"
@@ -294,6 +296,9 @@ else
 fi
 
 # Run the test.
+echo "============================================================================"
+echo "== Starting the test run at $(date)"
+echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
   BEHAT_FORMAT_DOTS="--format=moodle_progress --out=std"
