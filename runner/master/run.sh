@@ -270,7 +270,7 @@ docker run \
 docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
 
 # Copy the config.php in place
-docker cp /store/scripts/configs/config.template.php "${WEBSERVER}":/var/www/html/config.php
+docker cp "${SCRIPTPATH}/config.template.php" "${WEBSERVER}":/var/www/html/config.php
 
 # Setup the DB.
 if [ "$TESTTORUN" == "behat" ]
