@@ -2,6 +2,10 @@
 set -u
 set -o pipefail
 
+pushd `dirname $0` > /dev/null
+SCRIPTPATH=`pwd`
+popd > /dev/null
+
 CACHEDIR="/var/lib/jenkins/caches"
 export COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"
 export CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
@@ -37,52 +41,29 @@ then
   # Find which db to run today.
   dayoftheweek=`date +"%u"`
   if [[ -z ${DBTORUN} ]]; then
-    dbtouse=pgsql
+    DBTYPE=pgsql
   else
-    dbtouse=${DBTORUN[ $(( ${dayoftheweek} - 1 )) ]}
+    DBTYPE=${DBTORUN[ $(( ${dayoftheweek} - 1 )) ]}
   fi
-  echo "Running against ${dbtouse}"
+  echo "Running against ${DBTYPE}"
 fi
-
-if [ -z "$DBNAME" ]
-then
-  echo "No database name specified"
-  exit 1
-fi
-
-if [ "${DBTYPE}" == "oci" ]
-then
-  export DBHOST="oracle:1521/xe"
-  export DBUSER="system"
-  export DBPASS="oracle"
-  export DBPREFIX="${DBNAME}"
-  export DBNAME="xe"
-elif [ "${DBTYPE}" == "mssql" ]
-then
-  export DBHOST="sqlsrv"
-  export DBUSER="sa"
-  export DBPASS="Passw0rd!"
-fi
-
-export DBTYPE="${DBTYPE:-pgsql}"
-export DBUSER="${DBUSER:-moodle}"
-export DBPASS="${DBPASS:-moodle}"
-export DBHOST="${DBHOST:-${DBTYPE}}"
-export DBPORT="${DBPORT:-}"
-export DBNAME="${DBNAME:-}"
-export DBPREFIX="${DBPREFIX:-}"
-
 
 # Setup Environment
 UUID=$(uuid | sha1sum | awk '{print $1}')
 UUID=${UUID:0:16}
+export DBHOST=db"${UUID}"
+export DBTYPE="${DBTYPE:-pgsql}"
+export DBUSER="${DBUSER:-moodle}"
+export DBPASS="${DBPASS:-moodle}"
+export DBHOST="${DBHOST:-${DBTYPE}}"
+export DBNAME="moodle"
+
 echo "DBTYPE" >> "${ENVIROPATH}"
 echo "DBHOST" >> "${ENVIROPATH}"
-echo "DBPORT" >> "${ENVIROPATH}"
 echo "DBUSER" >> "${ENVIROPATH}"
 echo "DBPASS" >> "${ENVIROPATH}"
 echo "DBNAME" >> "${ENVIROPATH}"
-echo "PREFIX" >> "${ENVIROPATH}"
+echo "DBCOLLATION" >> "${ENVIROPATH}"
 echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
 
@@ -95,11 +76,9 @@ echo "== UUID: ${UUID}"
 echo "== Container prefix: ${UUID}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
-echo "== DBPORT: ${DBPORT}"
 echo "== DBUSER: ${DBUSER}"
 echo "== DBPASS: ${DBPASS}"
 echo "== DBNAME: ${DBNAME}"
-echo "== PREFIX: ${DBPREFIX}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 
@@ -121,6 +100,128 @@ function ctrl_c() {
 }
 trap ctrl_c INT
 
+echo "============================================================================"
+echo "Starting database server"
+echo "============================================================================"
+
+if [ "${DBTYPE}" == "mysqli" ]
+then
+  docker run \
+    --detach \
+    --name ${DBHOST} \
+    --network nightly \
+    -e MYSQL_ROOT_PASSWORD=moodle \
+    -e MYSQL_DATABASE=moodle \
+    -e MYSQL_USER=moodle \
+    -e MYSQL_PASSWORD=moodle \
+    --tmpfs /var/lib/mysql:rw \
+    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
+    mysql:5\
+    --character-set-server=utf8mb4 \
+    --collation-server=utf8mb4_bin \
+    --innodb_file_format=barracuda \
+    --innodb_file_per_table=On \
+    --innodb_large_prefix=On
+
+  export DBCOLLATION=utf8mb4_unicode_ci
+
+  # Wait few sec, before executing commands.
+  sleep 20
+
+elif [ "${DBTYPE}" == "mariadb" ]
+then
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network nightly \
+      -e MYSQL_ROOT_PASSWORD=moodle \
+      -e MYSQL_DATABASE=moodle \
+      -e MYSQL_USER=moodle \
+      -e MYSQL_PASSWORD=moodle \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
+      mariadb:10.1 \
+      --character-set-server=utf8mb4 \
+      --collation-server=utf8mb4_bin \
+      --innodb_file_format=barracuda \
+      --innodb_file_per_table=On \
+      --innodb_large_prefix=On
+
+  export DBCOLLATION=utf8mb4_unicode_ci
+
+  # Wait few sec, before executing commands.
+  sleep 20
+
+elif [ "${DBTYPE}" == "oci" ]
+then
+  docker run \
+    --detach \
+    --name ${DBHOST} \
+    --network nightly \
+    -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
+    --tmpfs /var/lib/oracle \
+    moodlehq/moodle-db-oracle
+
+  sleep 90
+  docker logs ${DBHOST}
+
+  export DBHOST="${DBHOST}:1521/xe"
+  export DBUSER="moodle"
+  export DBPASS="m@0dl3ing"
+  export DBNAME="xe"
+
+elif [ "${DBTYPE}" == "mssql" ]
+then
+
+  export DBUSER="sa"
+  export DBPASS="Passw0rd!"
+  export DBTYPE="sqlsrv"
+
+  docker run \
+    --detach \
+    --name ${DBHOST} \
+    --network nightly \
+    -e ACCEPT_EULA=Y \
+    -e SA_PASSWORD="${DBPASS}" \
+    microsoft/mssql-server-linux:2017-GA
+
+  sleep 10
+
+  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "CREATE DATABASE ${DBNAME} COLLATE LATIN1_GENERAL_CS_AS"
+  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET ANSI_NULLS ON"
+  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET QUOTED_IDENTIFIER ON"
+  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET READ_COMMITTED_SNAPSHOT ON"
+
+elif [ "${DBTYPE}" == "pgsql" ]
+then
+
+  docker run \
+    --detach \
+    --name ${DBHOST} \
+    --network nightly \
+    -e POSTGRES_USER=moodle \
+    -e POSTGRES_PASSWORD=moodle \
+    -e POSTGRES_DB=initial \
+    -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
+    --tmpfs /var/lib/postgresql/data:rw \
+    postgres:9
+
+  # Wait few sec, before executing commands.
+  sleep 5
+
+  # Create dbs.
+  docker exec ${DBHOST} psql -U postgres -c "CREATE DATABASE ${DBNAME} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
+
+else
+
+  echo "Unknown database type ${DBTYPE}"
+  exit 255
+
+fi
+
+echo "============================================================================"
+echo "Database server started"
+echo "============================================================================"
 
 if [ "$TESTTORUN" == "behat" ]
 then
@@ -227,13 +328,14 @@ then
     echo "== Test result: Pass"
     echo "============================================================================"
   else
+    echo "============================================================================"
+    echo "== Exit code: ${EXITCODE}"
+    echo "== Test result: Unstable"
+    echo "============================================================================"
+
     if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
     then
-
-      echo "============================================================================"
-      echo "== Exit code: ${EXITCODE}"
-      echo "== Test result: Rerunning"
-      echo "============================================================================"
+      # A single (non-parallel) behat run.
 
       CONFIGPATH="/var/www/behatdata/behatrun/behat/behat.yml"
       if [ "$MOODLE_VERSION" -lt "32" ]
