@@ -76,11 +76,6 @@ echo "== UUID: ${UUID}"
 echo "== Container prefix: ${UUID}"
 echo "== PHP Version: ${PHP_VERSION}"
 echo "== DBTORUN: ${DBTORUN}"
-echo "== DBTYPE: ${DBTYPE}"
-echo "== DBHOST: ${DBHOST}"
-echo "== DBUSER: ${DBUSER}"
-echo "== DBPASS: ${DBPASS}"
-echo "== DBNAME: ${DBNAME}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
@@ -138,8 +133,6 @@ then
   # Wait few sec, before executing commands.
   sleep 20
 
-  docker logs ${DBHOST}
-
 elif [ "${DBTYPE}" == "mariadb" ]
 then
   docker run \
@@ -164,8 +157,6 @@ then
   # Wait few sec, before executing commands.
   sleep 20
 
-  docker logs ${DBHOST}
-
 elif [ "${DBTYPE}" == "oci" ]
 then
   docker run \
@@ -177,8 +168,6 @@ then
     moodlehq/moodle-db-oracle
 
   sleep 90
-
-  docker logs ${DBHOST}
 
   export DBPASS="m@0dl3ing"
   export DBNAME="XE"
@@ -205,8 +194,6 @@ then
   docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET QUOTED_IDENTIFIER ON"
   docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET READ_COMMITTED_SNAPSHOT ON"
 
-  docker logs ${DBHOST}
-
 elif [ "${DBTYPE}" == "pgsql" ]
 then
 
@@ -227,8 +214,6 @@ then
   # Create dbs.
   docker exec ${DBHOST} psql -U postgres -c "CREATE DATABASE ${DBNAME} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
 
-  docker logs ${DBHOST}
-
 else
 
   echo "Unknown database type ${DBTYPE}"
@@ -238,6 +223,21 @@ fi
 
 echo "============================================================================"
 echo ">>> stopsection <<<"
+
+echo
+echo ">>> startsection Database summary <<<"
+echo "============================================================================"
+echo "== DBTORUN: ${DBTORUN}"
+echo "== DBTYPE: ${DBTYPE}"
+echo "== DBHOST: ${DBHOST}"
+echo "== DBUSER: ${DBUSER}"
+echo "== DBPASS: ${DBPASS}"
+echo "== DBNAME: ${DBNAME}"
+
+docker logs "${DBHOST}"
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
 
 if [ "$TESTTORUN" == "behat" ]
 then
