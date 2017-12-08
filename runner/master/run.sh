@@ -87,11 +87,17 @@ echo ">>> stopsection <<<"
 
 # Setup the image cleanup.
 function finish {
+  echo
+  echo ">>> startsection Cleaning up docker images <<<"
+  echo "============================================================================"
   echo "Stopping all docker images for ${UUID}"
+  docker ps -a --filter name=${UUID}
   for image in `docker ps -a -q --filter name=${UUID}`
   do
       docker stop $image
   done
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
 }
 trap finish EXIT
 
@@ -234,12 +240,11 @@ fi
 
 echo "============================================================================"
 echo ">>> stopsection <<<"
-echo
 
 if [ "$TESTTORUN" == "behat" ]
 then
   echo
-  echo ">>> startsection Starting selenium server<<<"
+  echo ">>> startsection Starting selenium server <<<"
   echo "============================================================================"
   SELNAME=sel"${UUID}"
   if [ "$BROWSER" == "chrome" ]
