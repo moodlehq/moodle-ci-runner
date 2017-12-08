@@ -67,8 +67,8 @@ echo "DBCOLLATION" >> "${ENVIROPATH}"
 echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
 
+echo ">>> startsection Job summary <<<"
 echo "============================================================================"
-echo "== Job summary:"
 echo "== Workspace: ${WORKSPACE}"
 echo "== Build Id: ${BUILD_ID}"
 echo "== Output directory: ${OUTPUTDIR}"
@@ -83,6 +83,7 @@ echo "== DBPASS: ${DBPASS}"
 echo "== DBNAME: ${DBNAME}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
+echo ">>> stopsection <<<"
 
 # Setup the image cleanup.
 function finish {
@@ -104,9 +105,7 @@ function ctrl_c() {
 trap ctrl_c INT
 
 echo
-echo "============================================================================"
-echo "Starting database server"
-echo ">>> startsection <<<"
+echo ">>> startsection Starting database server <<<"
 echo "============================================================================"
 
 if [ "${DBTYPE}" == "mysqli" ]
@@ -133,6 +132,8 @@ then
   # Wait few sec, before executing commands.
   sleep 20
 
+  docker logs ${DBHOST}
+
 elif [ "${DBTYPE}" == "mariadb" ]
 then
     docker run \
@@ -157,6 +158,8 @@ then
   # Wait few sec, before executing commands.
   sleep 20
 
+  docker logs ${DBHOST}
+
 elif [ "${DBTYPE}" == "oci" ]
 then
   docker run \
@@ -168,6 +171,7 @@ then
     moodlehq/moodle-db-oracle
 
   sleep 90
+
   docker logs ${DBHOST}
 
   export DBHOST="${DBHOST}:1521/xe"
@@ -197,6 +201,8 @@ then
   docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET QUOTED_IDENTIFIER ON"
   docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET READ_COMMITTED_SNAPSHOT ON"
 
+  docker logs ${DBHOST}
+
 elif [ "${DBTYPE}" == "pgsql" ]
 then
 
@@ -217,6 +223,8 @@ then
   # Create dbs.
   docker exec ${DBHOST} psql -U postgres -c "CREATE DATABASE ${DBNAME} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
 
+  docker logs ${DBHOST}
+
 else
 
   echo "Unknown database type ${DBTYPE}"
@@ -225,17 +233,13 @@ else
 fi
 
 echo "============================================================================"
-echo "Database server started"
-echo "============================================================================"
 echo ">>> stopsection <<<"
 echo
 
 if [ "$TESTTORUN" == "behat" ]
 then
   echo
-  echo "============================================================================"
-  echo ">>> startsection <<<"
-  echo "Starting selenium server"
+  echo ">>> startsection Starting selenium server<<<"
   echo "============================================================================"
   SELNAME=sel"${UUID}"
   if [ "$BROWSER" == "chrome" ]
@@ -271,9 +275,7 @@ fi
 
 # Start the test server.
 echo
-echo "============================================================================"
-echo "Starting web server"
-echo ">>> startsection <<<"
+echo ">>> startsection Starting web server <<<"
 echo "============================================================================"
 export WEBSERVER=run"${UUID}"
 docker run \
@@ -300,9 +302,7 @@ echo ">>> stopsection <<<"
 
 # Setup the DB.
 echo
-echo "============================================================================"
-echo "Initialising test environment"
-echo ">>> startsection <<<"
+echo ">>> startsection Initialising test environment<<<"
 echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
@@ -332,9 +332,7 @@ if [ "$TESTTORUN" == "behat" ]
 then
 
   echo
-  echo "============================================================================"
-  echo "== Starting behat test run at $(date)"
-  echo ">>> startsection <<<"
+  echo ">>> startsection Starting behat test run at $(date) <<<"
   echo "============================================================================"
 
   BEHAT_FORMAT_DOTS="--format=moodle_progress --out=std"
@@ -359,11 +357,13 @@ then
     echo "============================================================================"
     echo "== Exit code: ${EXITCODE}"
     echo "== Test result: Pass"
+    echo "== End time $(date)"
     echo "============================================================================"
   else
     echo "============================================================================"
     echo "== Exit code: ${EXITCODE}"
     echo "== Test result: Unstable"
+    echo "== End time $(date)"
     echo "============================================================================"
 
     if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
@@ -376,7 +376,8 @@ then
         CONFIGPATH="/var/www/behatdata/behat/behat.yml"
       fi
 
-      echo "---Running behat again for failed steps---"
+      echo ">>> startsection Running behat again for failed steps <<<"
+      echo "============================================================================"
       CMD="vendor/bin/behat"
       CMD="${CMD} --config ${CONFIGPATH}"
       CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
@@ -385,6 +386,8 @@ then
       CMD="${CMD} ${BEHAT_RUN_SUITE}"
       CMD="${CMD} --verbose"
       CMD="${CMD} --rerun"
+      echo "============================================================================"
+      echo ">>> stopsection <<<"
 
       docker exec -t "${WEBSERVER}" ${CMD}
       NEWEXITCODE=$?
@@ -406,7 +409,8 @@ then
           CONFIGPATH="/var/www/behatdata${RUN}/behat/behat.yml"
         fi
 
-        echo "---Running behat again for failed steps on process ${RUN}  ---"
+        echo ">>> startsection Running behat again for failed steps on process ${RUN} <<<"
+        echo "============================================================================"
 
         docker exec -t "${WEBSERVER}" [ ! -L "behatrun{$RUN}" ] && docker exec -t "${WEBSERVER}" ln -s /var/www/html "behatrun${RUN}"
         CMD="vendor/bin/behat"
@@ -420,6 +424,8 @@ then
 
         docker exec -t "${WEBSERVER}" ${CMD}
         NEWEXITCODE=$(($NEWEXITCODE + $?))
+        echo "============================================================================"
+        echo ">>> stopsection <<<"
       done
     fi
     EXITCODE=${NEWEXITCODE}
@@ -428,9 +434,7 @@ then
 else
 
   echo
-  echo "============================================================================"
-  echo "== Starting phpunit test run at $(date)"
-  echo ">>> startsection <<<"
+  echo ">>> startsection Starting phpunit run at $(date) <<<"
   echo "============================================================================"
 
   docker exec -t "${WEBSERVER}" \
