@@ -306,8 +306,18 @@ echo ">>> startsection <<<"
 echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
+  if [ -n "$BEHAT_SUITE" ]
+  then
+    BEHAT_INIT_SUITE="-a=${BEHAT_SUITE}"
+    BEHAT_RUN_SUITE="--suite=${BEHAT_SUITE}"
+  else
+    BEHAT_INIT_SUITE=""
+    BEHAT_RUN_SUITE=""
+  fi
+
   docker exec -t "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
+      ${BEHAT_INIT_SUITE} \
       -j="${BEHAT_TOTAL_RUNS}"
 else
   docker exec -t "${WEBSERVER}" \
@@ -332,18 +342,8 @@ then
   BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
   MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 
-  if [ -n "$BEHAT_SUITE" ]
-  then
-    BEHAT_INIT_SUITE="-a=${BEHAT_SUITE}"
-    BEHAT_RUN_SUITE="--suite=${BEHAT_SUITE}"
-  else
-    BEHAT_INIT_SUITE=""
-    BEHAT_RUN_SUITE=""
-  fi
-
   docker exec -t "${WEBSERVER}" \
     php admin/tool/behat/cli/run.php \
-      ${BEHAT_INIT_SUITE} \
       ${BEHAT_FORMAT_DOTS} \
       ${BEHAT_FORMAT_PRETTY} \
       ${BEHAT_FORMAT_JUNIT} \
