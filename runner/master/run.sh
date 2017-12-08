@@ -180,10 +180,8 @@ then
 
   docker logs ${DBHOST}
 
-  export DBHOST="${DBHOST}:1521/xe"
-  export DBUSER="moodle"
   export DBPASS="m@0dl3ing"
-  export DBNAME="xe"
+  export DBNAME="XE"
 
 elif [ "${DBTYPE}" == "mssql" ]
 then
