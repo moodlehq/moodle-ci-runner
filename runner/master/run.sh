@@ -120,10 +120,10 @@ then
     --detach \
     --name ${DBHOST} \
     --network nightly \
-    -e MYSQL_ROOT_PASSWORD=moodle \
-    -e MYSQL_DATABASE=moodle \
-    -e MYSQL_USER=moodle \
-    -e MYSQL_PASSWORD=moodle \
+    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+    -e MYSQL_DATABASE="${DBNAME}" \
+    -e MYSQL_USER="${DBUSER}" \
+    -e MYSQL_PASSWORD="${DBPASS}" \
     --tmpfs /var/lib/mysql:rw \
     -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
     mysql:5\
@@ -142,22 +142,22 @@ then
 
 elif [ "${DBTYPE}" == "mariadb" ]
 then
-    docker run \
-      --detach \
-      --name ${DBHOST} \
-      --network nightly \
-      -e MYSQL_ROOT_PASSWORD=moodle \
-      -e MYSQL_DATABASE=moodle \
-      -e MYSQL_USER=moodle \
-      -e MYSQL_PASSWORD=moodle \
-      --tmpfs /var/lib/mysql:rw \
-      -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-      mariadb:10.1 \
-      --character-set-server=utf8mb4 \
-      --collation-server=utf8mb4_bin \
-      --innodb_file_format=barracuda \
-      --innodb_file_per_table=On \
-      --innodb_large_prefix=On
+  docker run \
+    --detach \
+    --name ${DBHOST} \
+    --network nightly \
+    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+    -e MYSQL_DATABASE="${DBNAME}" \
+    -e MYSQL_USER="${DBUSER}" \
+    -e MYSQL_PASSWORD="${DBPASS}" \
+    --tmpfs /var/lib/mysql:rw \
+    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
+    mariadb:10.1 \
+    --character-set-server=utf8mb4 \
+    --collation-server=utf8mb4_bin \
+    --innodb_file_format=barracuda \
+    --innodb_file_per_table=On \
+    --innodb_large_prefix=On
 
   export DBCOLLATION=utf8mb4_bin
 
