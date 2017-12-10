@@ -13,7 +13,7 @@ export OUTPUTDIR="${WORKSPACE}"/"${BUILD_ID}"
 export ENVIROPATH="${OUTPUTDIR}"/environment.list
 
 # Which PHP Image to use.
-export PHP_VERSION="7.1"
+export PHP_VERSION="${PHP_VERSION:-7.1}"
 export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_VERSION}}"
 
 # Default type of test to run.
