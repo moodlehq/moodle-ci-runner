@@ -234,7 +234,7 @@ elif [ "${1}" == "exttests" ]; then
       --detach \
       --name exttests \
       --network nightly \
-      moodlehq/moodle-exttests-apache:latest
+      moodlehq/moodle-exttests:latest
 
 else
     echo "You should not have reached here...Check db passed"

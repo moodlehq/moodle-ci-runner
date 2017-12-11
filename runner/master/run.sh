@@ -253,7 +253,7 @@ then
     --detach \
     --name ${EXTTESTNAME} \
     --network nightly \
-    moodlehq/moodle-exttests-apache:latest
+    moodlehq/moodle-exttests:latest
 
   docker logs ${EXTTESTNAME}
 
