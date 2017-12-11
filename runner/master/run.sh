@@ -177,12 +177,11 @@ then
   export DBPASS="m@0dl3ing"
   export DBNAME="XE"
 
-elif [ "${DBTYPE}" == "mssql" ]
+elif [ "${DBTYPE}" == "mssql" ] || [ "${DBTYPE}" == "sqlsrv"]
 then
 
   export DBUSER="sa"
   export DBPASS="Passw0rd!"
-  export DBTYPE="sqlsrv"
 
   docker run \
     --detach \
