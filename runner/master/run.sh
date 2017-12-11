@@ -213,7 +213,7 @@ then
     postgres:9
 
   # Wait few sec, before executing commands.
-  sleep 5
+  sleep 10
 
   # Create dbs.
   docker exec ${DBHOST} psql -U postgres -c "CREATE DATABASE ${DBNAME} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
