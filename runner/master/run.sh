@@ -177,7 +177,7 @@ then
   export DBPASS="m@0dl3ing"
   export DBNAME="XE"
 
-elif [ "${DBTYPE}" == "mssql" ] || [ "${DBTYPE}" == "sqlsrv"]
+elif [ "${DBTYPE}" == "mssql" ] || [ "${DBTYPE}" == "sqlsrv" ]
 then
 
   export DBUSER="sa"
