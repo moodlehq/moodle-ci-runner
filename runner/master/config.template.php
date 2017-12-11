@@ -75,7 +75,8 @@ if (!empty(getenv('MOODLE_DOCKER_PHPUNIT_EXTRAS'))) {
     define('TEST_ENROL_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
 }
 
-// Commented out until MDL-60948 lands.
-//define('TEST_EXTERNAL_FILES_HTTP_URL', 'http://exttests');
+if (!empty(getenv('EXTTESTHOST'))) {
+    define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
+}
 
 require_once(__DIR__ . '/lib/setup.php');

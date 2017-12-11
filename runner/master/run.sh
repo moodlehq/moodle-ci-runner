@@ -242,8 +242,27 @@ docker logs "${DBHOST}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
+if [ "${TESTTORUN}" == "phpunit" ]
+then
+  echo
+  echo ">>> startsection Starting external test server <<<"
+  echo "============================================================================"
+  EXTTESTNAME=ext"${UUID}"
 
-if [ "$TESTTORUN" == "behat" ]
+  docker run \
+    --detach \
+    --name ${EXTTESTNAME} \
+    --network nightly \
+    moodlehq/moodle-exttests-apache:latest
+
+  docker logs ${EXTTESTNAME}
+
+  export EXTTESTURL="http://${EXTTEST}"
+  echo EXTTESTURL >> "${ENVIROPATH}"
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
+
+elif [ "$TESTTORUN" == "behat" ]
 then
   echo
   echo ">>> startsection Starting selenium server <<<"
