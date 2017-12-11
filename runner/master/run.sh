@@ -257,7 +257,7 @@ then
 
   docker logs ${EXTTESTNAME}
 
-  export EXTTESTURL="http://${EXTTEST}"
+  export EXTTESTURL="http://${EXTTESTNAME}"
   echo EXTTESTURL >> "${ENVIROPATH}"
   echo "============================================================================"
   echo ">>> stopsection <<<"
