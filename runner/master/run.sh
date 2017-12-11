@@ -313,13 +313,15 @@ echo ">>> startsection Initialising test environment<<<"
 echo "============================================================================"
 if [ "$TESTTORUN" == "behat" ]
 then
+  BEHAT_INIT_SUITE=""
+  BEHAT_RUN_SUITE=""
   if [ -n "$BEHAT_SUITE" ]
   then
     BEHAT_INIT_SUITE="-a=${BEHAT_SUITE}"
-    BEHAT_RUN_SUITE="--suite=${BEHAT_SUITE}"
-  else
-    BEHAT_INIT_SUITE=""
-    BEHAT_RUN_SUITE=""
+    if [ "${BEHAT_SUITE}" != "ALL" ]
+    then
+      BEHAT_RUN_SUITE="--suite=${BEHAT_SUITE}"
+    fi
   fi
 
   docker exec -t "${WEBSERVER}" \
