@@ -111,6 +111,17 @@ function ctrl_c() {
 trap ctrl_c INT
 
 echo
+echo ">>> startsection Checking networks <<<"
+echo "============================================================================"
+docker network list  --filter name=nightly | grep nightly > /dev/null
+if [ $? -ne 0 ]
+then
+    docker network create nightly
+fi
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
+echo
 echo ">>> startsection Starting database server <<<"
 echo "============================================================================"
 
