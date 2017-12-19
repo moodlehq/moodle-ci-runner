@@ -75,7 +75,7 @@ if (!empty(getenv('MOODLE_DOCKER_PHPUNIT_EXTRAS'))) {
     define('TEST_ENROL_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
 }
 
-if (!empty(getenv('EXTTESTHOST'))) {
+if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
 
