@@ -488,6 +488,16 @@ else
 fi
 
 echo
+echo ">>> startsection Cleaning workspace<<<"
+echo "============================================================================"
+
+docker exec -t "${WEBSERVER}" \
+  chown -R "${UID}:${GROUPS[0]}" /shared
+
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
+echo
 echo "============================================================================"
 echo "== Exit summary":
 echo "== Exit code: ${EXITCODE}"
