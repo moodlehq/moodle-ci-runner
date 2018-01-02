@@ -29,6 +29,7 @@ export DBTORUN="${DBTORUN:-}"
 export BROWSER="${BROWSER:-chrome}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
+export TAGS="${TAGS:-}"
 
 mkdir -p "${OUTPUTDIR}"
 rm -f "${ENVIROPATH}"
@@ -81,6 +82,7 @@ echo "== TESTTORUN: ${TESTTORUN}"
 echo "== BROWSER: ${BROWSER}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
+echo "== TAGS: ${TAGS}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
@@ -291,7 +293,8 @@ then
       -v "${CODEDIR}":/var/www/html \
       -p 5900:5900 \
       selenium/standalone-chrome
-  else
+  elif [ "$BROWSER" == "firefox" ]
+  then
     SHMMAP=''
     docker run \
       --network nightly \
@@ -300,12 +303,20 @@ then
       $SHMMAP \
       -v "${CODEDIR}":/var/www/html \
       selenium/standalone-firefox:2.53.1
+  elif [ "$BROWSER" == "goutte" ]
+  then
+      export BROWSER=""
+      export SELNAME=""
+      echo "No selenium server required"
   fi
 
-  docker logs ${SELNAME}
+  if [ -n "${SELNAME}" ]
+  then
+      docker logs ${SELNAME}
 
-  export SELENIUMURL="http://${SELNAME}:4444"
-  echo SELENIUMURL >> "${ENVIROPATH}"
+      export SELENIUMURL="http://${SELNAME}:4444"
+      echo SELENIUMURL >> "${ENVIROPATH}"
+  fi
   echo "============================================================================"
   echo ">>> stopsection <<<"
 fi
@@ -379,11 +390,17 @@ then
   BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
   MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 
+  if [ -n "${TAGS}" ]
+  then
+    TAGS="--tags=${TAGS}"
+  fi
+
   docker exec -t "${WEBSERVER}" \
     php admin/tool/behat/cli/run.php \
       ${BEHAT_FORMAT_DOTS} \
       ${BEHAT_FORMAT_PRETTY} \
       ${BEHAT_FORMAT_JUNIT} \
+      ${TAGS} \
       ${BEHAT_RUN_SUITE}
   EXITCODE=$?
   echo "============================================================================"
@@ -423,6 +440,7 @@ then
       CMD="${CMD} --format=pretty --out=/shared/pretty_rerun.txt"
       CMD="${CMD} --format=junit --out=/shared/log_rerun.junit"
       CMD="${CMD} ${BEHAT_RUN_SUITE}"
+      CMD="${CMD} ${TAGS}"
       CMD="${CMD} --verbose"
       CMD="${CMD} --rerun"
       echo "============================================================================"
@@ -458,6 +476,7 @@ then
         CMD="${CMD} --format=pretty --out=/shared/pretty${RUN}_rerun.txt"
         CMD="${CMD} --format=junit --out=/shared/log${RUN}_rerun.junit"
         CMD="${CMD} ${BEHAT_RUN_SUITE}"
+        CMD="${CMD} ${TAGS}"
         CMD="${CMD} --verbose"
         CMD="${CMD} --rerun"
 
@@ -476,9 +495,17 @@ else
   echo ">>> startsection Starting phpunit run at $(date) <<<"
   echo "============================================================================"
 
+  if [ -n "${TAGS}" ]
+  then
+    PHPUNIT_FILTER="--filter ${TAGS}"
+  else
+    PHPUNIT_FILTER=""
+  fi
+
   docker exec -t "${WEBSERVER}" \
     php vendor/bin/phpunit \
       --log-junit "/shared/log.junit" \
+      ${PHPUNIT_FILTER} \
       --verbose
   EXITCODE=$?
 
