@@ -6,7 +6,7 @@ pushd `dirname $0` > /dev/null
 SCRIPTPATH=`pwd`
 popd > /dev/null
 
-CACHEDIR="/var/lib/jenkins/caches"
+CACHEDIR="${CACHEDIR:-${HOME}/caches}"
 export COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"
 export CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 export OUTPUTDIR="${WORKSPACE}"/"${BUILD_ID}"
