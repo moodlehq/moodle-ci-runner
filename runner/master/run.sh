@@ -291,7 +291,6 @@ then
       --detach \
       $SHMMAP \
       -v "${CODEDIR}":/var/www/html \
-      -p 5900:5900 \
       selenium/standalone-chrome
   elif [ "$BROWSER" == "firefox" ]
   then
