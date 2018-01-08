@@ -258,7 +258,7 @@ echo ">>> stopsection <<<"
 if [ "${TESTTORUN}" == "phpunit" ]
 then
   echo
-  echo ">>> startsection Starting external test server <<<"
+  echo ">>> startsection Starting supplemental services <<<"
   echo "============================================================================"
   EXTTESTNAME=ext"${UUID}"
 
@@ -268,10 +268,24 @@ then
     --network nightly \
     moodlehq/moodle-exttests:latest
 
-  docker logs ${EXTTESTNAME}
-
   export EXTTESTURL="http://${EXTTESTNAME}"
   echo EXTTESTURL >> "${ENVIROPATH}"
+  docker logs ${EXTTESTNAME}
+
+
+  LDAPTESTNAME=ldap"${UUID}"
+
+  docker run \
+    --detach \
+    --name ${LDAPTESTNAME} \
+    --network nightly \
+    larrycai/openldap
+
+  export LDAPTESTURL="http://${LDAPTESTNAME}"
+  echo LDAPTESTURL >> "${ENVIROPATH}"
+  docker logs ${LDAPTESTNAME}
+
+
   echo "============================================================================"
   echo ">>> stopsection <<<"
 
