@@ -30,6 +30,7 @@ export BROWSER="${BROWSER:-chrome}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export TAGS="${TAGS:-}"
+export RUNCOUNT="${RUNCOUNT:-1}"
 
 mkdir -p "${OUTPUTDIR}"
 rm -f "${ENVIROPATH}"
@@ -408,14 +409,21 @@ then
     TAGS="--tags=${TAGS}"
   fi
 
-  docker exec -t "${WEBSERVER}" \
-    php admin/tool/behat/cli/run.php \
-      ${BEHAT_FORMAT_DOTS} \
-      ${BEHAT_FORMAT_PRETTY} \
-      ${BEHAT_FORMAT_JUNIT} \
-      ${TAGS} \
-      ${BEHAT_RUN_SUITE}
-  EXITCODE=$?
+  CMD="php admin/tool/behat/cli/run.php"
+  CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
+  CMD="${CMD} ${BEHAT_FORMAT_PRETTY}"
+  CMD="${CMD} ${BEHAT_FORMAT_JUNIT}"
+  CMD="${CMD} ${TAGS}"
+  CMD="${CMD} ${BEHAT_RUN_SUITE}"
+
+  ITER=0
+  EXITCODE=0
+  while [[ ${ITER} -lt ${RUNCOUNT} ]]
+  do
+    docker exec -t "${WEBSERVER}" ${CMD}
+    EXITCODE=$(($EXITCODE + $?))
+    ITER=$(($ITER+1))
+  done
   echo "============================================================================"
   echo ">>> stopsection <<<"
 
@@ -515,11 +523,19 @@ else
     PHPUNIT_FILTER=""
   fi
 
-  docker exec -t "${WEBSERVER}" \
-    php vendor/bin/phpunit \
-      --log-junit "/shared/log.junit" \
-      ${PHPUNIT_FILTER} \
-      --verbose
+  CMD="php vendor/bin/phpunit"
+  CMD="${CMD} --log-junit '/shared/log.junit'"
+  CMD="${CMD} ${PHPUNIT_FILTER}"
+  CMD="${CMD} --verbose"
+
+  ITER=0
+  EXITCODE=0
+  while [[ ${ITER} -lt ${RUNCOUNT} ]]
+  do
+    docker exec -t "${WEBSERVER}" ${CMD}
+    EXITCODE=$(($EXITCODE + $?))
+    ITER=$(($ITER+1))
+  done
   EXITCODE=$?
 
   echo "============================================================================"
