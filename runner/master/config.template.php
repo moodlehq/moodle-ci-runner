@@ -36,12 +36,17 @@ $CFG->phpunit_prefix = 't_';
 $CFG->behat_wwwroot   = 'http://' . getenv('WEBSERVER');
 $CFG->behat_dataroot  = '/var/www/behatdata';
 $CFG->behat_prefix = 'b_';
-$CFG->behat_profiles = array(
-    'default' => array(
+$CFG->behat_profiles = [
+    'default' => [
         'browser' => getenv('BROWSER'),
         'wd_host' => getenv('SELENIUMURL') . '/wd/hub',
-    ),
-);
+        'capabilities' => [
+            'browser' => '',
+            'browserVersion' => '',
+            'version' => '',
+        ],
+    ],
+];
 $CFG->behat_faildump_path = '/shared';
 
 define('PHPUNIT_LONGTEST', true);
