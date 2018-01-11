@@ -306,7 +306,7 @@ then
       --detach \
       $SHMMAP \
       -v "${CODEDIR}":/var/www/html \
-      selenium/standalone-chrome:3.0.1
+      selenium/standalone-chrome:3.7.1
   elif [ "$BROWSER" == "firefox" ]
   then
     SHMMAP=''
