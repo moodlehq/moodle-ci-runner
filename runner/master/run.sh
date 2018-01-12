@@ -295,10 +295,11 @@ then
   echo
   echo ">>> startsection Starting selenium server <<<"
   echo "============================================================================"
+  SHMMAP="--shm-size=2g"
+
   SELNAME=sel"${UUID}"
   if [ "$BROWSER" == "chrome" ]
   then
-    SHMMAP="-v /dev/shm:/dev/shm"
 
     docker run \
       --network nightly \
@@ -309,7 +310,6 @@ then
       selenium/standalone-chrome:3.7.1
   elif [ "$BROWSER" == "firefox" ]
   then
-    SHMMAP=''
     docker run \
       --network nightly \
       --name ${SELNAME} \
@@ -326,6 +326,7 @@ then
 
   if [ -n "${SELNAME}" ]
   then
+      sleep 5
       docker logs ${SELNAME}
 
       export SELENIUMURL="http://${SELNAME}:4444"
