@@ -184,6 +184,7 @@ then
     --network nightly \
     -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
     --tmpfs /var/lib/oracle \
+    --shm-size=2g \
     moodlehq/moodle-db-oracle
 
   sleep 90
