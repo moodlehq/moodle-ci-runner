@@ -317,7 +317,7 @@ then
       --detach \
       $SHMMAP \
       -v "${CODEDIR}":/var/www/html \
-      selenium/standalone-firefox:2.53.1
+      rajeshtaneja/selenium:2.53.1 firefox
   elif [ "$BROWSER" == "goutte" ]
   then
       export BROWSER=""
