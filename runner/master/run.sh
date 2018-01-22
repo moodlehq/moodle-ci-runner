@@ -381,6 +381,10 @@ then
     fi
   fi
 
+  echo php admin/tool/behat/cli/init.php \
+      ${BEHAT_INIT_SUITE} \
+      -j="${BEHAT_TOTAL_RUNS}"
+
   docker exec -t "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
       ${BEHAT_INIT_SUITE} \
@@ -422,6 +426,7 @@ then
   EXITCODE=0
   while [[ ${ITER} -lt ${RUNCOUNT} ]]
   do
+    echo ${CMD}
     docker exec -t "${WEBSERVER}" ${CMD}
     EXITCODE=$(($EXITCODE + $?))
     ITER=$(($ITER+1))
