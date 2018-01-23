@@ -531,7 +531,7 @@ else
   fi
 
   CMD="php vendor/bin/phpunit"
-  CMD="${CMD} --log-junit '/shared/log.junit'"
+  CMD="${CMD} --log-junit /shared/log.junit"
   CMD="${CMD} ${PHPUNIT_FILTER}"
   CMD="${CMD} --verbose"
 
