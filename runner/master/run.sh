@@ -562,6 +562,8 @@ then
     EXITCODE=${NEWEXITCODE}
   fi
 
+  # Store the web server logs.
+  docker logs "${WEBSERVER}" 2>&1 | gzip > "${OUTPUTDIR}"/webserver.gz
 else
 
   echo
