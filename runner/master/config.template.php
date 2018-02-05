@@ -39,13 +39,20 @@ $CFG->behat_prefix = 'b_';
 $CFG->behat_profiles = [
     'default' => [
         'browser' => getenv('BROWSER'),
-        'wd_host' => getenv('SELENIUMURL') . '/wd/hub',
-        'capabilities' => [
-            'browser' => '',
-        ],
+        'wd_host' => getenv('SELENIUMURL_0') . '/wd/hub',
     ],
 ];
 $CFG->behat_faildump_path = '/shared';
+
+$CFG->behat_parallel_run = [];
+for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
+    $CFG->behat_parallel_run[$run] = [
+        'wd_host' => getenv("SELENIUMURL_{$run}"),
+    ];
+
+    // Copy the default profile for use re-runs.
+    $CFG->behat_profiles["default{$run}"] = $CFG->behat_profiles['default'];
+}
 
 define('PHPUNIT_LONGTEST', true);
 

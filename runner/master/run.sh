@@ -68,6 +68,7 @@ echo "DBNAME" >> "${ENVIROPATH}"
 echo "DBCOLLATION" >> "${ENVIROPATH}"
 echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
+echo "BEHAT_TOTAL_RUNS" >> "${ENVIROPATH}"
 
 echo ">>> startsection Job summary <<<"
 echo "============================================================================"
@@ -299,85 +300,68 @@ then
 
   SHMMAP="--shm-size=2g"
 
-  SELNAME=hub"${UUID}"
+  HASSELENIUM=1
 
   if [ "$BROWSER" == "chrome" ]
   then
 
     SELVERSION="3.7.1"
-    docker run \
-      --network nightly \
-      --name ${SELNAME} \
-      --detach \
-      $SHMMAP \
-      selenium/hub:${SELVERSION}
-
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
       SELITERNAME=sel"${ITER}${UUID}"
       docker run \
-        -e HUB_HOST=${SELNAME} \
-        -e HUB_PORT_4444_TCP_ADDR=${SELNAME} \
-        -e HUB_PORT_4444_TCP_PORT=4444 \
         --network nightly \
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
         -v "${CODEDIR}":/var/www/html \
-        selenium/node-chrome:${SELVERSION}
+        selenium/standalone-chrome:${SELVERSION}
 
-      sleep 1
-      docker logs ${SELITERNAME}
+      export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
+      echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
 
       ITER=$(($ITER+1))
     done
   elif [ "$BROWSER" == "firefox" ]
   then
 
-    SELVERSION="2.53.1"
-    docker run \
-      --network nightly \
-      --name ${SELNAME} \
-      --detach \
-      $SHMMAP \
-      selenium/hub:${SELVERSION}
-
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
       SELITERNAME=sel"${ITER}${UUID}"
       docker run \
-        -e HUB_HOST=${SELNAME} \
-        -e HUB_PORT_4444_TCP_ADDR=${SELNAME} \
-        -e HUB_PORT_4444_TCP_PORT=4444 \
         --network nightly \
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
         -v "${CODEDIR}":/var/www/html \
-        selenium/node-firefox:${SELVERSION}
+        rajeshtaneja/selenium:2.53.1 firefox
 
-      sleep 1
-      docker logs ${SELITERNAME}
+      export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
+      echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
 
       ITER=$(($ITER+1))
     done
   elif [ "$BROWSER" == "goutte" ]
   then
       export BROWSER=""
-      export SELNAME=""
+      HASSELENIUM=0
       echo "No selenium server required"
   fi
 
-  if [ -n "${SELNAME}" ]
+  if [ "${HASSELENIUM}" -gt 0 ]
   then
       sleep 5
-      docker logs ${SELNAME}
 
-      export SELENIUMURL="http://${SELNAME}:4444"
-      echo SELENIUMURL >> "${ENVIROPATH}"
+      ITER=0
+      while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
+      do
+        docker logs sel"${ITER}${UUID}"
+        ITER=$(($ITER+1))
+      done
   fi
+
   echo "============================================================================"
   echo ">>> stopsection <<<"
 fi
