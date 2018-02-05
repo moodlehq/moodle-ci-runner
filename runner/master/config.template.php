@@ -42,8 +42,6 @@ $CFG->behat_profiles = [
         'wd_host' => getenv('SELENIUMURL') . '/wd/hub',
         'capabilities' => [
             'browser' => '',
-            'browserVersion' => '',
-            'version' => '',
         ],
     ],
 ];
