@@ -574,7 +574,6 @@ else
     EXITCODE=$(($EXITCODE + $?))
     ITER=$(($ITER+1))
   done
-  EXITCODE=$?
 
   echo "============================================================================"
   echo ">>> stopsection <<<"
