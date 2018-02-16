@@ -1,3 +1,0 @@
-# Note: It's safest to copy this file into /etc/cron.d rather than
-# symlinking it as cron is strict about ownership of the cron.d files.
-@reboot jenkins [ -x /store/scripts/start_slave.sh ] && /store/scripts/start_slave.sh
