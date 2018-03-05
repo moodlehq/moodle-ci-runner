@@ -242,7 +242,7 @@ then
     -e POSTGRES_DB=initial \
     -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
     --tmpfs /var/lib/postgresql/data:rw \
-    postgres:9
+    postgres:9.6.7
 
   # Wait few sec, before executing commands.
   sleep 10
