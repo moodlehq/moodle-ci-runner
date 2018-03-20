@@ -578,6 +578,7 @@ else
   fi
 
   CMD="php vendor/bin/phpunit"
+  CMD="${CMD} --disallow-test-output"
   CMD="${CMD} --log-junit /shared/log.junit"
   CMD="${CMD} ${PHPUNIT_FILTER}"
   CMD="${CMD} --verbose"
