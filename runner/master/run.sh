@@ -32,6 +32,9 @@ export ENVIROPATH="${OUTPUTDIR}"/environment.list
 export PHP_VERSION="${PHP_VERSION:-7.1}"
 export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_VERSION}}"
 
+# Which Moodle version (XY) is being used.
+export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
+
 # Default type of test to run.
 # phpunit or behat.
 export TESTTORUN="${TESTTORUN:-phpunit}"
@@ -453,7 +456,6 @@ then
   BEHAT_FORMAT_DOTS="--format=moodle_progress --out=std"
   BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty{runprocess}.txt --replace={runprocess}"
   BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
-  MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 
   if [ -n "${TAGS}" ]
   then
