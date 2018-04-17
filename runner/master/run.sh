@@ -207,6 +207,7 @@ then
     -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
     --tmpfs /var/lib/oracle \
     --shm-size=2g \
+    -e ORACLE_DISABLE_ASYNCH_IO=true \
     moodlehq/moodle-db-oracle
 
   sleep 90
