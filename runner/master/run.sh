@@ -49,6 +49,7 @@ export BROWSER="${BROWSER:-chrome}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export TAGS="${TAGS:-}"
+export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
 
 mkdir -p "${OUTPUTDIR}"
@@ -104,6 +105,7 @@ echo "== BROWSER: ${BROWSER}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
+echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
@@ -579,6 +581,13 @@ else
     PHPUNIT_FILTER=""
   fi
 
+  if [ -n "${TESTSUITE}" ]
+  then
+    PHPUNIT_SUITE="--testsuite ${TESTSUITE}"
+  else
+    PHPUNIT_SUITE=""
+  fi
+
   CMD="php vendor/bin/phpunit"
   CMD="${CMD} --disallow-test-output"
   if [ "$MOODLE_VERSION" -gt "31" ]
@@ -589,6 +598,7 @@ else
   fi
   CMD="${CMD} --log-junit /shared/log.junit"
   CMD="${CMD} ${PHPUNIT_FILTER}"
+  CMD="${CMD} ${PHPUNIT_SUITE}"
   CMD="${CMD} --verbose"
 
   ITER=0
