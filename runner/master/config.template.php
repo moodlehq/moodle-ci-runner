@@ -53,7 +53,6 @@ $CFG->behat_prefix = 'b_';
 $CFG->behat_profiles = [
     'default' => [
         'browser' => getenv('BROWSER'),
-        'wd_host' => getenv('SELENIUMURL_0') . '/wd/hub',
     ],
 ];
 $CFG->behat_faildump_path = '/shared';
