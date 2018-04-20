@@ -70,17 +70,17 @@ for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
 
 define('PHPUNIT_LONGTEST', true);
 
-define('TEST_LDAPLIB_HOST_URL', 'ldap://' . getenv('LDAPTESTNAME'));
+define('TEST_LDAPLIB_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_LDAPLIB_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_LDAPLIB_BIND_PW', 'password');
 define('TEST_LDAPLIB_DOMAIN', 'ou=Users,dc=openstack,dc=org');
 
-define('TEST_AUTH_LDAP_HOST_URL', 'ldap://' . getenv('LDAPTESTNAME'));
+define('TEST_AUTH_LDAP_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_AUTH_LDAP_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_AUTH_LDAP_BIND_PW', 'password');
 define('TEST_AUTH_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
 
-define('TEST_ENROL_LDAP_HOST_URL', 'ldap://' . getenv('LDAPTESTNAME'));
+define('TEST_ENROL_LDAP_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_ENROL_LDAP_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_ENROL_LDAP_BIND_PW', 'password');
 define('TEST_ENROL_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');

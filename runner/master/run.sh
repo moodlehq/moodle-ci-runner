@@ -306,7 +306,7 @@ then
     --network nightly \
     larrycai/openldap
 
-  export LDAPTESTURL="http://${LDAPTESTNAME}"
+  export LDAPTESTURL="ldap://${LDAPTESTNAME}"
   echo LDAPTESTURL >> "${ENVIROPATH}"
   docker logs ${LDAPTESTNAME}
 
