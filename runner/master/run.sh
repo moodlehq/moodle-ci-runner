@@ -327,7 +327,7 @@ then
   if [ "$BROWSER" == "chrome" ]
   then
 
-    SELVERSION="3.7.1"
+    SELVERSION="3.11.0-dysprosium"
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
