@@ -440,7 +440,7 @@ then
     php admin/tool/behat/cli/init.php \
       ${BEHAT_INIT_SUITE} \
       -j="${BEHAT_TOTAL_RUNS}"
-  docker exec -it "{$WEBSERVER}" chown -R www-data /var/www/moodledata
+  docker exec -it "${WEBSERVER}" chown -R www-data /var/www/moodledata
 else
   docker exec -t "${WEBSERVER}" \
     php admin/tool/phpunit/cli/init.php \
