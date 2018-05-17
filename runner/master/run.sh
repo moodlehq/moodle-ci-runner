@@ -549,7 +549,7 @@ then
         CONFIGPATH="/var/www/behatdata/behatrun${RUN}/behat/behat.yml"
         if [ "$MOODLE_VERSION" -lt "32" ]
         then
-          CONFIGPATH="/var/www/behatdata${RUN}/behat/behat.yml"
+          CONFIGPATH="/var/www/behatdata/${RUN}/behat/behat.yml"
         fi
 
         echo ">>> startsection Running behat again for failed steps on process ${RUN} <<<"
