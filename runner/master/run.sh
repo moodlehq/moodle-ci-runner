@@ -216,7 +216,7 @@ then
     -e ORACLE_DISABLE_ASYNCH_IO=true \
     moodlehq/moodle-db-oracle
 
-  sleep 120
+  sleep 140
 
   export DBPASS="m@0dl3ing"
   export DBNAME="XE"
