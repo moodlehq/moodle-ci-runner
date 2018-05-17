@@ -52,7 +52,13 @@ export TAGS="${TAGS:-}"
 export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
 
+# Ensure that the output directory exists.
+# It must also be set with the sticky bit, and world writable.
+# Apache and Behat run as www-data, and must be able to write to this directory, but there is no reliabel UID mapping
+# between the container and host.
 mkdir -p "${OUTPUTDIR}"
+chmod g+sw,a+sw "${OUTPUTDIR}"
+
 rm -f "${ENVIROPATH}"
 touch "${ENVIROPATH}"
 
@@ -398,7 +404,7 @@ docker run \
   --name "${WEBSERVER}" \
   --detach \
   --env-file "${ENVIROPATH}" \
-  -v "${COMPOSERCACHE}:/root/.composer:rw" \
+  -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
   -v "${OUTPUTDIR}":/shared \
   ${PHP_SERVER_DOCKER}
 
@@ -436,14 +442,15 @@ then
       ${BEHAT_INIT_SUITE} \
       -j="${BEHAT_TOTAL_RUNS}"
 
-  docker exec -t "${WEBSERVER}" \
+  docker exec -it "${WEBSERVER}" chown -R www-data /var/www/moodledata
+  docker exec -it "${WEBSERVER}" chown -R www-data /var/www/behatdata
+
+  docker exec -t -u www-data "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
       ${BEHAT_INIT_SUITE} \
       -j="${BEHAT_TOTAL_RUNS}"
-  docker exec -it "${WEBSERVER}" chown -R www-data /var/www/moodledata
-  docker exec -it "${WEBSERVER}" chown -R www-data /var/www/behatdata
 else
-  docker exec -t "${WEBSERVER}" \
+  docker exec -t -u www-data "${WEBSERVER}" \
     php admin/tool/phpunit/cli/init.php \
       --force
 fi
@@ -479,7 +486,7 @@ then
   while [[ ${ITER} -lt ${RUNCOUNT} ]]
   do
     echo ${CMD}
-    docker exec -t "${WEBSERVER}" ${CMD}
+    docker exec -t -u www-data "${WEBSERVER}" ${CMD}
     EXITCODE=$(($EXITCODE + $?))
     ITER=$(($ITER+1))
   done
@@ -526,7 +533,7 @@ then
       echo "============================================================================"
       echo ">>> stopsection <<<"
 
-      docker exec -t "${WEBSERVER}" ${CMD}
+      docker exec -t -u www-data "${WEBSERVER}" ${CMD}
       NEWEXITCODE=$?
     else
       NEWEXITCODE=0
@@ -560,7 +567,7 @@ then
         CMD="${CMD} --verbose"
         CMD="${CMD} --rerun"
 
-        docker exec -t "${WEBSERVER}" ${CMD}
+        docker exec -t -u www-data "${WEBSERVER}" ${CMD}
         NEWEXITCODE=$(($NEWEXITCODE + $?))
         echo "============================================================================"
         echo ">>> stopsection <<<"
