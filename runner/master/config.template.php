@@ -48,7 +48,7 @@ $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
 $CFG->phpunit_prefix = 't_';
 
 $CFG->behat_wwwroot   = 'http://' . getenv('WEBSERVER');
-$CFG->behat_dataroot  = '/var/www/behatdata/';
+$CFG->behat_dataroot  = '/var/www/behatdata';
 $CFG->behat_prefix = 'b_';
 $CFG->behat_profiles = [
     'default' => [
