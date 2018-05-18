@@ -144,11 +144,14 @@ trap ctrl_c INT
 echo
 echo ">>> startsection Checking networks <<<"
 echo "============================================================================"
-docker network list  --filter name=nightly | grep nightly > /dev/null
-if [ $? -ne 0 ]
+NETWORKNAME="moodle"
+NETWORK=$(docker network list -q --filter name="${NETWORKNAME}")
+if [[ -z ${NETWORK} ]]
 then
-    docker network create nightly
+    echo "Creating new network '${NETWORKNAME}'"
+    NETWORK=$(docker network create "${NETWORKNAME}")
 fi
+echo "Found network '${NETWORKNAME}' with  identifier ${NETWORK}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
@@ -161,7 +164,7 @@ then
   docker run \
     --detach \
     --name ${DBHOST} \
-    --network nightly \
+    --network "${NETWORK}" \
     -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
     -e MYSQL_DATABASE="${DBNAME}" \
     -e MYSQL_USER="${DBUSER}" \
@@ -185,7 +188,7 @@ then
   docker run \
     --detach \
     --name ${DBHOST} \
-    --network nightly \
+    --network "${NETWORK}" \
     -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
     -e MYSQL_DATABASE="${DBNAME}" \
     -e MYSQL_USER="${DBUSER}" \
@@ -209,7 +212,7 @@ then
   docker run \
     --detach \
     --name ${DBHOST} \
-    --network nightly \
+    --network "${NETWORK}" \
     -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
     --tmpfs /var/lib/oracle \
     --shm-size=2g \
@@ -230,7 +233,7 @@ then
   docker run \
     --detach \
     --name ${DBHOST} \
-    --network nightly \
+    --network "${NETWORK}" \
     -e ACCEPT_EULA=Y \
     -e SA_PASSWORD="${DBPASS}" \
     microsoft/mssql-server-linux:2017-GA
@@ -248,7 +251,7 @@ then
   docker run \
     --detach \
     --name ${DBHOST} \
-    --network nightly \
+    --network "${NETWORK}" \
     -e POSTGRES_USER=moodle \
     -e POSTGRES_PASSWORD=moodle \
     -e POSTGRES_DB=initial \
@@ -296,7 +299,7 @@ then
   docker run \
     --detach \
     --name ${EXTTESTNAME} \
-    --network nightly \
+    --network "${NETWORK}" \
     moodlehq/moodle-exttests:latest
 
   export EXTTESTURL="http://${EXTTESTNAME}"
@@ -309,7 +312,7 @@ then
   docker run \
     --detach \
     --name ${LDAPTESTNAME} \
-    --network nightly \
+    --network "${NETWORK}" \
     larrycai/openldap
 
   export LDAPTESTURL="ldap://${LDAPTESTNAME}"
@@ -339,7 +342,7 @@ then
     do
       SELITERNAME=sel"${ITER}${UUID}"
       docker run \
-        --network nightly \
+        --network "${NETWORK}" \
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
@@ -359,7 +362,7 @@ then
     do
       SELITERNAME=sel"${ITER}${UUID}"
       docker run \
-        --network nightly \
+        --network "${NETWORK}" \
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
@@ -400,7 +403,7 @@ echo ">>> startsection Starting web server <<<"
 echo "============================================================================"
 export WEBSERVER=run"${UUID}"
 docker run \
-  --network nightly \
+  --network "${NETWORK}" \
   --name "${WEBSERVER}" \
   --detach \
   --env-file "${ENVIROPATH}" \
@@ -546,10 +549,10 @@ then
           continue
         fi
 
-        CONFIGPATH="/var/www/behatdata/behatrun${RUN}/behat/behat.yml"
+        CONFIGPATH="/var/www/behatdata/run/behatrun${RUN}/behat/behat.yml"
         if [ "$MOODLE_VERSION" -lt "32" ]
         then
-          CONFIGPATH="/var/www/behatdata${RUN}/behat/behat.yml"
+          CONFIGPATH="/var/www/behatdata/run${RUN}/behat/behat.yml"
         fi
 
         echo ">>> startsection Running behat again for failed steps on process ${RUN} <<<"
