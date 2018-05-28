@@ -57,10 +57,24 @@ export RUNCOUNT="${RUNCOUNT:-1}"
 # Apache and Behat run as www-data, and must be able to write to this directory, but there is no reliabel UID mapping
 # between the container and host.
 mkdir -p "${OUTPUTDIR}"
-chmod g+sw,a+sw "${OUTPUTDIR}"
 
 rm -f "${ENVIROPATH}"
 touch "${ENVIROPATH}"
+
+if [ ! -z "$BEHAT_TIMING_FILENAME" ]
+then
+  mkdir -p "${WORKSPACE}/timing"
+  TIMINGSOURCE="${WORKSPACE}/timing/${BEHAT_TIMING_FILENAME}"
+
+  if [ -f "${TIMINGSOURCE}" ]
+  then
+    cp "${TIMINGSOURCE}" "${OUTPUTDIR}"/timing.json
+  else
+    touch "${OUTPUTDIR}"/timing.json
+  fi
+fi
+
+chmod -R g+sw,a+sw "${OUTPUTDIR}"
 
 # Select db to use today.
 if [ -n "$DBTORUN" ]
@@ -95,6 +109,7 @@ echo "DBCOLLATION" >> "${ENVIROPATH}"
 echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
 echo "BEHAT_TOTAL_RUNS" >> "${ENVIROPATH}"
+echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 
 echo ">>> startsection Job summary <<<"
 echo "============================================================================"
@@ -580,6 +595,12 @@ then
 
   # Store the web server logs.
   docker logs "${WEBSERVER}" 2>&1 | gzip > "${OUTPUTDIR}"/webserver.gz
+
+  # Update the timing file
+  if [ ! -z "$BEHAT_TIMING_FILENAME" ]
+  then
+    cp "${OUTPUTDIR}"/timing.json "${TIMINGSOURCE}"
+  fi
 else
 
   echo

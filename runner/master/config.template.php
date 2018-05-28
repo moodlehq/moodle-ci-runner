@@ -61,6 +61,10 @@ if (getenv('BEHAT_TOTAL_RUNS') <= 1) {
 
 $CFG->behat_faildump_path = '/shared';
 
+if (getenv('BEHAT_TIMING_FILENAME')) {
+    define('BEHAT_FEATURE_TIMING_FILE', '/shared/timing.json');
+}
+
 $CFG->behat_parallel_run = [];
 for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
     $CFG->behat_parallel_run[$run] = [
