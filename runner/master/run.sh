@@ -51,6 +51,7 @@ export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export TAGS="${TAGS:-}"
 export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
+export BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
 
 # Ensure that the output directory exists.
 # It must also be set with the sticky bit, and world writable.
