@@ -26,17 +26,18 @@ In order to run tests on your own machines, you need the following:
 
 You also need to set several environment variables, depending on your testing requirements:
 
-| Variable            | Options                                                 | Default         | Notes |
-| --------            | -------                                                 | -------         | ----- |
-| `WORKSPACE`         | /path/to/your/workspace                                 | EMPTY!!         | For local testing, there is a gitignore for a workspace directory in root of this repository. |
-| `BUILD_ID`          | STRING (e.g. Int)                                       | EMPTY!!         | Used to create a folder and store the output from your run. Recommend using an Integer. |
-| `DBTYPE`            | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`         | The database to run. Note that `mssql` is only for PHP 5.6. |
-| `TESTTORUN`         | `phpunit` or `behat`                                    | `phpunit`       | Used to determine which test will be run. |
-| `TAGS`              | A behat tag arg, or phpunit filter                      | Optional        | The tag argument to behat, or a valid argument to the phpunit `--filter`. |
-| `BROWSER`           | `firefox`, `chrome`, `goutte`                           | `chrome`        | The browser to use for behat tests. |
-| `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3               | For behat, the number of parallel runs to perform. |
-| `BEHAT_SUITE`       | Theme                                                   | Empty           | The theme to test with Behat. Valid options are `default` (meaning site default), `clean`, and `more`. |
-| `RUNCOUNT`          | INTEGER                                                 | 1               | Used to perform tests in a loop. Use with caution and always with tags. |
+| Variable            | Options                                                 | Default             | Notes |
+| --------            | -------                                                 | -------             | ----- |
+| `WORKSPACE`         | /path/to/your/workspace                                 | EMPTY!!             | For local testing, there is a gitignore for a workspace directory in root of this repository. |
+| `CODEDIR`           | /path/to/your/code                                      | $WORKSPACE/moodle   | The location of the Moodle checkout |
+| `BUILD_ID`          | STRING (e.g. Int)                                       | EMPTY!!             | Used to create a folder and store the output from your run. Recommend using an Integer. |
+| `DBTYPE`            | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`             | The database to run. Note that `mssql` is only for PHP 5.6. |
+| `TESTTORUN`         | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which test will be run. |
+| `TAGS`              | A behat tag arg, or phpunit filter                      | Optional            | The tag argument to behat, or a valid argument to the phpunit `--filter`. |
+| `BROWSER`           | `firefox`, `chrome`, `goutte`                           | `chrome`            | The browser to use for behat tests. |
+| `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
+| `BEHAT_SUITE`       | Theme                                                   | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), `clean`, and `more`. |
+| `RUNCOUNT`          | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
 
 Other args are also available too, but are not recommended.
 
