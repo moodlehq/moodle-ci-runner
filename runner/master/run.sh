@@ -347,6 +347,18 @@ then
   echo SOLRTESTNAME >> "${ENVIROPATH}"
   docker logs ${SOLRTESTNAME}
 
+
+  export REDISTESTNAME=redis"${UUID}"
+  docker run \
+    --detach \
+    --name ${REDISTESTNAME} \
+    --network "${NETWORK}" \
+    redis:3
+
+  echo REDISTESTNAME >> "${ENVIROPATH}"
+  docker logs ${REDISTESTNAME}
+
+
   echo "============================================================================"
   echo ">>> stopsection <<<"
 

@@ -99,6 +99,11 @@ if ($solrtestname = getenv('SOLRTESTNAME')) {
     define('TEST_SEARCH_SOLR_INDEXNAME', 'test');
     define('TEST_SEARCH_SOLR_PORT', 8983);
 }
+
+if ($redistestname = getenv('REDISTESTNAME')) {
+    define('TEST_SESSION_REDIS_HOST', $redistestname);
+    define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
+}
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
