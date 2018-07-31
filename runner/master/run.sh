@@ -435,6 +435,13 @@ docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
 echo "== Copying configuration"
 docker cp "${SCRIPTPATH}/config.template.php" "${WEBSERVER}":/var/www/html/config.php
 
+COMPOSERPHAR="${COMPOSERCACHE}/composer.phar"
+if [ -f "${COMPOSERPHAR}" ]
+then
+  docker cp "${COMPOSERPHAR}" "${WEBSERVER}":/var/www/html/composer.phar
+  docker exec -t "${WEBSERVER}" bash -c 'chown -R www-data:www-data /var/www/html/composer.phar'
+fi
+
 echo "============================================================================"
 docker logs "${WEBSERVER}"
 echo "============================================================================"
