@@ -94,6 +94,11 @@ define('TEST_ENROL_LDAP_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_ENROL_LDAP_BIND_PW', 'password');
 define('TEST_ENROL_LDAP_DOMAIN', 'ou=Users,dc=openstack,dc=org');
 
+if ($solrtestname = getenv('SOLRTESTNAME')) {
+    define('TEST_SEARCH_SOLR_HOSTNAME', $solrtestname);
+    define('TEST_SEARCH_SOLR_INDEXNAME', 'test');
+    define('TEST_SEARCH_SOLR_PORT', 8983);
+}
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
