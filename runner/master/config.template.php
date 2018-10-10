@@ -79,6 +79,8 @@ for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
 
 define('PHPUNIT_LONGTEST', true);
 
+define('PHPUNIT_PATH_TO_SASSC', '/usr/bin/sassc');
+
 define('TEST_LDAPLIB_HOST_URL', getenv('LDAPTESTURL'));
 define('TEST_LDAPLIB_BIND_DN', 'cn=admin,dc=openstack,dc=org');
 define('TEST_LDAPLIB_BIND_PW', 'password');
