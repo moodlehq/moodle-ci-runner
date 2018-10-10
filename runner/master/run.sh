@@ -477,9 +477,14 @@ echo "==========================================================================
 if [ "$TESTTORUN" == "behat" ]
 then
   BEHAT_INIT_SUITE=""
+  BEHAT_RUN_SUITE=""
   if [ -n "$BEHAT_SUITE" ]
   then
     BEHAT_INIT_SUITE="-a=${BEHAT_SUITE}"
+    if [ "${BEHAT_SUITE}" != "ALL" ]
+    then
+      BEHAT_RUN_SUITE="--suite=${BEHAT_SUITE}"
+    fi
   fi
 
   echo php admin/tool/behat/cli/init.php \
@@ -522,6 +527,7 @@ then
   CMD="${CMD} ${BEHAT_FORMAT_PRETTY}"
   CMD="${CMD} ${BEHAT_FORMAT_JUNIT}"
   CMD="${CMD} ${TAGS}"
+  CMD="${CMD} ${BEHAT_RUN_SUITE}"
 
   ITER=0
   EXITCODE=0
@@ -568,6 +574,7 @@ then
       CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
       CMD="${CMD} --format=pretty --out=/shared/pretty_rerun.txt"
       CMD="${CMD} --format=junit --out=/shared/log_rerun.junit"
+      CMD="${CMD} ${BEHAT_RUN_SUITE}"
       CMD="${CMD} ${TAGS}"
       CMD="${CMD} --verbose"
       CMD="${CMD} --rerun"
@@ -603,6 +610,7 @@ then
         CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
         CMD="${CMD} --format=pretty --out=/shared/pretty${RUN}_rerun.txt"
         CMD="${CMD} --format=junit --out=/shared/log${RUN}_rerun.junit"
+        CMD="${CMD} ${BEHAT_RUN_SUITE}"
         CMD="${CMD} ${TAGS}"
         CMD="${CMD} --verbose"
         CMD="${CMD} --rerun"
