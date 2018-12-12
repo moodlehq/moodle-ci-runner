@@ -53,6 +53,11 @@ $CFG->behat_prefix = 'b_';
 $CFG->behat_profiles = [
     'default' => [
         'browser' => getenv('BROWSER'),
+        'capabilities' => [
+            'extra_capabilities' => [
+                'marionette' => false,
+            ],
+        ],
     ],
 ];
 if (getenv('BEHAT_TOTAL_RUNS') <= 1) {
