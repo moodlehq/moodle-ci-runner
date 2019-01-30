@@ -396,6 +396,7 @@ then
   elif [ "$BROWSER" == "firefox" ]
   then
 
+    FFSELVERSION="3.141.59_47.0.1"
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
@@ -406,7 +407,7 @@ then
         --detach \
         $SHMMAP \
         -v "${CODEDIR}":/var/www/html \
-        rajeshtaneja/selenium:2.53.1 firefox
+        moodlehq/moodle-standalone-firefox:${FFSELVERSION}
 
       export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
       echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
