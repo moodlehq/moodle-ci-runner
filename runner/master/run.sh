@@ -376,6 +376,17 @@ then
 
   if [ "$BROWSER" == "chrome" ]
   then
+    IONICHOSTNAME="ionic${UUID}"
+    echo $IONICHOSTNAME
+
+    docker run \
+      --network "${NETWORK}" \
+      --name ${IONICHOSTNAME} \
+      --detach \
+      moodlehq/moodlemobile2:latest
+
+    export "IONICURL"="http://${IONICHOSTNAME}:8100"
+    echo "IONICURL" >> "${ENVIROPATH}"
 
     SELVERSION="3.141.59-mercury"
     ITER=0
@@ -470,6 +481,32 @@ fi
 
 echo "============================================================================"
 docker logs "${WEBSERVER}"
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
+echo
+echo ">>> startsection Waiting for all containers to become healthy<<<"
+echo "============================================================================"
+for waitperiod in {0..90}
+do
+  # Note we cannot use the 'health' filter due to https://github.com/moby/moby/issues/35920
+  startingcount=$((`docker ps -a --filter name=${UUID} | grep -e starting -e unhealthy | wc -l`))
+  if [[ ${startingcount} -lt 1 ]]
+  then
+    break
+  fi
+  echo "Waiting for ${startingcount} containers to become healthy"
+  sleep 1
+done
+startingcount=$((`docker ps -a --filter name=${UUID} | grep -e starting -e unhealthy | wc -l`))
+if [[ ${startingcount} -gt 0 ]]
+then
+  echo "Some containers were too slow. Aborting the run:"
+  docker ps -a --filter name=${UUID} --filter | grep -e starting -e unhealthy
+  exit 1
+fi
+echo "All containers started"
+
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
