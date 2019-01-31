@@ -53,13 +53,17 @@ $CFG->behat_prefix = 'b_';
 $CFG->behat_profiles = [
     'default' => [
         'browser' => getenv('BROWSER'),
-        'capabilities' => [
+    ],
+];
+
+if ('firefox' === getenv('BROWSER')) {
+    $CFG->behat_profiles['default']['capabilities'] = [
             'extra_capabilities' => [
                 'marionette' => false,
             ],
-        ],
-    ],
-];
+        ];
+}
+
 if (getenv('BEHAT_TOTAL_RUNS') <= 1) {
     $CFG->behat_profiles['default']['wd_host'] = getenv('SELENIUMURL_0') . '/wd/hub';
 }
