@@ -233,7 +233,7 @@ then
     --tmpfs /var/lib/oracle \
     --shm-size=2g \
     -e ORACLE_DISABLE_ASYNCH_IO=true \
-    moodlehq/moodle-db-oracle
+    moodlehq/moodle-db-oci
 
   sleep 140
 
