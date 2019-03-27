@@ -53,6 +53,7 @@ export NAME="${NAME:-}"
 export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
 export BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
+export BEHAT_INCREASE_TIMEOUT="${BEHAT_INCREASE_TIMEOUT:-}"
 
 # Ensure that the output directory exists.
 # It must also be set with the sticky bit, and world writable.
@@ -112,6 +113,7 @@ echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
 echo "BEHAT_TOTAL_RUNS" >> "${ENVIROPATH}"
 echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
+echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
 
 echo ">>> startsection Job summary <<<"
 echo "============================================================================"

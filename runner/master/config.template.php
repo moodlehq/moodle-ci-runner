@@ -88,6 +88,10 @@ for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
 
 define('PHPUNIT_LONGTEST', true);
 
+if ($behattimeout = getenv('BEHAT_INCREASE_TIMEOUT')) {
+    $CFG->behat_increasetimeout = $behattimeout;
+}
+
 define('PHPUNIT_PATH_TO_SASSC', '/usr/bin/sassc');
 
 define('TEST_LDAPLIB_HOST_URL', getenv('LDAPTESTURL'));
@@ -118,6 +122,7 @@ if ($redistestname = getenv('REDISTESTNAME')) {
     }
     define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
 }
+
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
