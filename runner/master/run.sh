@@ -49,6 +49,7 @@ export BROWSER="${BROWSER:-chrome}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export TAGS="${TAGS:-}"
+export NAME="${NAME:-}"
 export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
 export BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
@@ -127,6 +128,7 @@ echo "== BROWSER: ${BROWSER}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
+echo "== NAME: ${NAME}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
@@ -523,19 +525,25 @@ then
     TAGS="--tags=${TAGS}"
   fi
 
-  CMD="php admin/tool/behat/cli/run.php"
-  CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
-  CMD="${CMD} ${BEHAT_FORMAT_PRETTY}"
-  CMD="${CMD} ${BEHAT_FORMAT_JUNIT}"
-  CMD="${CMD} ${TAGS}"
-  CMD="${CMD} ${BEHAT_RUN_SUITE}"
+  if [ -n "${NAME}" ]
+  then
+    NAME="--name=${NAME}"
+  fi
+
+  CMD=(php admin/tool/behat/cli/run.php
+    ${BEHAT_FORMAT_DOTS}
+    ${BEHAT_FORMAT_PRETTY}
+    ${BEHAT_FORMAT_JUNIT}
+    ${BEHAT_RUN_SUITE}
+    ${TAGS}
+    "${NAME}")
 
   ITER=0
   EXITCODE=0
   while [[ ${ITER} -lt ${RUNCOUNT} ]]
   do
-    echo ${CMD}
-    docker exec -t -u www-data "${WEBSERVER}" ${CMD}
+    echo ${CMD[@]}
+    docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
     EXITCODE=$(($EXITCODE + $?))
     ITER=$(($ITER+1))
   done
@@ -558,33 +566,36 @@ then
     echo "== End time $(date)"
     echo "============================================================================"
 
+    # Rerun behat, always 1 by 1 (no matter if the main run was single or parallel)
     if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
     then
-      # A single (non-parallel) behat run.
-
-      CONFIGPATH="/var/www/behatdata/behatrun/behat/behat.yml"
+      # Was single
+      CONFIGPATH="/var/www/behatdata/run/behatrun/behat/behat.yml"
       if [ "$MOODLE_VERSION" -lt "32" ]
       then
-        CONFIGPATH="/var/www/behatdata/behat/behat.yml"
+        CONFIGPATH="/var/www/behatdata/run/behat/behat.yml"
       fi
 
       echo ">>> startsection Running behat again for failed steps <<<"
       echo "============================================================================"
-      CMD="vendor/bin/behat"
-      CMD="${CMD} --config ${CONFIGPATH}"
-      CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
-      CMD="${CMD} --format=pretty --out=/shared/pretty_rerun.txt"
-      CMD="${CMD} --format=junit --out=/shared/log_rerun.junit"
-      CMD="${CMD} ${BEHAT_RUN_SUITE}"
-      CMD="${CMD} ${TAGS}"
-      CMD="${CMD} --verbose"
-      CMD="${CMD} --rerun"
+      CMD=(vendor/bin/behat
+        --config ${CONFIGPATH}
+        ${BEHAT_FORMAT_DOTS}
+        --format=pretty --out=/shared/pretty_rerun.txt
+        --format=junit --out=/shared/log_rerun.junit
+        ${BEHAT_RUN_SUITE}
+        ${TAGS}
+        "${NAME}"
+        --verbose
+        --rerun)
+
+      echo ${CMD[@]}
+      docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
+      NEWEXITCODE=$?
       echo "============================================================================"
       echo ">>> stopsection <<<"
-
-      docker exec -t -u www-data "${WEBSERVER}" ${CMD}
-      NEWEXITCODE=$?
     else
+      # Was parallel
       NEWEXITCODE=0
       for RUN in `seq 1 "${BEHAT_TOTAL_RUNS}"`
       do
@@ -606,17 +617,19 @@ then
         echo "============================================================================"
 
         docker exec -t "${WEBSERVER}" [ ! -L "behatrun{$RUN}" ] && docker exec -t "${WEBSERVER}" ln -s /var/www/html "behatrun${RUN}"
-        CMD="vendor/bin/behat"
-        CMD="${CMD} --config ${CONFIGPATH}"
-        CMD="${CMD} ${BEHAT_FORMAT_DOTS}"
-        CMD="${CMD} --format=pretty --out=/shared/pretty${RUN}_rerun.txt"
-        CMD="${CMD} --format=junit --out=/shared/log${RUN}_rerun.junit"
-        CMD="${CMD} ${BEHAT_RUN_SUITE}"
-        CMD="${CMD} ${TAGS}"
-        CMD="${CMD} --verbose"
-        CMD="${CMD} --rerun"
+        CMD=(vendor/bin/behat
+          --config ${CONFIGPATH}
+          ${BEHAT_FORMAT_DOTS}
+          --format=pretty --out=/shared/pretty${RUN}_rerun.txt
+          --format=junit --out=/shared/log${RUN}_rerun.junit
+          ${BEHAT_RUN_SUITE}
+          ${TAGS}
+          "${NAME}"
+          --verbose
+          --rerun)
 
-        docker exec -t -u www-data "${WEBSERVER}" ${CMD}
+        echo ${CMD[@]}
+        docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
         NEWEXITCODE=$(($NEWEXITCODE + $?))
         echo "============================================================================"
         echo ">>> stopsection <<<"
