@@ -586,7 +586,7 @@ then
         ${BEHAT_RUN_SUITE}
         ${TAGS}
         "${NAME}"
-        --no-ansi
+        --no-color
         --verbose
         --rerun)
 
