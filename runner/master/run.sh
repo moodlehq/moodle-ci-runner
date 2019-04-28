@@ -586,6 +586,7 @@ then
         ${BEHAT_RUN_SUITE}
         ${TAGS}
         "${NAME}"
+        --no-ansi
         --verbose
         --rerun)
 
@@ -625,6 +626,7 @@ then
           ${BEHAT_RUN_SUITE}
           ${TAGS}
           "${NAME}"
+          --no-ansi
           --verbose
           --rerun)
 
