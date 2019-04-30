@@ -377,7 +377,7 @@ then
   if [ "$BROWSER" == "chrome" ]
   then
 
-    SELVERSION="3.141.59"
+    SELVERSION="3.141.59-mercury"
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
