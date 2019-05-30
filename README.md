@@ -40,6 +40,7 @@ You also need to set several environment variables, depending on your testing re
 | `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
 | `BEHAT_SUITE`       | Theme                                                   | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), `clean` and `more` for 3.6 downwards and `classic` for 3.7 upwards. |
 | `RUNCOUNT`          | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
+| `MOBILE_VERSION`    | `latest`, `next`                                        | `latest`            | The Moodle app version to use when executing behat @app tests. |
 
 Other args are also available too, but are not recommended.
 

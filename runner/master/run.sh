@@ -34,6 +34,7 @@ export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_
 
 # Which Moodle version (XY) is being used.
 export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
+export MOBILE_VERSION="${MOBILE_VERSION:-latest}"
 
 # Default type of test to run.
 # phpunit or behat.
@@ -385,7 +386,7 @@ then
       --network "${NETWORK}" \
       --name ${IONICHOSTNAME} \
       --detach \
-      moodlehq/moodlemobile2:latest
+      moodlehq/moodlemobile2:"$MOBILE_VERSION"
 
     export "IONICURL"="http://${IONICHOSTNAME}:8100"
     echo "IONICURL" >> "${ENVIROPATH}"
