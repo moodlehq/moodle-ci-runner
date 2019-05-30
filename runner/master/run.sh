@@ -164,8 +164,8 @@ trap ctrl_c INT
 echo
 echo ">>> startsection Checking networks <<<"
 echo "============================================================================"
-NETWORKNAME="moodle"
-NETWORK=$(docker network list -q --filter name="${NETWORKNAME}")
+NETWORKNAME="${NETWORKNAME:-moodle}"
+NETWORK=$(docker network list -q --filter name="${NETWORKNAME}$")
 if [[ -z ${NETWORK} ]]
 then
     echo "Creating new network '${NETWORKNAME}'"
