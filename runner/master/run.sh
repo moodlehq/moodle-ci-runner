@@ -385,7 +385,7 @@ then
       --network "${NETWORK}" \
       --name ${IONICHOSTNAME} \
       --detach \
-      moodlehq/moodlemobile2:latest
+      moodlehq/moodlemobile2:3.6.1
 
     export "IONICURL"="http://${IONICHOSTNAME}:8100"
     echo "IONICURL" >> "${ENVIROPATH}"
