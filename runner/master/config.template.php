@@ -116,10 +116,7 @@ if ($solrtestname = getenv('SOLRTESTNAME')) {
 }
 
 if ($redistestname = getenv('REDISTESTNAME')) {
-    // We need to keep Redis session tests disabled for PHP 7.2 and up. See MDL-60978.
-    if (version_compare(PHP_VERSION, '7.2.0', '<')) {
-        define('TEST_SESSION_REDIS_HOST', $redistestname);
-    }
+    define('TEST_SESSION_REDIS_HOST', $redistestname);
     define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
 }
 
