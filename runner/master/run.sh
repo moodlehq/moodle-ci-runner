@@ -390,7 +390,7 @@ then
     export "IONICURL"="http://${IONICHOSTNAME}:8100"
     echo "IONICURL" >> "${ENVIROPATH}"
 
-    SELVERSION="3.141.59-mercury"
+    SELVERSION="3.141.59"
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
