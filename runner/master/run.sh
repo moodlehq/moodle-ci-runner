@@ -54,6 +54,7 @@ export TESTSUITE="${TESTSUITE:-}"
 export RUNCOUNT="${RUNCOUNT:-1}"
 export BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
 export BEHAT_INCREASE_TIMEOUT="${BEHAT_INCREASE_TIMEOUT:-}"
+export APP_VERSION="${APP_VERSION:-latest}"
 
 # Ensure that the output directory exists.
 # It must also be set with the sticky bit, and world writable.
@@ -132,6 +133,7 @@ echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
 echo "== TESTSUITE: ${TESTSUITE}"
+echo "== APP_VERSION: ${APP_VERSION}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 echo ">>> stopsection <<<"
@@ -385,7 +387,7 @@ then
       --network "${NETWORK}" \
       --name ${IONICHOSTNAME} \
       --detach \
-      moodlehq/moodlemobile2:latest
+      "moodlehq/moodlemobile2:${APP_VERSION}"
 
     export "IONICURL"="http://${IONICHOSTNAME}:8100"
     echo "IONICURL" >> "${ENVIROPATH}"
