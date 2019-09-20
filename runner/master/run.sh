@@ -32,13 +32,14 @@ export ENVIROPATH="${OUTPUTDIR}"/environment.list
 # be separated using ";": "gitrepoplugin1|gitfolderplugin1|gitbranchplugin1;gitrepoplugin2|gitfolderplugin2|gitbranchplugin2[...]"
 # Example: "https://github.com/moodlehq/moodle-local_mobile.git|local/mobile|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git|blocks/configurable_reports"
 export PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
+# Plugin folder where the plugins to install will be downloaded.
+export PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
 
+mkdir -p "${PLUGINSDIR}"
 if [ -n "$PLUGINSTOINSTALL" ];
 then
   echo ">>> startsection Download external plugins <<<"
   echo "============================================================================"
-  # Create a temporary folder.
-  PLUGINSTMPDIR=$(mktemp -d -t ci-$(date +%Y-%m-%d-%H-%M-%S)-XXXXXXXXXX)
   # Download all the plugins in a temporary folder.
   IFS=';' read -ra PLUGINS <<< "$PLUGINSTOINSTALL"
   for PLUGIN in "${PLUGINS[@]}";
@@ -56,7 +57,7 @@ then
       fi
 
       # Clone the plugin repository in the defined folder.
-      git clone ${PLUGINBRANCH} ${PLUGINGITREPO} "${PLUGINSTMPDIR}/${PLUGINFOLDER}"
+      git clone ${PLUGINBRANCH} ${PLUGINGITREPO} "${PLUGINSDIR}/${PLUGINFOLDER}"
       echo
     fi
   done
@@ -72,7 +73,9 @@ export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_
 
 # Which Moodle version (XY) is being used.
 export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
-export MOBILE_VERSION="${MOBILE_VERSION:-latest}"
+# Which Mobile app version is used: latest (stable), next (master), x.y.z.
+# If the MOBILE_VERSION is not defined, the moodlemobile docker won't be executed.
+export MOBILE_VERSION="${MOBILE_VERSION:-}"
 
 # Default type of test to run.
 # phpunit or behat.
@@ -170,6 +173,8 @@ echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
+echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
+echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
@@ -417,17 +422,22 @@ then
 
   if [ "$BROWSER" == "chrome" ]
   then
-    IONICHOSTNAME="ionic${UUID}"
-    echo $IONICHOSTNAME
 
-    docker run \
-      --network "${NETWORK}" \
-      --name ${IONICHOSTNAME} \
-      --detach \
-      moodlehq/moodlemobile2:"$MOBILE_VERSION"
+    if [ ! -z "$MOBILE_VERSION" ]
+    then
+      # Only run the moodlemobile docker container when the MOBILE_VERSION is defined.
+      IONICHOSTNAME="ionic${UUID}"
+      echo $IONICHOSTNAME
 
-    export "IONICURL"="http://${IONICHOSTNAME}:8100"
-    echo "IONICURL" >> "${ENVIROPATH}"
+      docker run \
+        --network "${NETWORK}" \
+        --name ${IONICHOSTNAME} \
+        --detach \
+        moodlehq/moodlemobile2:"$MOBILE_VERSION"
+
+      export "IONICURL"="http://${IONICHOSTNAME}:8100"
+      echo "IONICURL" >> "${ENVIROPATH}"
+    fi
 
     SELVERSION="3.141.59-mercury"
     ITER=0
@@ -508,10 +518,10 @@ docker run \
 # Copy code in place.
 echo "== Copying code in place"
 docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
-if [ -v PLUGINSTMPDIR ]
+if [ -n "$PLUGINSTOINSTALL" ];
 then
   echo "== Copying external plugins in place"
-  docker cp "${PLUGINSTMPDIR}"/. "${WEBSERVER}":/var/www/html
+  docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
 fi
 
 # Copy the config.php in place
@@ -784,13 +794,6 @@ echo "==========================================================================
 
 docker exec -t "${WEBSERVER}" \
   chown -R "${UID}:${GROUPS[0]}" /shared
-
-# Delete the temporary folder.
-if [ -v PLUGINSTMPDIR ]
-then
-  echo "== Removing temporary folder."
-  rm -rf ${PLUGINSTMPDIR}
-fi
 
 echo "============================================================================"
 echo ">>> stopsection <<<"
