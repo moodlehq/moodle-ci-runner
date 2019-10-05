@@ -385,6 +385,18 @@ then
   docker logs ${MEMCACHED2TESTNAME}
 
 
+  MONGODBTESTNAME=mongodb"${UUID}"
+  docker run \
+    --detach \
+    --name ${MONGODBTESTNAME} \
+    --network "${NETWORK}" \
+    mongo:4.0
+
+  export MONGODBTESTURL="mongodb://${MONGODBTESTNAME}:27017"
+  echo MONGODBTESTURL >> "${ENVIROPATH}"
+  docker logs ${MONGODBTESTNAME}
+
+
   echo "============================================================================"
   echo ">>> stopsection <<<"
 
