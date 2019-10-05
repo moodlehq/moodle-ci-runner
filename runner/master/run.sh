@@ -338,16 +338,16 @@ then
   docker logs ${LDAPTESTNAME}
 
 
-#  export SOLRTESTNAME=solr"${UUID}"
-#  docker run \
-#    --detach \
-#    --name ${SOLRTESTNAME} \
-#    --network "${NETWORK}" \
-#    solr:7 \
-#    solr-precreate test
-#
-#  echo SOLRTESTNAME >> "${ENVIROPATH}"
-#  docker logs ${SOLRTESTNAME}
+  export SOLRTESTNAME=solr"${UUID}"
+  docker run \
+    --detach \
+    --name ${SOLRTESTNAME} \
+    --network "${NETWORK}" \
+    solr:7 \
+    solr-precreate test
+
+  echo SOLRTESTNAME >> "${ENVIROPATH}"
+  docker logs ${SOLRTESTNAME}
 
 
   export REDISTESTNAME=redis"${UUID}"
