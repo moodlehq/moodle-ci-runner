@@ -361,6 +361,30 @@ then
   docker logs ${REDISTESTNAME}
 
 
+  MEMCACHED1TESTNAME=memcached1"${UUID}"
+  docker run \
+    --detach \
+    --name ${MEMCACHED1TESTNAME} \
+    --network "${NETWORK}" \
+    memcached:1.4
+
+  export MEMCACHED1TESTURL="${MEMCACHED1TESTNAME}:11211"
+  echo MEMCACHED1TESTURL >> "${ENVIROPATH}"
+  docker logs ${MEMCACHED1TESTNAME}
+
+
+  MEMCACHED2TESTNAME=memcached2"${UUID}"
+  docker run \
+    --detach \
+    --name ${MEMCACHED2TESTNAME} \
+    --network "${NETWORK}" \
+    memcached:1.4
+
+  export MEMCACHED2TESTURL="${MEMCACHED2TESTNAME}:11211"
+  echo MEMCACHED2TESTURL >> "${ENVIROPATH}"
+  docker logs ${MEMCACHED2TESTNAME}
+
+
   echo "============================================================================"
   echo ">>> stopsection <<<"
 

@@ -120,6 +120,14 @@ if ($redistestname = getenv('REDISTESTNAME')) {
     define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
 }
 
+if ($memcached1testurl = getenv('MEMCACHED1TESTURL')) {
+    if ($memcached2testurl = getenv('MEMCACHED2TESTURL')) {
+        define('TEST_CACHESTORE_MEMCACHED_TESTSERVERS', $memcached1testurl. "\n" . $memcached2testurl);
+    } else {
+        define('TEST_CACHESTORE_MEMCACHED_TESTSERVERS', $memcached1testurl);
+    }
+}
+
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
