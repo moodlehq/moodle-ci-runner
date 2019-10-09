@@ -18,9 +18,7 @@
 set -u
 set -o pipefail
 
-pushd `dirname $0` > /dev/null
-SCRIPTPATH=`pwd`
-popd > /dev/null
+SCRIPTPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CACHEDIR="${CACHEDIR:-${HOME}/caches}"
 export COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"
