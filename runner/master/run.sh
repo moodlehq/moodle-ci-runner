@@ -27,6 +27,45 @@ export COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"
 export CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 export OUTPUTDIR="${WORKSPACE}"/"${BUILD_ID}"
 export ENVIROPATH="${OUTPUTDIR}"/environment.list
+# The PLUGINSTOINSTALL variable could be set to install external plugins in the CODEDIR folder. The following information is needed
+# for each plugin: gitrepo, folder and branch (optional). The plugin fields should be separated by "|" and each plugin should
+# be separated using ";": "gitrepoplugin1|gitfolderplugin1|gitbranchplugin1;gitrepoplugin2|gitfolderplugin2|gitbranchplugin2[...]"
+# Example: "https://github.com/moodlehq/moodle-local_mobile.git|local/mobile|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git|blocks/configurable_reports"
+export PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
+# Plugin folder where the plugins to install will be downloaded.
+export PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+
+mkdir -p "${PLUGINSDIR}"
+if [ -n "$PLUGINSTOINSTALL" ];
+then
+  echo ">>> startsection Download external plugins <<<"
+  echo "============================================================================"
+  # Download all the plugins in a temporary folder.
+  IFS=';' read -ra PLUGINS <<< "$PLUGINSTOINSTALL"
+  for PLUGIN in "${PLUGINS[@]}";
+  do
+    if  [ -n "$PLUGIN" ]
+    then
+      PLUGINGITREPO=$(echo "$PLUGIN" | cut -f1 -d'|')
+      PLUGINFOLDER=$(echo "$PLUGIN" | cut -f2 -d'|')
+      PLUGINBRANCH=$(echo "$PLUGIN" | cut -f3 -d'|')
+
+      if [ -n "${PLUGINBRANCH}" ]
+      then
+        # Only download this branch.
+        PLUGINBRANCH="-b ${PLUGINBRANCH} --single-branch"
+      fi
+
+      # Clone the plugin repository in the defined folder.
+      git clone ${PLUGINBRANCH} ${PLUGINGITREPO} "${PLUGINSDIR}/${PLUGINFOLDER}"
+      echo
+    fi
+  done
+  unset IFS
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
+  echo
+fi
 
 # Which PHP Image to use.
 export PHP_VERSION="${PHP_VERSION:-7.1}"
@@ -34,6 +73,9 @@ export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_
 
 # Which Moodle version (XY) is being used.
 export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
+# Which Mobile app version is used: latest (stable), next (master), x.y.z.
+# If the MOBILE_VERSION is not defined, the moodlemobile docker won't be executed.
+export MOBILE_VERSION="${MOBILE_VERSION:-}"
 
 # Default type of test to run.
 # phpunit or behat.
@@ -131,6 +173,8 @@ echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
+echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
+echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
@@ -378,17 +422,22 @@ then
 
   if [ "$BROWSER" == "chrome" ]
   then
-    IONICHOSTNAME="ionic${UUID}"
-    echo $IONICHOSTNAME
 
-    docker run \
-      --network "${NETWORK}" \
-      --name ${IONICHOSTNAME} \
-      --detach \
-      moodlehq/moodlemobile2:latest
+    if [ ! -z "$MOBILE_VERSION" ]
+    then
+      # Only run the moodlemobile docker container when the MOBILE_VERSION is defined.
+      IONICHOSTNAME="ionic${UUID}"
+      echo $IONICHOSTNAME
 
-    export "IONICURL"="http://${IONICHOSTNAME}:8100"
-    echo "IONICURL" >> "${ENVIROPATH}"
+      docker run \
+        --network "${NETWORK}" \
+        --name ${IONICHOSTNAME} \
+        --detach \
+        moodlehq/moodlemobile2:"$MOBILE_VERSION"
+
+      export "IONICURL"="http://${IONICHOSTNAME}:8100"
+      echo "IONICURL" >> "${ENVIROPATH}"
+    fi
 
     SELVERSION="3"
     ITER=0
@@ -469,6 +518,11 @@ docker run \
 # Copy code in place.
 echo "== Copying code in place"
 docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
+if [ -n "$PLUGINSTOINSTALL" ];
+then
+  echo "== Copying external plugins in place"
+  docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
+fi
 
 # Copy the config.php in place
 echo "== Copying configuration"

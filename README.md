@@ -40,6 +40,9 @@ You also need to set several environment variables, depending on your testing re
 | `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
 | `BEHAT_SUITE`       | Theme                                                   | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), `clean` and `more` for 3.6 downwards and `classic` for 3.7 upwards. |
 | `RUNCOUNT`          | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
+| `MOBILE_VERSION`    | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
+| `PLUGINSTOINSTALL`  | gitrepoplugin1\|gitfolderplugin1\|gitbranchplugin1;gitrepoplugin2\|gitfolderplugin2         | Empty               | External plugins to install.<br/>The following information is needed for each plugin: gitrepo (mandatory), folder (mandatory) and branch (optional).<br/>The plugin fields should be separated by "\|" and each plugin should be separated using ";".<br/>Example: "https://github.com/moodlehq/moodle-local_mobile.git\|local/mobile\|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git\|blocks/configurable_reports" |
+| `PLUGINSDIR`        | /path/to/your/plugins                                   | $WORKSPACE/plugins  | The location of the plugins checkout. |
 
 Other args are also available too, but are not recommended.
 
