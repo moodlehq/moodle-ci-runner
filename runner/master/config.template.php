@@ -128,6 +128,10 @@ if ($memcached1testurl = getenv('MEMCACHED1TESTURL')) {
     }
 }
 
+if ($mongodbtesturl = getenv('MONGODBTESTURL')) {
+    define('TEST_CACHESTORE_MONGODB_TESTSERVER', $mongodbtesturl);
+}
+
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
 }
