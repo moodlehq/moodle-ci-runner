@@ -600,6 +600,18 @@ echo "All containers started"
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
+# Prepare the summary of images being used by the run (creation date & digest)
+echo
+echo ">>> startsection Details about the images being used by the run<<<"
+echo "============================================================================"
+docker ps --filter "name=${UUID}" --format='{{.Image}}' | sort | uniq | xargs -I{} \
+    docker image inspect \
+        --format '{} {{if .Created}}created:{{.Created}}{{end}} {{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' {} | \
+    tr '@' ' ' | cut -f1,2,4 -d' '
+
+echo "============================================================================"
+echo ">>> stopsection <<<"
+
 # Setup the DB.
 echo
 echo ">>> startsection Initialising test environment<<<"
