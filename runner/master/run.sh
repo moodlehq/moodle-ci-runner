@@ -257,7 +257,7 @@ then
     -e MYSQL_PASSWORD="${DBPASS}" \
     --tmpfs /var/lib/mysql:rw \
     -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-    mariadb:10.1 \
+    mariadb:10.2 \
     --character-set-server=utf8mb4 \
     --collation-server=utf8mb4_bin \
     --innodb_file_format=barracuda \
