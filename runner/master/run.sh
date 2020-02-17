@@ -473,7 +473,7 @@ then
       echo "IONICURL" >> "${ENVIROPATH}"
     fi
 
-    SELVERSION="3"
+    SELVERSION="3.141.59-zinc"
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
