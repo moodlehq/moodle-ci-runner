@@ -27,6 +27,16 @@ $CFG->dbpass    = getenv('DBPASS');
 $CFG->prefix    = 'm_';
 $CFG->dboptions = ['dbcollation' => getenv('DBCOLLATION')];
 
+if ($slave = getenv('DBHOST_SLAVE')) {
+    $CFG->dboptions['readonly'] = [
+        'instance' => [
+            [
+                'dbhost' => $slave,
+            ],
+        ],
+    ];
+}
+
 // Skip language upgrade during the on-sync period.
 $CFG->skiplangupgrade = false;
 
