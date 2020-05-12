@@ -245,22 +245,59 @@ echo "==========================================================================
 
 if [ "${DBTYPE}" == "mysqli" ]
 then
-  docker run \
-    --detach \
-    --name ${DBHOST} \
-    --network "${NETWORK}" \
-    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
-    -e MYSQL_DATABASE="${DBNAME}" \
-    -e MYSQL_USER="${DBUSER}" \
-    -e MYSQL_PASSWORD="${DBPASS}" \
-    --tmpfs /var/lib/mysql:rw \
-    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-    mysql:5\
-    --character-set-server=utf8mb4 \
-    --collation-server=utf8mb4_bin \
-    --innodb_file_format=barracuda \
-    --innodb_file_per_table=On \
-    --innodb_large_prefix=On
+
+  if [ "${DBSLAVES}" -ne 0 ]
+  then
+    export DBHOST_SLAVE="${DBHOST}_slave"
+
+    echo "Starting master"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      mysql:5
+
+    echo "Starting slave"
+    docker run \
+      --detach \
+      --name ${DBHOST_SLAVE} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST=$DBHOST \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      -v $SCRIPTPATH/mysql.d/slave/config:/config \
+      -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      --tmpfs /var/lib/mysql:rw \
+      mysql:5
+
+    # Hack to make gosu work for all users on the slave.
+    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
+    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  else
+    echo "Starting standalone"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
+      mysql:5
+  fi
 
   export DBCOLLATION=utf8mb4_bin
 
@@ -269,22 +306,58 @@ then
 
 elif [ "${DBTYPE}" == "mariadb" ]
 then
-  docker run \
-    --detach \
-    --name ${DBHOST} \
-    --network "${NETWORK}" \
-    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
-    -e MYSQL_DATABASE="${DBNAME}" \
-    -e MYSQL_USER="${DBUSER}" \
-    -e MYSQL_PASSWORD="${DBPASS}" \
-    --tmpfs /var/lib/mysql:rw \
-    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-    mariadb:10.2 \
-    --character-set-server=utf8mb4 \
-    --collation-server=utf8mb4_bin \
-    --innodb_file_format=barracuda \
-    --innodb_file_per_table=On \
-    --innodb_large_prefix=On
+  if [ "${DBSLAVES}" != "0" ]
+  then
+    export DBHOST_SLAVE="${DBHOST}_slave"
+
+    echo "Starting master"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      mariadb:10.2
+
+    echo "Starting slave"
+    docker run \
+      --detach \
+      --name ${DBHOST_SLAVE} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST=$DBHOST \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      -v $SCRIPTPATH/mysql.d/slave/config:/config \
+      -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      --tmpfs /var/lib/mysql:rw \
+      mariadb:10.2
+
+    # Hack to make gosu work for all users on the slave.
+    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
+    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  else
+    echo "Starting standalone"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
+      mariadb:10.2
+  fi
 
   export DBCOLLATION=utf8mb4_bin
 
@@ -355,8 +428,6 @@ then
 
   if [ "${DBSLAVES}" -ne 0 ]
   then
-    mkdir -p "${WORKSPACE}/dbslave"
-
     echo "Starting slave"
     docker run \
       --detach \
@@ -921,8 +992,6 @@ else
   EXITCODE=0
   while [[ ${ITER} -lt ${RUNCOUNT} ]]
   do
-    echo $RUNCOUNT
-    echo $CMD
     docker exec -t "${WEBSERVER}" ${CMD}
     EXITCODE=$(($EXITCODE + $?))
     ITER=$(($ITER+1))
