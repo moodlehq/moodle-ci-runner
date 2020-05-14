@@ -88,6 +88,7 @@ export DBTORUN="${DBTORUN:-}"
 export BROWSER="${BROWSER:-chrome}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
+export BEHAT_NUM_RERUNS="${BEHAT_NUM_RERUNS:-1}"
 export TAGS="${TAGS:-}"
 export NAME="${NAME:-}"
 export TESTSUITE="${TESTSUITE:-}"
@@ -152,6 +153,7 @@ echo "DBCOLLATION" >> "${ENVIROPATH}"
 echo "BROWSER" >> "${ENVIROPATH}"
 echo "WEBSERVER" >> "${ENVIROPATH}"
 echo "BEHAT_TOTAL_RUNS" >> "${ENVIROPATH}"
+echo "BEHAT_NUM_RERUNS" >> "${ENVIROPATH}"
 echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
 
@@ -168,6 +170,7 @@ echo "== DBTYPE: ${DBTYPE}"
 echo "== TESTTORUN: ${TESTTORUN}"
 echo "== BROWSER: ${BROWSER}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
+echo "== BEHAT_NUM_RERUNS: ${BEHAT_NUM_RERUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
@@ -656,8 +659,14 @@ then
   echo "============================================================================"
 
   BEHAT_FORMAT_DOTS="--format=moodle_progress --out=std"
-  BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty{runprocess}.txt --replace={runprocess}"
-  BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
+  if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
+  then
+    BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty.txt"
+    BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log.junit"
+  else
+    BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty{runprocess}.txt --replace={runprocess}"
+    BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
+  fi
 
   if [ -n "${TAGS}" ]
   then
@@ -705,78 +714,101 @@ then
     echo "== End time $(date)"
     echo "============================================================================"
 
-    # Rerun behat, always 1 by 1 (no matter if the main run was single or parallel)
-    if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
+    # Perform reruns only if > 0
+    if [ "$BEHAT_TOTAL_RUNS" -gt 0 ]
     then
-      # Was single
-      CONFIGPATH="/var/www/behatdata/run/behatrun/behat/behat.yml"
-      if [ "$MOODLE_VERSION" -lt "32" ]
+      # Rerun behat, always 1 by 1 (no matter if the main run was single or parallel)
+      if [ "$BEHAT_TOTAL_RUNS" -le 1 ]
       then
-        CONFIGPATH="/var/www/behatdata/run/behat/behat.yml"
+        # Was single
+        for RERUN in `seq 1 "${BEHAT_NUM_RERUNS}"`
+        do
+          NEWEXITCODE=0
+          CONFIGPATH="/var/www/behatdata/run/behatrun/behat/behat.yml"
+          if [ "$MOODLE_VERSION" -lt "32" ]
+          then
+            CONFIGPATH="/var/www/behatdata/run/behat/behat.yml"
+          fi
+
+          echo ">>> startsection Running behat again (rerun #${RERUN}) for failed steps <<<"
+          echo "============================================================================"
+          CMD=(vendor/bin/behat
+            --config ${CONFIGPATH}
+            ${BEHAT_FORMAT_DOTS}
+            --format=pretty --out=/shared/pretty_rerun${RERUN}.txt
+            --format=junit --out=/shared/log_rerun${RERUN}.junit
+            ${BEHAT_RUN_SUITE}
+            ${TAGS}
+            "${NAME}"
+            --no-colors
+            --verbose
+            --rerun)
+
+          echo ${CMD[@]}
+          docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
+          NEWEXITCODE=$?
+          if [ "$NEWEXITCODE" -eq 0 ]
+          then
+            break;
+          fi
+          echo "============================================================================"
+          echo ">>> stopsection <<<"
+        done
+      else
+        # Was parallel
+        for RERUN in `seq 1 "${BEHAT_NUM_RERUNS}"`
+        do
+          NEWEXITCODE=0
+          for RUN in `seq 1 "${BEHAT_TOTAL_RUNS}"`
+          do
+            # Check is the previous build failed
+            status=$((1 << $RUN-1))
+            if [ $(($status & $EXITCODE)) -eq 0 ]
+            then
+              continue
+            fi
+
+            CONFIGPATH="/var/www/behatdata/run/behatrun${RUN}/behat/behat.yml"
+            if [ "$MOODLE_VERSION" -lt "32" ]
+            then
+              CONFIGPATH="/var/www/behatdata/run${RUN}/behat/behat.yml"
+            fi
+
+            echo ">>> startsection Running behat again (rerun #${RERUN}) for failed steps on process ${RUN} <<<"
+            echo "============================================================================"
+
+            docker exec -t -w /var/www/html "${WEBSERVER}" bash -c \
+              "if [ ! -L \"behatrun${RUN}\" ]; then ln -s . \"behatrun${RUN}\"; fi"
+
+            CMD=(vendor/bin/behat
+              --config ${CONFIGPATH}
+              ${BEHAT_FORMAT_DOTS}
+              --format=pretty --out=/shared/pretty${RUN}_rerun${RERUN}.txt
+              --format=junit --out=/shared/log${RUN}_rerun${RERUN}.junit
+              ${BEHAT_RUN_SUITE}
+              ${TAGS}
+              "${NAME}"
+              --no-colors
+              --verbose
+              --rerun)
+
+            echo ${CMD[@]}
+            docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
+            if [ $? -ne 0 ]
+            then
+              NEWEXITCODE=$(($NEWEXITCODE + $status))
+            fi
+            echo "============================================================================"
+            echo ">>> stopsection <<<"
+          done
+          EXITCODE=$NEWEXITCODE
+          if [ "$NEWEXITCODE" -eq 0 ]
+          then
+            break;
+          fi
+        done
       fi
-
-      echo ">>> startsection Running behat again for failed steps <<<"
-      echo "============================================================================"
-      CMD=(vendor/bin/behat
-        --config ${CONFIGPATH}
-        ${BEHAT_FORMAT_DOTS}
-        --format=pretty --out=/shared/pretty_rerun.txt
-        --format=junit --out=/shared/log_rerun.junit
-        ${BEHAT_RUN_SUITE}
-        ${TAGS}
-        "${NAME}"
-        --no-color
-        --verbose
-        --rerun)
-
-      echo ${CMD[@]}
-      docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
-      NEWEXITCODE=$?
-      echo "============================================================================"
-      echo ">>> stopsection <<<"
-    else
-      # Was parallel
-      NEWEXITCODE=0
-      for RUN in `seq 1 "${BEHAT_TOTAL_RUNS}"`
-      do
-        # Check is the previous build failed
-        status=$((1 << $RUN-1))
-        CURRENTRUNEXITCODE=$(($status & $EXITCODE))
-        if [ $CURRENTRUNEXITCODE -eq 0 ]
-        then
-          continue
-        fi
-
-        CONFIGPATH="/var/www/behatdata/run/behatrun${RUN}/behat/behat.yml"
-        if [ "$MOODLE_VERSION" -lt "32" ]
-        then
-          CONFIGPATH="/var/www/behatdata/run${RUN}/behat/behat.yml"
-        fi
-
-        echo ">>> startsection Running behat again for failed steps on process ${RUN} <<<"
-        echo "============================================================================"
-
-        docker exec -t "${WEBSERVER}" [ ! -L "behatrun{$RUN}" ] && docker exec -t "${WEBSERVER}" ln -s /var/www/html "behatrun${RUN}"
-        CMD=(vendor/bin/behat
-          --config ${CONFIGPATH}
-          ${BEHAT_FORMAT_DOTS}
-          --format=pretty --out=/shared/pretty${RUN}_rerun.txt
-          --format=junit --out=/shared/log${RUN}_rerun.junit
-          ${BEHAT_RUN_SUITE}
-          ${TAGS}
-          "${NAME}"
-          --no-colors
-          --verbose
-          --rerun)
-
-        echo ${CMD[@]}
-        docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
-        NEWEXITCODE=$(($NEWEXITCODE + $?))
-        echo "============================================================================"
-        echo ">>> stopsection <<<"
-      done
     fi
-    EXITCODE=${NEWEXITCODE}
   fi
 
   # Store the web server logs.

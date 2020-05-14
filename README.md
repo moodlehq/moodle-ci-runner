@@ -38,6 +38,7 @@ You also need to set several environment variables, depending on your testing re
 | `NAME`              | A behat name arg. Ignored for phpunit                   | Optional            | The name argument to behat. It will be ignored for phpunit. |
 | `BROWSER`           | `firefox`, `chrome`, `goutte`                           | `chrome`            | The browser to use for behat tests. |
 | `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
+| `BEHAT_NUM_RERUNS`  | INTEGER                                                 | 1                   | For behat, the number reruns to perform for failed runs. 0 disables reruns. |
 | `BEHAT_SUITE`       | Theme                                                   | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), `clean` and `more` for 3.6 downwards and `classic` for 3.7 upwards. |
 | `RUNCOUNT`          | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
 | `MOBILE_VERSION`    | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
