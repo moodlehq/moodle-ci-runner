@@ -96,6 +96,20 @@ export RUNCOUNT="${RUNCOUNT:-1}"
 export BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
 export BEHAT_INCREASE_TIMEOUT="${BEHAT_INCREASE_TIMEOUT:-}"
 
+# Remove some stuff that, simply, cannot be there based on $TESTTORUN
+if [ "${TESTTORUN}" == "phpunit" ]
+then
+    BROWSER=
+    BEHAT_SUITE=
+    BEHAT_TOTAL_RUNS=
+    BEHAT_NUM_RERUNS=
+    BEHAT_TIMING_FILENAME=
+    BEHAT_INCREASE_TIMEOUT=
+elif [ "${TESTTORUN}" == "behat" ]
+then
+    TESTSUITE=
+fi
+
 # Ensure that the output directory exists.
 # It must also be set with the sticky bit, and world writable.
 # Apache and Behat run as www-data, and must be able to write to this directory, but there is no reliabel UID mapping
