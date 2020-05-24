@@ -83,6 +83,7 @@ export TESTTORUN="${TESTTORUN:-phpunit}"
 # Todo: Tidy this up properly.
 export DBTYPE="${DBTYPE:-pgsql}"
 export DBTORUN="${DBTORUN:-}"
+export DBSLAVES="${DBSLAVES:-0}"
 
 # Test defaults
 export BROWSER="${BROWSER:-chrome}"
@@ -156,10 +157,13 @@ export DBTYPE="${DBTYPE:-pgsql}"
 export DBUSER="${DBUSER:-moodle}"
 export DBPASS="${DBPASS:-moodle}"
 export DBHOST="${DBHOST:-${DBTYPE}}"
+export DBHOST_SLAVE=""
 export DBNAME="moodle"
 
 echo "DBTYPE" >> "${ENVIROPATH}"
+echo "DBSLAVES" >> "${ENVIROPATH}"
 echo "DBHOST" >> "${ENVIROPATH}"
+echo "DBHOST_SLAVE" >> "${ENVIROPATH}"
 echo "DBUSER" >> "${ENVIROPATH}"
 echo "DBPASS" >> "${ENVIROPATH}"
 echo "DBNAME" >> "${ENVIROPATH}"
@@ -181,6 +185,7 @@ echo "== Container prefix: ${UUID}"
 echo "== PHP Version: ${PHP_VERSION}"
 echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
+echo "== DBSLAVES: ${DBSLAVES}"
 echo "== TESTTORUN: ${TESTTORUN}"
 echo "== BROWSER: ${BROWSER}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
@@ -240,22 +245,59 @@ echo "==========================================================================
 
 if [ "${DBTYPE}" == "mysqli" ]
 then
-  docker run \
-    --detach \
-    --name ${DBHOST} \
-    --network "${NETWORK}" \
-    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
-    -e MYSQL_DATABASE="${DBNAME}" \
-    -e MYSQL_USER="${DBUSER}" \
-    -e MYSQL_PASSWORD="${DBPASS}" \
-    --tmpfs /var/lib/mysql:rw \
-    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-    mysql:5\
-    --character-set-server=utf8mb4 \
-    --collation-server=utf8mb4_bin \
-    --innodb_file_format=barracuda \
-    --innodb_file_per_table=On \
-    --innodb_large_prefix=On
+
+  if [ "${DBSLAVES}" -ne 0 ]
+  then
+    export DBHOST_SLAVE="${DBHOST}_slave"
+
+    echo "Starting master"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      mysql:5
+
+    echo "Starting slave"
+    docker run \
+      --detach \
+      --name ${DBHOST_SLAVE} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST=$DBHOST \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      -v $SCRIPTPATH/mysql.d/slave/config:/config \
+      -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      --tmpfs /var/lib/mysql:rw \
+      mysql:5
+
+    # Hack to make gosu work for all users on the slave.
+    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
+    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  else
+    echo "Starting standalone"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
+      mysql:5
+  fi
 
   export DBCOLLATION=utf8mb4_bin
 
@@ -264,22 +306,58 @@ then
 
 elif [ "${DBTYPE}" == "mariadb" ]
 then
-  docker run \
-    --detach \
-    --name ${DBHOST} \
-    --network "${NETWORK}" \
-    -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
-    -e MYSQL_DATABASE="${DBNAME}" \
-    -e MYSQL_USER="${DBUSER}" \
-    -e MYSQL_PASSWORD="${DBPASS}" \
-    --tmpfs /var/lib/mysql:rw \
-    -v $SCRIPTPATH/mysql.d:/etc/mysql/conf.d \
-    mariadb:10.2 \
-    --character-set-server=utf8mb4 \
-    --collation-server=utf8mb4_bin \
-    --innodb_file_format=barracuda \
-    --innodb_file_per_table=On \
-    --innodb_large_prefix=On
+  if [ "${DBSLAVES}" != "0" ]
+  then
+    export DBHOST_SLAVE="${DBHOST}_slave"
+
+    echo "Starting master"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      mariadb:10.2
+
+    echo "Starting slave"
+    docker run \
+      --detach \
+      --name ${DBHOST_SLAVE} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      -e DBHOST=$DBHOST \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      -v $SCRIPTPATH/mysql.d/slave/config:/config \
+      -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      --tmpfs /var/lib/mysql:rw \
+      mariadb:10.2
+
+    # Hack to make gosu work for all users on the slave.
+    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
+    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  else
+    echo "Starting standalone"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
+      -e MYSQL_DATABASE="${DBNAME}" \
+      -e MYSQL_USER="${DBUSER}" \
+      -e MYSQL_PASSWORD="${DBPASS}" \
+      --tmpfs /var/lib/mysql:rw \
+      -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
+      mariadb:10.2
+  fi
 
   export DBCOLLATION=utf8mb4_bin
 
@@ -326,6 +404,10 @@ then
 
 elif [ "${DBTYPE}" == "pgsql" ]
 then
+  if [ "${DBSLAVES}" -ne 0 ]
+  then
+    export DBHOST_SLAVE="${DBHOST}_slave"
+  fi
 
   docker run \
     --detach \
@@ -333,16 +415,42 @@ then
     --network "${NETWORK}" \
     -e POSTGRES_USER=moodle \
     -e POSTGRES_PASSWORD=moodle \
+    -e POSTGRES_HOST_AUTH_METHOD=trust \
     -e POSTGRES_DB=initial \
+    -e DBHOST_SLAVE=$DBHOST_SLAVE \
+    -e DBNAME=$DBNAME \
     -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
     --tmpfs /var/lib/postgresql/data:rw \
-    postgres:9.6.7
+    postgres:9.6
 
   # Wait few sec, before executing commands.
   sleep 10
 
-  # Create dbs.
-  docker exec ${DBHOST} psql -U postgres -c "CREATE DATABASE ${DBNAME} WITH OWNER moodle ENCODING 'UTF8' LC_COLLATE='en_US.utf8' LC_CTYPE='en_US.utf8' TEMPLATE=template0;"
+  if [ "${DBSLAVES}" -ne 0 ]
+  then
+    echo "Starting slave"
+    docker run \
+      --detach \
+      --name ${DBHOST_SLAVE} \
+      --network "${NETWORK}" \
+      -e POSTGRES_USER=moodle \
+      -e POSTGRES_PASSWORD=moodle \
+      -e POSTGRES_HOST_AUTH_METHOD=trust \
+      -e POSTGRES_DB=initial \
+      -e DBHOST=$DBHOST \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      -e DBNAME=$DBNAME \
+      -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
+      --tmpfs /var/lib/postgresql/data:rw \
+      postgres:9.6
+
+    # Hack to make gosu work for all users on the slave.
+    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:postgres /usr/local/bin/gosu'
+    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  fi
+
+  # Wait few sec, before executing commands for all nodes to come up.
+  sleep 10
 
 else
 
@@ -360,11 +468,23 @@ echo "==========================================================================
 echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBHOST: ${DBHOST}"
+echo "== DBHOST_SLAVE: ${DBHOST_SLAVE}"
 echo "== DBUSER: ${DBUSER}"
 echo "== DBPASS: ${DBPASS}"
 echo "== DBNAME: ${DBNAME}"
 
 docker logs "${DBHOST}"
+
+if [ "${DBHOST_SLAVE}" != "" ]
+then
+  echo
+  echo ">>> startsection Database slave summary <<<"
+  echo "============================================================================"
+  docker logs "${DBHOST_SLAVE}"
+  echo "============================================================================"
+  echo ">>> stopsection <<<"
+fi
+
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
@@ -574,6 +694,8 @@ then
   echo "== Copying external plugins in place"
   docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
 fi
+
+docker exec $WEBSERVER bash -c 'apt-get update && apt-get install -y --no-install-recommends apt-transport-https git'
 
 # Copy the config.php in place
 echo "== Copying configuration"

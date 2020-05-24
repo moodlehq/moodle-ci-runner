@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ "${DBHOST_SLAVE}" != "" ]
+then
+  echo "Not applying tuning to a master"
+  exit 0
+fi
+
 CONFFILE="$PGDATA"/postgresql.conf
 
 echo 'shared_buffers = 2GB'         >> $CONFFILE
