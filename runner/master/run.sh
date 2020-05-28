@@ -72,8 +72,9 @@ export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_
 # Which Moodle version (XY) is being used.
 export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 # Which Mobile app version is used: latest (stable), next (master), x.y.z.
-# If the MOBILE_VERSION is not defined, the moodlemobile docker won't be executed.
-export MOBILE_VERSION="${MOBILE_VERSION:-}"
+# If the APP_VERSION is not defined, the moodleapp docker won't be executed.
+# (keep BC with the old variable name, MOBILE_VERSION, for now. TODO: Remove it)
+export APP_VERSION="${APP_VERSION:=${MOBILE_VERSION:-}}"
 
 # Default type of test to run.
 # phpunit or behat.
@@ -193,7 +194,7 @@ echo "== BEHAT_NUM_RERUNS: ${BEHAT_NUM_RERUNS}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
-echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
+echo "== APP_VERSION: ${APP_VERSION}"
 echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
@@ -594,9 +595,9 @@ then
   if [ "$BROWSER" == "chrome" ]
   then
 
-    if [ ! -z "$MOBILE_VERSION" ]
+    if [ ! -z "$APP_VERSION" ]
     then
-      # Only run the moodlemobile docker container when the MOBILE_VERSION is defined.
+      # Only run the moodleapp docker container when the APP_VERSION is defined.
       IONICHOSTNAME="ionic${UUID}"
       echo $IONICHOSTNAME
 
@@ -604,7 +605,7 @@ then
         --network "${NETWORK}" \
         --name ${IONICHOSTNAME} \
         --detach \
-        moodlehq/moodleapp:"$MOBILE_VERSION"
+        moodlehq/moodleapp:"$APP_VERSION"
 
       export "IONICURL"="http://${IONICHOSTNAME}:8100"
       echo "IONICURL" >> "${ENVIROPATH}"
