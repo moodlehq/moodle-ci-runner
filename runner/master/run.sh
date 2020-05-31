@@ -393,14 +393,7 @@ then
     --network "${NETWORK}" \
     -e ACCEPT_EULA=Y \
     -e SA_PASSWORD="${DBPASS}" \
-    microsoft/mssql-server-linux:2017-GA
-
-  sleep 10
-
-  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "CREATE DATABASE ${DBNAME} COLLATE LATIN1_GENERAL_CS_AS"
-  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET ANSI_NULLS ON"
-  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET QUOTED_IDENTIFIER ON"
-  docker exec ${DBHOST} /opt/mssql-tools/bin/sqlcmd -S localhost -U "${DBUSER}" -P "${DBPASS}" -Q "ALTER DATABASE ${DBNAME} SET READ_COMMITTED_SNAPSHOT ON"
+    moodlehq/moodle-db-mssql:2017-latest
 
 elif [ "${DBTYPE}" == "pgsql" ]
 then
