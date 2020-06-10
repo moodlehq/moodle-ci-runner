@@ -376,6 +376,7 @@ then
     -e ORACLE_DISABLE_ASYNCH_IO=true \
     moodlehq/moodle-db-oci
 
+  # Wait few sec, before executing commands.
   sleep 140
 
   export DBPASS="m@0dl3ing"
@@ -394,6 +395,9 @@ then
     -e ACCEPT_EULA=Y \
     -e SA_PASSWORD="${DBPASS}" \
     moodlehq/moodle-db-mssql:2017-latest
+
+  # Wait few sec, before executing commands.
+  sleep 10
 
 elif [ "${DBTYPE}" == "pgsql" ]
 then
