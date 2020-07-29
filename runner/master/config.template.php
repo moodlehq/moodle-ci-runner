@@ -144,6 +144,7 @@ if ($mongodbtesturl = getenv('MONGODBTESTURL')) {
 
 if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTP_URL', getenv('EXTTESTURL'));
+    define('TEST_EXTERNAL_FILES_HTTPS_URL', getenv('EXTTESTURL'));
 }
 
 if ($ionicurl = getenv('IONICURL')) {
