@@ -38,7 +38,7 @@ if ($slave = getenv('DBHOST_SLAVE')) {
 }
 
 // Skip language upgrade during the on-sync period.
-$CFG->skiplangupgrade = false;
+$CFG->skiplangupgrade = true;
 
 $CFG->wwwroot   = 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
