@@ -945,8 +945,12 @@ then
     fi
   fi
 
-  # Store the web server logs.
-  docker logs "${WEBSERVER}" 2>&1 | gzip > "${OUTPUTDIR}"/webserver.gz
+  # Store the docker container logs.
+  docker ps -a --filter name=${UUID}
+  for image in `docker ps -a -q --filter name=${UUID}`
+  do
+      docker logs "${image}" 2>&1 | gzip > "${OUTPUTDIR}"/${image}.gz
+  done
 
   # Update the timing file
   if [ ! -z "$BEHAT_TIMING_FILENAME" ]
