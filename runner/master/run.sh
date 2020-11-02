@@ -152,7 +152,7 @@ fi
 # Setup Environment
 UUID=$(uuid | sha1sum | awk '{print $1}')
 UUID=${UUID:0:16}
-export DBHOST=db"${UUID}"
+export DBHOST=database"${UUID}"
 export DBTYPE="${DBTYPE:-pgsql}"
 export DBUSER="${DBUSER:-moodle}"
 export DBPASS="${DBPASS:-moodle}"
@@ -491,7 +491,7 @@ then
   echo
   echo ">>> startsection Starting supplemental services <<<"
   echo "============================================================================"
-  EXTTESTNAME=ext"${UUID}"
+  EXTTESTNAME=exttests"${UUID}"
 
   docker run \
     --detach \
@@ -612,7 +612,7 @@ then
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
-      SELITERNAME=sel"${ITER}${UUID}"
+      SELITERNAME=selenium"${ITER}${UUID}"
       docker run \
         --network "${NETWORK}" \
         --name ${SELITERNAME} \
@@ -633,7 +633,7 @@ then
     ITER=0
     while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
     do
-      SELITERNAME=sel"${ITER}${UUID}"
+      SELITERNAME=selenium"${ITER}${UUID}"
       docker run \
         --network "${NETWORK}" \
         --name ${SELITERNAME} \
@@ -661,7 +661,7 @@ then
       ITER=0
       while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
       do
-        docker logs sel"${ITER}${UUID}"
+        docker logs selenium"${ITER}${UUID}"
         ITER=$(($ITER+1))
       done
   fi
@@ -674,7 +674,7 @@ fi
 echo
 echo ">>> startsection Starting web server <<<"
 echo "============================================================================"
-export WEBSERVER=run"${UUID}"
+export WEBSERVER=webserver"${UUID}"
 docker run \
   --network "${NETWORK}" \
   --name "${WEBSERVER}" \
@@ -945,13 +945,6 @@ then
     fi
   fi
 
-  # Store the docker container logs.
-  docker ps -a --filter name=${UUID}
-  for image in `docker ps -a -q --filter name=${UUID}`
-  do
-      docker logs "${image}" 2>&1 | gzip > "${OUTPUTDIR}"/${image}.gz
-  done
-
   # Update the timing file
   if [ ! -z "$BEHAT_TIMING_FILENAME" ]
   then
@@ -1007,6 +1000,17 @@ fi
 echo
 echo ">>> startsection Cleaning workspace<<<"
 echo "============================================================================"
+
+# Store the docker container logs.
+docker ps -a --filter name=${UUID}
+for container in `docker ps -a --format "{{.ID}}~{{.Names}}" --filter name=${UUID}`
+do
+    image=$(echo $container | cut -d'~' -f1)
+    name=$(echo $container | cut -d'~' -f2)
+    name=${name%"${UUID}"} # Get rid of the UUID for naming log files.
+    echo "Exporting ${name} logs to ${OUTPUTDIR}/${name}.gz"
+    docker logs "${image}" 2>&1 | gzip > "${OUTPUTDIR}"/${name}.gz
+done
 
 docker exec -t "${WEBSERVER}" \
   chown -R "${UID}:${GROUPS[0]}" /shared
