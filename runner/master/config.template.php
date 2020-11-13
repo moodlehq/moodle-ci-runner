@@ -57,50 +57,16 @@ $CFG->passwordpolicy = 0;
 $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
 $CFG->phpunit_prefix = 't_';
 
-$CFG->behat_wwwroot   = 'http://' . getenv('WEBSERVER');
-$CFG->behat_dataroot  = '/var/www/behatdata/run';
-$CFG->behat_prefix = 'b_';
-$CFG->behat_profiles = [
-    'default' => [
-        'browser' => getenv('BROWSER'),
-    ],
-];
-
-if ('firefox' === getenv('BROWSER')) {
-    $CFG->behat_profiles['default']['capabilities'] = [
-            'extra_capabilities' => [
-                'marionette' => false,
-            ],
-        ];
-}
-
-if (getenv('BEHAT_TOTAL_RUNS') <= 1) {
-    $CFG->behat_profiles['default']['wd_host'] = getenv('SELENIUMURL_0') . '/wd/hub';
-}
-
-$CFG->behat_faildump_path = '/shared';
-
-if (getenv('BEHAT_TIMING_FILENAME')) {
-    define('BEHAT_FEATURE_TIMING_FILE', '/shared/timing.json');
-}
-
-$CFG->behat_parallel_run = [];
-for ($run = 0; $run < getenv('BEHAT_TOTAL_RUNS'); $run++) {
-    $CFG->behat_parallel_run[$run] = [
-        'wd_host' => getenv("SELENIUMURL_{$run}") . '/wd/hub',
-    ];
-
-    // Copy the profile for re-runs.
-    $profile = $CFG->behat_profiles['default'];
-    $profile['wd_host'] = getenv("SELENIUMURL_{$run}") . '/wd/hub';
-    $CFG->behat_profiles["default{$run}"] = $profile;
-}
+// Configure behat.
+\moodlehq_ci_runner::set_behat_configuration(
+    getenv('WEBSERVER'),
+    getenv('BROWSER'),
+    getenv('BEHAT_TOTAL_RUNS'),
+    !empty(getenv('BEHAT_TIMING_FILENAME')),
+    getenv('BEHAT_INCREASE_TIMEOUT')
+);
 
 define('PHPUNIT_LONGTEST', true);
-
-if ($behattimeout = getenv('BEHAT_INCREASE_TIMEOUT')) {
-    $CFG->behat_increasetimeout = $behattimeout;
-}
 
 define('PHPUNIT_PATH_TO_SASSC', '/usr/bin/sassc');
 
@@ -152,3 +118,142 @@ if ($ionicurl = getenv('IONICURL')) {
 }
 
 require_once(__DIR__ . '/lib/setup.php');
+
+/**
+ * Configuration utility for the CI runner.
+ */
+class moodlehq_ci_runner {
+
+    /**
+     * Set behat configuration.
+     *
+     * @param string $behathostname
+     * @param string $browsername
+     * @param string $runcount
+     * @param bool $usetimingfile
+     * @param string $timeoutfactor
+     */
+    public static function set_behat_configuration(
+        string $behathostname,
+        string $browsername,
+        string $runcount,
+        bool $usetimingfile,
+        string $timeoutfactor
+    ) {
+        global $CFG;
+
+        $CFG->behat_wwwroot   = "http://${behathostname}";
+        $CFG->behat_dataroot  = '/var/www/behatdata/run';
+        $CFG->behat_prefix = 'b_';
+
+        self::configure_profiles_for_browser($browsername, $runcount);
+
+        $CFG->behat_faildump_path = '/shared';
+
+        if ($usetimingfile) {
+            define('BEHAT_FEATURE_TIMING_FILE', '/shared/timing.json');
+        }
+
+        if ($timeoutfactor) {
+            $CFG->behat_increasetimeout = $timeoutfactor;
+        }
+    }
+
+    /**
+     * Get the configuration for the specified browser.
+     *
+     * @param string $browsername
+     * @param string $runcount
+     */
+    public static function configure_profiles_for_browser(string $browser, string $runs) {
+        global $CFG;
+        switch ($browser) {
+            case 'chrome':
+                $profile = self::get_chrome_profile();
+                break;
+            case 'firefox':
+                $profile = self::get_firefox_profile();
+                break;
+            default:
+                $profile = [];
+                break;
+        }
+
+        // Set the default profile to use the first selenium URL only.
+        $profile['wd_host'] = getenv('SELENIUMURL_1') . '/wd/hub';
+
+        $CFG->behat_profiles = [];
+        $CFG->behat_profiles[$browser] = $profile;
+
+        if ($runs > 1) {
+            // There is more than one parallel run..
+            // Set the wd URL in the behat_parallel_run array.
+            $CFG->behat_parallel_run = [];
+            for ($run = 0; $run <= $runs; $run++) {
+                $CFG->behat_parallel_run[$run] = [
+                    'wd_host' => getenv("SELENIUMURL_{$run}") . '/wd/hub',
+                ];
+
+                // Copy the profile for re-runs.
+                $profile['wd_host'] = getenv("SELENIUMURL_{$run}") . '/wd/hub';
+                $CFG->behat_profiles["{$browser}{$run}"] = $profile;
+            }
+        }
+    }
+
+    /**
+     * Get the configuration for Chrome.
+     *
+     * @return array
+     */
+    protected static function get_chrome_profile(): array {
+        $profile = [
+            'browser' => 'chrome',
+            'capabilities' => [
+                'browserName' => 'chrome',
+                'extra_capabilities' => [
+                    'chromeOptions' => [
+                        'args' => [
+                            // Disable the sandbox.
+                            // https://peter.sh/experiments/chromium-command-line-switches/#no-sandbox
+                            // Recommended for testing.
+                            'no-sandbox',
+
+                            // Disable use of GPU hardware acceleration.
+                            // https://peter.sh/experiments/chromium-command-line-switches/#disable-gpu
+                            //
+                            // This ensures that the rendering is done in software and works around a bug in Chrome.
+                            // This may be fixed by https://bugs.chromium.org/p/chromedriver/issues/detail?id=3667 but we
+                            // cannot upgrade until Chrome 89 is released due to another bug in Chromedriver.
+                            'no-gpu',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        return $profile;
+    }
+
+    /**
+     * Get the configuration for Chrome.
+     *
+     * @return array
+     */
+    protected static function get_firefox_profile(): array {
+        $profile = [
+            'browser' => 'firefox',
+            'capabilities' => [
+                'browserName' => 'firefox',
+                'extra_capabilities' => [],
+            ],
+        ];
+
+        if (getenv('DISABLE_MARIONETTE')) {
+            // Disable marionette for the older instaclick driver.
+            $profile['capabilities']['extra_capabilities']['marionette'] = false;
+        }
+
+        return $profile;
+    }
+}

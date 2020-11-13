@@ -87,6 +87,7 @@ export DBSLAVES="${DBSLAVES:-0}"
 
 # Test defaults
 export BROWSER="${BROWSER:-chrome}"
+export DISABLE_MARIONETTE=
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export BEHAT_NUM_RERUNS="${BEHAT_NUM_RERUNS:-1}"
@@ -109,6 +110,13 @@ then
 elif [ "${TESTTORUN}" == "behat" ]
 then
     TESTSUITE=
+
+    # If the composer.json contains instaclick then we must disable marionette and use an older version of firefox.
+    hasinstaclick=$((`grep instaclick "${CODEDIR}"/composer.json | wc -l`))
+    if [[ ${hasinstaclick} -ge 1 ]]
+    then
+        export DISABLE_MARIONETTE=1
+    fi
 fi
 
 # Ensure that the output directory exists.
@@ -174,6 +182,7 @@ echo "BEHAT_TOTAL_RUNS" >> "${ENVIROPATH}"
 echo "BEHAT_NUM_RERUNS" >> "${ENVIROPATH}"
 echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
+echo "DISABLE_MARIONETTE" >> "${ENVIROPATH}"
 
 echo "============================================================================"
 echo "= Job summary <<<"
@@ -189,6 +198,7 @@ echo "== DBTYPE: ${DBTYPE}"
 echo "== DBSLAVES: ${DBSLAVES}"
 echo "== TESTTORUN: ${TESTTORUN}"
 echo "== BROWSER: ${BROWSER}"
+echo "== DISABLE_MARIONETTE: ${DISABLE_MARIONETTE}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_NUM_RERUNS: ${BEHAT_NUM_RERUNS}"
 echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
@@ -588,6 +598,21 @@ then
   SHMMAP="--shm-size=2g"
 
   HASSELENIUM=1
+  SELVERSION="3.141.59"
+  SELCHROMEIMAGE="selenium/standalone-chrome:${SELVERSION}"
+  SELFIREFOXIMAGE="selenium/standalone-firefox:${SELVERSION}"
+
+  # Pin Chrome to 3.141.59-zinc until Chrome 89 is released around 02/03/2021.
+  # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3682&q=&can=1&sort=-id
+  SELCHROMEIMAGE="selenium/standalone-chrome:3.141.59-zinc"
+
+  # Newer versions of Firefox do not allow Marionette to be disabled.
+  # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
+  if [[ ${DISABLE_MARIONETTE} -ge 1 ]]
+  then
+      SELFIREFOXIMAGE="moodlehq/moodle-standalone-firefox:3.141.59_47.0.1"
+  fi
+
 
   if [ "$BROWSER" == "chrome" ]
   then
@@ -608,9 +633,8 @@ then
       echo "IONICURL" >> "${ENVIROPATH}"
     fi
 
-    SELVERSION="3.141.59-zinc"
-    ITER=0
-    while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
+    ITER=1
+    while [[ ${ITER} -le ${BEHAT_TOTAL_RUNS} ]]
     do
       SELITERNAME=selenium"${ITER}${UUID}"
       docker run \
@@ -619,7 +643,7 @@ then
         --detach \
         $SHMMAP \
         -v "${CODEDIR}":/var/www/html \
-        selenium/standalone-chrome:${SELVERSION}
+        ${SELCHROMEIMAGE}
 
       export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
       echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
@@ -629,9 +653,8 @@ then
   elif [ "$BROWSER" == "firefox" ]
   then
 
-    FFSELVERSION="3.141.59_47.0.1"
-    ITER=0
-    while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
+    ITER=1
+    while [[ ${ITER} -le ${BEHAT_TOTAL_RUNS} ]]
     do
       SELITERNAME=selenium"${ITER}${UUID}"
       docker run \
@@ -640,7 +663,7 @@ then
         --detach \
         $SHMMAP \
         -v "${CODEDIR}":/var/www/html \
-        moodlehq/moodle-standalone-firefox:${FFSELVERSION}
+        ${SELFIREFOXIMAGE}
 
       export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
       echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
@@ -658,8 +681,8 @@ then
   then
       sleep 5
 
-      ITER=0
-      while [[ ${ITER} -lt ${BEHAT_TOTAL_RUNS} ]]
+      ITER=1
+      while [[ ${ITER} -le ${BEHAT_TOTAL_RUNS} ]]
       do
         docker logs selenium"${ITER}${UUID}"
         ITER=$(($ITER+1))
@@ -797,9 +820,11 @@ then
   then
     BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty.txt"
     BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log.junit"
+    BEHAT_RUN_PROFILE="--profile=${BROWSER}"
   else
     BEHAT_FORMAT_PRETTY="--format=pretty --out=/shared/pretty{runprocess}.txt --replace={runprocess}"
     BEHAT_FORMAT_JUNIT="--format=junit --out=/shared/log{runprocess}.junit --replace={runprocess}"
+    BEHAT_RUN_PROFILE="--profile=${BROWSER}{runprocess}"
   fi
 
   if [ -n "${TAGS}" ]
@@ -817,6 +842,7 @@ then
     ${BEHAT_FORMAT_PRETTY}
     ${BEHAT_FORMAT_JUNIT}
     ${BEHAT_RUN_SUITE}
+    ${BEHAT_RUN_PROFILE}
     ${TAGS}
     "${NAME}")
 
@@ -868,6 +894,7 @@ then
           echo "============================================================================"
           CMD=(vendor/bin/behat
             --config ${CONFIGPATH}
+            --profile=${BROWSER}
             ${BEHAT_FORMAT_DOTS}
             --format=pretty --out=/shared/pretty_rerun${RERUN}.txt
             --format=junit --out=/shared/log_rerun${RERUN}.junit
@@ -916,6 +943,7 @@ then
 
             CMD=(vendor/bin/behat
               --config ${CONFIGPATH}
+              --profile=${BROWSER}${RUN}
               ${BEHAT_FORMAT_DOTS}
               --format=pretty --out=/shared/pretty${RUN}_rerun${RERUN}.txt
               --format=junit --out=/shared/log${RUN}_rerun${RERUN}.junit
