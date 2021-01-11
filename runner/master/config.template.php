@@ -237,6 +237,30 @@ class moodlehq_ci_runner {
             // These may exist but are undocumented.
         }
 
+        if (getenv('BROWSER_HEADLESS')) {
+            $profile = array_merge_recursive(
+                $profile,
+                [
+                    // Chrome headless mode.
+                    //
+                    // Add the 'headless' argument to chrome.
+                    // https://peter.sh/experiments/chromium-command-line-switches/#headless
+                    //
+                    // Note: Chrome args _should not_ include the leading `--`.
+                    // https://chromedriver.chromium.org/capabilities
+                    'capabilities' => [
+                        'extra_capabilities' => [
+                            'chromeOptions' => [
+                                'args' => [
+                                    'headless',
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
         return $profile;
     }
 
@@ -282,6 +306,30 @@ class moodlehq_ci_runner {
                 ]
             );
 
+        }
+
+        if (getenv('BROWSER_HEADLESS')) {
+            $profile = array_merge_recursive(
+                $profile,
+                [
+                    // Firefox headless mode.
+                    //
+                    // Add the '-headless' argument to firefox.
+                    // https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode
+                    //
+                    // Note: Firefox args _must_ include the leading `-`.
+                    // https://developer.mozilla.org/en-US/docs/Web/WebDriver/Capabilities/firefoxOptions#args
+                    'capabilities' => [
+                        'extra_capabilities' => [
+                            'moz:firefoxOptions' => [
+                                'args' => [
+                                    '-headless',
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            );
         }
 
         return $profile;
