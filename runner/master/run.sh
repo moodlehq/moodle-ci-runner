@@ -175,7 +175,8 @@ echo "BEHAT_NUM_RERUNS" >> "${ENVIROPATH}"
 echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
 
-echo ">>> startsection Job summary <<<"
+echo "============================================================================"
+echo "= Job summary <<<"
 echo "============================================================================"
 echo "== Workspace: ${WORKSPACE}"
 echo "== Build Id: ${BUILD_ID}"
@@ -199,7 +200,6 @@ echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
-echo ">>> stopsection <<<"
 
 # Setup the image cleanup.
 function finish {
