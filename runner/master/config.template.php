@@ -232,6 +232,11 @@ class moodlehq_ci_runner {
             ],
         ];
 
+        if (getenv('BROWSER_DEBUG')) {
+            // Chrome has no documented debug logging via capabilities.
+            // These may exist but are undocumented.
+        }
+
         return $profile;
     }
 
@@ -252,6 +257,31 @@ class moodlehq_ci_runner {
         if (getenv('DISABLE_MARIONETTE')) {
             // Disable marionette for the older instaclick driver.
             $profile['capabilities']['extra_capabilities']['marionette'] = false;
+        }
+
+        if (getenv('BROWSER_DEBUG')) {
+            $profile = array_merge_recursive(
+                $profile,
+                [
+                    // Increase verbosity for Firefox.
+                    'capabilities' => [
+                        'extra_capabilities' => [
+                            'moz:firefoxOptions' => [
+                                'prefs' => [
+                                    // Write the developer console to STDOUT.
+                                    'devtools.console.stdout.content' => true,
+                                ],
+                                'log' => [
+                                    // Set log level to 'trace'.
+                                    // https://firefox-source-docs.mozilla.org/testing/geckodriver/TraceLogs.html
+                                    'level' => 'trace',
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            );
+
         }
 
         return $profile;
