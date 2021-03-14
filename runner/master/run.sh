@@ -608,6 +608,10 @@ then
   SELCHROMEIMAGE="selenium/standalone-chrome:${SELVERSION}"
   SELFIREFOXIMAGE="selenium/standalone-firefox:${SELVERSION}"
 
+  # Pin Chrome to 3.141.59-zinc until Chrome 89 is released around 02/03/2021.
+  # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3682&q=&can=1&sort=-id
+  SELCHROMEIMAGE="selenium/standalone-chrome:3.141.59-zinc"
+
   # Newer versions of Firefox do not allow Marionette to be disabled.
   # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
   if [[ ${DISABLE_MARIONETTE} -ge 1 ]]
