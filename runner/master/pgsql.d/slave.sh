@@ -46,7 +46,7 @@ until psql -h ${DBHOST} -U moodle initial -c '\q'; do
 done
 
 echo "Restoring backup from master"
-pg_basebackup -h ${DBHOST} -U moodle -D "${PGDATA}" -P --xlog-method=stream
+pg_basebackup -h ${DBHOST} -U moodle -D "${PGDATA}" -P --wal-method=stream
 
 echo "Copying postgresql.conf in place"
 cp $PGDATA.orig/postgresql.conf $CONFFILE
@@ -56,7 +56,7 @@ echo "Configuring $CONFFILE as a slave"
 cat << EOF >> $CONFFILE
 hot_standby = on
 
-log_directory = 'pg_log'
+log_directory = 'log'
 log_filename = 'postgres.log'
 logging_collector = on
 log_min_error_statement = error
