@@ -435,7 +435,7 @@ then
     -e DBNAME=$DBNAME \
     -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
     --tmpfs /var/lib/postgresql/data:rw \
-    postgres:9.6
+    postgres:10
 
   # Wait few sec, before executing commands.
   sleep 10
@@ -456,7 +456,7 @@ then
       -e DBNAME=$DBNAME \
       -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
-      postgres:9.6
+      postgres:10
 
     # Hack to make gosu work for all users on the slave.
     docker exec -u root $DBHOST_SLAVE bash -c 'chown root:postgres /usr/local/bin/gosu'
