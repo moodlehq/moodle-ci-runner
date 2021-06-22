@@ -42,7 +42,7 @@ wal_keep_segments = 32
 synchronous_standby_names = '${DBHOST_SLAVE}'
 
 #log_statement = 'all'
-log_directory = 'pg_log'
+log_directory = 'log'
 log_filename = 'postgres.log'
 logging_collector = on
 log_min_error_statement = error
