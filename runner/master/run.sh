@@ -919,7 +919,7 @@ then
             --rerun)
 
           echo ${CMD[@]}
-          docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
+          docker exec -u www-data "${WEBSERVER}" "${CMD[@]}"
           NEWEXITCODE=$?
           if [ "$NEWEXITCODE" -eq 0 ]
           then
@@ -968,7 +968,7 @@ then
               --rerun)
 
             echo ${CMD[@]}
-            docker exec -t -u www-data "${WEBSERVER}" "${CMD[@]}"
+            docker exec -u www-data "${WEBSERVER}" "${CMD[@]}"
             if [ $? -ne 0 ]
             then
               NEWEXITCODE=$(($NEWEXITCODE + $status))
