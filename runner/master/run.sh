@@ -74,6 +74,7 @@ export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//
 # Which Mobile app version is used: latest (stable), next (master), x.y.z.
 # If the MOBILE_VERSION is not defined, the moodlemobile docker won't be executed.
 export MOBILE_VERSION="${MOBILE_VERSION:-}"
+export MOBILE_APP_PORT="${MOBILE_APP_PORT:-8100}"
 
 # Default type of test to run.
 # phpunit or behat.
@@ -211,6 +212,7 @@ echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
 echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
 echo "== TAGS: ${TAGS}"
 echo "== NAME: ${NAME}"
+echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
 echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
 echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
@@ -633,9 +635,9 @@ then
         --network "${NETWORK}" \
         --name ${IONICHOSTNAME} \
         --detach \
-        moodlehq/moodleapp:"$MOBILE_VERSION"
+        moodlehq/moodleapp:"${MOBILE_VERSION}"
 
-      export "IONICURL"="http://${IONICHOSTNAME}:8100"
+      export "IONICURL"="http://${IONICHOSTNAME}:${MOBILE_APP_PORT}"
       echo "IONICURL" >> "${ENVIROPATH}"
     fi
 
