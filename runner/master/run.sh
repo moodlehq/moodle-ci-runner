@@ -507,11 +507,24 @@ fi
 echo "============================================================================"
 echo ">>> stopsection <<<"
 
+
+echo
+echo ">>> startsection Starting supplemental services <<<"
+echo "============================================================================"
+BBBMOCK=bbbmock"${UUID}"
+docker run \
+  --detach \
+  --name ${BBBMOCK} \
+  --network "${NETWORK}" \
+  andrewnicols/bigbluebutton_mock:latest
+
+export BBBMOCKURL="http://${BBBMOCK}"
+echo BBBMOCKURL >> "${ENVIROPATH}"
+docker logs ${BBBMOCKURL}
+
+
 if [ "${TESTTORUN}" == "phpunit" ]
 then
-  echo
-  echo ">>> startsection Starting supplemental services <<<"
-  echo "============================================================================"
   EXTTESTNAME=exttests"${UUID}"
 
   docker run \
@@ -595,12 +608,12 @@ then
   export MONGODBTESTURL="mongodb://${MONGODBTESTNAME}:27017"
   echo MONGODBTESTURL >> "${ENVIROPATH}"
   docker logs ${MONGODBTESTNAME}
+fi
 
+echo "============================================================================"
+echo ">>> stopsection <<<"
 
-  echo "============================================================================"
-  echo ">>> stopsection <<<"
-
-elif [ "$TESTTORUN" == "behat" ]
+if [ "$TESTTORUN" == "behat" ]
 then
   echo
   echo ">>> startsection Starting selenium server <<<"
