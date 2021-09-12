@@ -797,22 +797,17 @@ then
     fi
   fi
 
-  AXE=""
-  # Accesibility tests disabled for classic until MDL-70846 is fixed.
-  if [ "${BEHAT_SUITE}" != "classic" ];
-  then
-    AXE="--axe"
-  fi
-
   echo php admin/tool/behat/cli/init.php \
-      ${BEHAT_INIT_SUITE} ${AXE} \
+      ${BEHAT_INIT_SUITE} \
+      --axe \
       -j="${BEHAT_TOTAL_RUNS}"
 
   docker exec -t "${WEBSERVER}" bash -c 'chown -R www-data:www-data /var/www/*'
 
   docker exec -t -u www-data "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
-      ${BEHAT_INIT_SUITE} ${AXE} \
+      ${BEHAT_INIT_SUITE} \
+      --axe \
       -j="${BEHAT_TOTAL_RUNS}"
 else
   docker exec -t -u www-data "${WEBSERVER}" \
