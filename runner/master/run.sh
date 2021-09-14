@@ -607,12 +607,15 @@ then
 
   HASSELENIUM=1
   SELVERSION="3.141.59"
+  # We are going brave here and go back to unpinned chrome version, because staying with
+  # the old Chrome 79 version (3.141.59-zinc) is making things really harder and harder.
+  # We are aware that, for headed runs, there are some zero-size errors still not fixed,
+  # but headless ones should run ok. For reference, the problems we are aware are being
+  # tracked (as of 14 Sep 2021) @:
+  #   - MDL-71108 : zero-size
+  #   - MDL-72306 : feedback
   SELCHROMEIMAGE="selenium/standalone-chrome:${SELVERSION}"
   SELFIREFOXIMAGE="selenium/standalone-firefox:${SELVERSION}"
-
-  # Pin Chrome to 3.141.59-zinc until Chrome 89 is released around 02/03/2021.
-  # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=3682&q=&can=1&sort=-id
-  SELCHROMEIMAGE="selenium/standalone-chrome:3.141.59-zinc"
 
   # Newer versions of Firefox do not allow Marionette to be disabled.
   # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
