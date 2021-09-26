@@ -727,8 +727,6 @@ then
   docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
 fi
 
-docker exec $WEBSERVER bash -c 'apt-get update && apt-get install -y --no-install-recommends apt-transport-https git'
-
 # Copy the config.php in place
 echo "== Copying configuration"
 docker cp "${SCRIPTPATH}/config.template.php" "${WEBSERVER}":/var/www/html/config.php
