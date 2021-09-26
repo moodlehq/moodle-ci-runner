@@ -1037,12 +1037,7 @@ else
 
   CMD="php vendor/bin/phpunit"
   CMD="${CMD} --disallow-test-output"
-  if [ "$MOODLE_VERSION" -gt "31" ]
-  then
-    # Only for phpunit 5 and above (aka post 31_STABLE)
-    # TODO: Remove condition once 31_STABLE is out.
-    CMD="${CMD} --fail-on-risky"
-  fi
+  CMD="${CMD} --fail-on-risky"
   CMD="${CMD} --log-junit /shared/log.junit"
   CMD="${CMD} ${PHPUNIT_FILTER}"
   CMD="${CMD} ${PHPUNIT_SUITE}"
