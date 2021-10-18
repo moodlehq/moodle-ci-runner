@@ -617,6 +617,9 @@ then
   SELCHROMEIMAGE="selenium/standalone-chrome:${SELVERSION}"
   SELFIREFOXIMAGE="selenium/standalone-firefox:${SELVERSION}"
 
+  # Temporarily switching to custom image to include our bugfix for zero size failures.
+  SELCHROMEIMAGE="moodlehq/selenium-standalone-chrome:3.141.59-20210929-moodlehq"
+
   # Newer versions of Firefox do not allow Marionette to be disabled.
   # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
   if [[ ${DISABLE_MARIONETTE} -ge 1 ]]
