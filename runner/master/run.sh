@@ -47,6 +47,7 @@ then
       PLUGINGITREPO=$(echo "$PLUGIN" | cut -f1 -d'|')
       PLUGINFOLDER=$(echo "$PLUGIN" | cut -f2 -d'|')
       PLUGINBRANCH=$(echo "$PLUGIN" | cut -f3 -d'|')
+      echo "Cloning ${PLUGINGITREPO}/${PLUGINBRANCH}"
 
       if [ -n "${PLUGINBRANCH}" ]
       then
@@ -56,6 +57,7 @@ then
 
       # Clone the plugin repository in the defined folder.
       git clone ${PLUGINBRANCH} ${PLUGINGITREPO} "${PLUGINSDIR}/${PLUGINFOLDER}"
+      echo "Cloned. HEAD is @ $(cd "${PLUGINSDIR}/${PLUGINFOLDER}" && git rev-parse HEAD)"
       echo
     fi
   done
