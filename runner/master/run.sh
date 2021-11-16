@@ -516,7 +516,7 @@ docker run \
   --detach \
   --name ${BBBMOCK} \
   --network "${NETWORK}" \
-  andrewnicols/bigbluebutton_mock:latest
+  moodlehq/bigbluebutton_mock:latest
 
 export BBBMOCKURL="http://${BBBMOCK}"
 echo BBBMOCKURL >> "${ENVIROPATH}"
