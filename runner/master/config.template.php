@@ -113,6 +113,17 @@ if (!empty(getenv('EXTTESTURL'))) {
     define('TEST_EXTERNAL_FILES_HTTPS_URL', getenv('EXTTESTURL'));
 }
 
+if (!empty(getenv('BBBMOCKURL'))) {
+    if (property_exists($CFG, 'behat_wwwroot')) {
+        $mockhash = sha1($CFG->behat_wwwroot);
+    } else {
+        $mockhash = sha1($CFG->wwwroot);
+    }
+
+    $bbbmockurl = getenv('BBBMOCKURL') . "/hash{$mockhash}";
+    define("TEST_MOD_BIGBLUEBUTTONBN_MOCK_SERVER", $bbbmockurl);
+}
+
 if ($ionicurl = getenv('IONICURL')) {
     $CFG->behat_ionic_wwwroot = $ionicurl;
 }
