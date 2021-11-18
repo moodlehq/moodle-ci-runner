@@ -520,7 +520,7 @@ docker run \
 
 export BBBMOCKURL="http://${BBBMOCK}"
 echo BBBMOCKURL >> "${ENVIROPATH}"
-docker logs ${BBBMOCKURL}
+docker logs ${BBBMOCK}
 
 
 if [ "${TESTTORUN}" == "phpunit" ]
