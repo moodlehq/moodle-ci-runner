@@ -193,6 +193,9 @@ class moodlehq_ci_runner {
         // Set the default profile to use the first selenium URL only.
         $profile['wd_host'] = getenv('SELENIUMURL_1') . '/wd/hub';
 
+        // Work around for https://github.com/Behat/MinkExtension/issues/376.
+        $profile['capabilities']['marionette'] = true;
+
         $CFG->behat_profiles = [];
         $CFG->behat_profiles[$browser] = $profile;
 
