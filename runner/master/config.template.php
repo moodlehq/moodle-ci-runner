@@ -178,12 +178,19 @@ class moodlehq_ci_runner {
      */
     public static function configure_profiles_for_browser(string $browser, string $runs) {
         global $CFG;
+
         switch ($browser) {
             case 'chrome':
                 $profile = self::get_chrome_profile();
+                $urlfunction = 'get_wd_url';
                 break;
             case 'firefox':
                 $profile = self::get_firefox_profile();
+                $urlfunction = 'get_wd_url';
+                break;
+            case 'chromedriver':
+                $profile = self::get_chrome_profile();
+                $urlfunction = 'get_chromedriver_url';
                 break;
             default:
                 $profile = [];
@@ -191,7 +198,7 @@ class moodlehq_ci_runner {
         }
 
         // Set the default profile to use the first selenium URL only.
-        $profile['wd_host'] = getenv('SELENIUMURL_1') . '/wd/hub';
+        $profile['wd_host'] = call_user_func(['self', $urlfunction], 1);
 
         // Work around for https://github.com/Behat/MinkExtension/issues/376.
         $profile['capabilities']['marionette'] = true;
@@ -205,14 +212,26 @@ class moodlehq_ci_runner {
             $CFG->behat_parallel_run = [];
             for ($run = 0; $run <= $runs; $run++) {
                 $CFG->behat_parallel_run[$run] = [
-                    'wd_host' => getenv("SELENIUMURL_{$run}") . '/wd/hub',
+                    'wd_host' => call_user_func(['self', $urlfunction], $run),
                 ];
 
                 // Copy the profile for re-runs.
-                $profile['wd_host'] = getenv("SELENIUMURL_{$run}") . '/wd/hub';
+                $profile['wd_host'] = call_user_func(['self', $urlfunction], $run);
                 $CFG->behat_profiles["{$browser}{$run}"] = $profile;
             }
         }
+    }
+
+    protected static function get_base_url(int $run): string {
+        return "http://" . getenv("SELENIUMHOSTNAME_{$run}");
+    }
+
+    protected static function get_wd_url(int $run): string {
+        return self::get_base_url($run) . ':4444/wd/hub';
+    }
+
+    protected static function get_chromedriver_url(int $run): string {
+        return self::get_base_url($run) . ':9515';
     }
 
     /**

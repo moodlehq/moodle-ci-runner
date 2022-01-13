@@ -641,6 +641,9 @@ then
   # Temporarily switching to custom image to include our bugfix for zero size failures.
   SELCHROMEIMAGE="moodlehq/selenium-standalone-chrome:96.0-moodlehq"
 
+  # And switching to a new image which provides us with chromedriver instead.
+  SELCHROMEIMAGE="moodlehq/selenium-chromedriver:latest"
+
   # Newer versions of Firefox do not allow Marionette to be disabled.
   # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
   if [[ ${DISABLE_MARIONETTE} -ge 1 ]]
@@ -651,6 +654,7 @@ then
 
   if [ "$BROWSER" == "chrome" ]
   then
+    BROWSER="chromedriver"
 
     if [ ! -z "$MOBILE_VERSION" ] && [ -d "${PLUGINSDIR}/local/moodlemobileapp" ]
     then
@@ -683,6 +687,9 @@ then
 
       export "SELENIUMURL_${ITER}"="http://${SELITERNAME}:4444"
       echo "SELENIUMURL_${ITER}" >> "${ENVIROPATH}"
+
+      export "SELENIUMHOSTNAME_${ITER}"="${SELITERNAME}"
+      echo "SELENIUMHOSTNAME_${ITER}" >> "${ENVIROPATH}"
 
       ITER=$(($ITER+1))
     done
