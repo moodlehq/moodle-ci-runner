@@ -620,11 +620,6 @@ then
   echo "============================================================================"
 
   SHMMAP="--shm-size=2g"
-  XVFB=""
-  if [ -n "$BROWSER_HEADLESS" ] && [ "$BROWSER_HEADLESS" != "0" ]
-  then
-      XVFB="-e START_XVFB=false"
-  fi
 
   HASSELENIUM=1
   SELVERSION="3.141.59"
@@ -677,7 +672,6 @@ then
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
-        $XVFB \
         -v "${CODEDIR}":/var/www/html \
         ${SELCHROMEIMAGE}
 
@@ -698,7 +692,6 @@ then
         --name ${SELITERNAME} \
         --detach \
         $SHMMAP \
-        $XVFB \
         -v "${CODEDIR}":/var/www/html \
         ${SELFIREFOXIMAGE}
 
