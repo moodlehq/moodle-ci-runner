@@ -124,6 +124,13 @@ if (!empty(getenv('BBBMOCKURL'))) {
     define("TEST_MOD_BIGBLUEBUTTONBN_MOCK_SERVER", $bbbmockurl);
 }
 
+if ($mlbackendpython = getenv('MLBACKENDTESTNAME')) {
+    define('TEST_MLBACKEND_PYTHON_HOST', $mlbackendpython);
+    define('TEST_MLBACKEND_PYTHON_PORT', 5000);
+    define('TEST_MLBACKEND_PYTHON_USERNAME', 'default');
+    define('TEST_MLBACKEND_PYTHON_PASSWORD', 'sshhhh');
+}
+
 if ($ionicurl = getenv('IONICURL')) {
     $CFG->behat_ionic_wwwroot = $ionicurl;
 }

@@ -93,6 +93,7 @@ export BROWSER="${BROWSER:-chrome}"
 export BROWSER_DEBUG="${BROWSER_DEBUG:-}"
 export BROWSER_HEADLESS="${BROWSER_HEADLESS:-}"
 export DISABLE_MARIONETTE=
+export MLBACKEND_PYTHON_VERSION="${MLBACKEND_PYTHON_VERSION:-}"
 export BEHAT_SUITE="${BEHAT_SUITE:-}"
 export BEHAT_TOTAL_RUNS="${BEHAT_TOTAL_RUNS:-3}"
 export BEHAT_NUM_RERUNS="${BEHAT_NUM_RERUNS:-1}"
@@ -190,6 +191,7 @@ echo "BEHAT_NUM_RERUNS" >> "${ENVIROPATH}"
 echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
 echo "DISABLE_MARIONETTE" >> "${ENVIROPATH}"
+echo "MLBACKEND_PYTHON_VERSION" >> "${ENVIROPATH}"
 
 echo "============================================================================"
 echo "= Job summary <<<"
@@ -208,6 +210,7 @@ echo "== BROWSER: ${BROWSER}"
 echo "== BROWSER_DEBUG: ${BROWSER_DEBUG}"
 echo "== BROWSER_HEADLESS: ${BROWSER_HEADLESS}"
 echo "== DISABLE_MARIONETTE: ${DISABLE_MARIONETTE}"
+echo "== MLBACKEND_PYTHON_VERSION: ${MLBACKEND_PYTHON_VERSION}"
 echo "== RUNCOUNT: ${RUNCOUNT}"
 echo "== BEHAT_TOTAL_RUNS: ${BEHAT_TOTAL_RUNS}"
 echo "== BEHAT_NUM_RERUNS: ${BEHAT_NUM_RERUNS}"
@@ -522,7 +525,6 @@ export BBBMOCKURL="http://${BBBMOCK}"
 echo BBBMOCKURL >> "${ENVIROPATH}"
 docker logs ${BBBMOCK}
 
-
 if [ "${TESTTORUN}" == "phpunit" ]
 then
   EXTTESTNAME=exttests"${UUID}"
@@ -562,6 +564,18 @@ then
   echo SOLRTESTNAME >> "${ENVIROPATH}"
   docker logs ${SOLRTESTNAME}
 
+  if [ -n "${MLBACKEND_PYTHON_VERSION}" ]
+  then
+    export MLBACKENDTESTNAME=mlpython"${UUID}"
+    docker run \
+      --detach \
+      --name ${MLBACKENDTESTNAME} \
+      --network "${NETWORK}" \
+      moodlehq/moodle-mlbackend-python:${MLBACKEND_PYTHON_VERSION}
+
+    echo MLBACKENDTESTNAME >> "${ENVIROPATH}"
+    docker logs ${MLBACKENDTESTNAME}
+  fi
 
   export REDISTESTNAME=redis"${UUID}"
   docker run \
