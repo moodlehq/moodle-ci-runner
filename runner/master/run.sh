@@ -661,7 +661,7 @@ then
   if [ "$BROWSER" == "chrome" ]
   then
 
-    if [ ! -z "$MOBILE_VERSION" ] && [ -d "${PLUGINSDIR}/local/moodlemobileapp" ]
+    if [ ! -z "$MOBILE_VERSION" ]
     then
       # Only run the moodlemobile docker container when the MOBILE_VERSION is defined.
       IONICHOSTNAME="ionic${UUID}"
