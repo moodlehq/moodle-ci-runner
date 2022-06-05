@@ -85,8 +85,39 @@ export TESTTORUN="${TESTTORUN:-phpunit}"
 # Default DB settings.
 # Todo: Tidy this up properly.
 export DBTYPE="${DBTYPE:-pgsql}"
+export DBTAG="${DBTAG:-auto}" # Optional docker image tag to be used (defaults to "auto", to pin later if needed.
 export DBTORUN="${DBTORUN:-}"
 export DBSLAVES="${DBSLAVES:-0}"
+
+# Here it's where we pin any DBTAG docker tag (versions), when needed. Don't change it elsewhere.
+# We only apply these pinned defaults when no DBTAG has been explicitly defined. And we only apply
+# them to databases know to need them (some bug prevents to use "latest"). Every pinned case should
+# include a comment with the reason for it.
+
+if [ "${DBTAG}" == "auto" ]
+then
+    case ${DBTYPE} in
+        mariadb)
+            DBTAG=10.7 # Because there is a problem with the >= 10.8 images not working with older hosts OS.
+            ;;
+        mysqli)
+            DBTAG=5.7 # Because it's the master lowest supported version and we need it covered by default.
+            ;;
+        mssql | sqlsrv)
+            DBTAG=2017-latest # Because we havent't got newer versions to work yet.
+            ;;
+        oci)
+            DBTAG=latest # No pin, right now this is 11.2
+            ;;
+        pgsql)
+            DBTAG=12 # Because it's the master lowest supported version and we need it covered by default.
+            ;;
+        *)
+            echo "Wrong DBTYPE: ${DBTYPE}. Fix the run, or add support for that DB above"
+            exit 1
+            ;;
+    esac
+fi
 
 # Test defaults
 export BROWSER="${BROWSER:-chrome}"
@@ -168,6 +199,7 @@ UUID=$(uuid | sha1sum | awk '{print $1}')
 UUID=${UUID:0:16}
 export DBHOST=database"${UUID}"
 export DBTYPE="${DBTYPE:-pgsql}"
+export DBTAG="${DBTAG:-latest}"
 export DBUSER="${DBUSER:-moodle}"
 export DBPASS="${DBPASS:-moodle}"
 export DBHOST="${DBHOST:-${DBTYPE}}"
@@ -175,6 +207,7 @@ export DBHOST_SLAVE=""
 export DBNAME="moodle"
 
 echo "DBTYPE" >> "${ENVIROPATH}"
+echo "DBTAG" >> "${ENVIROPATH}"
 echo "DBSLAVES" >> "${ENVIROPATH}"
 echo "DBHOST" >> "${ENVIROPATH}"
 echo "DBHOST_SLAVE" >> "${ENVIROPATH}"
@@ -204,6 +237,7 @@ echo "== Container prefix: ${UUID}"
 echo "== PHP Version: ${PHP_VERSION}"
 echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
+echo "== DBTAG: ${DBTAG}"
 echo "== DBSLAVES: ${DBSLAVES}"
 echo "== TESTTORUN: ${TESTTORUN}"
 echo "== BROWSER: ${BROWSER}"
@@ -288,7 +322,7 @@ then
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
       -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
-      mysql:5
+      mysql:${DBTAG}
 
     echo "Starting slave"
     docker run \
@@ -304,7 +338,7 @@ then
       -v $SCRIPTPATH/mysql.d/slave/config:/config \
       -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/mysql:rw \
-      mysql:5
+      mysql:${DBTAG}
 
     # Hack to make gosu work for all users on the slave.
     docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
@@ -321,7 +355,7 @@ then
       -e MYSQL_PASSWORD="${DBPASS}" \
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
-      mysql:5
+      mysql:${DBTAG}
   fi
 
   export DBCOLLATION=utf8mb4_bin
@@ -348,7 +382,7 @@ then
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
       -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
-      mariadb:10.7
+      mariadb:${DBTAG}
 
     echo "Starting slave"
     docker run \
@@ -364,7 +398,7 @@ then
       -v $SCRIPTPATH/mysql.d/slave/config:/config \
       -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/mysql:rw \
-      mariadb:10.7
+      mariadb:${DBTAG}
 
     # Hack to make gosu work for all users on the slave.
     docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
@@ -381,7 +415,7 @@ then
       -e MYSQL_PASSWORD="${DBPASS}" \
       --tmpfs /var/lib/mysql:rw \
       -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
-      mariadb:10.7
+      mariadb:${DBTAG}
   fi
 
   export DBCOLLATION=utf8mb4_bin
@@ -399,7 +433,7 @@ then
     --tmpfs /var/lib/oracle \
     --shm-size=2g \
     -e ORACLE_DISABLE_ASYNCH_IO=true \
-    moodlehq/moodle-db-oracle-r2
+    moodlehq/moodle-db-oracle-r2:${DBTAG}
 
   # Wait few sec, before executing commands.
   sleep 140
@@ -419,7 +453,7 @@ then
     --network "${NETWORK}" \
     -e ACCEPT_EULA=Y \
     -e SA_PASSWORD="${DBPASS}" \
-    moodlehq/moodle-db-mssql:2017-latest
+    moodlehq/moodle-db-mssql:${DBTAG}
 
   # Wait few sec, before executing commands.
   sleep 10
@@ -443,7 +477,7 @@ then
     -e DBNAME=$DBNAME \
     -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
     --tmpfs /var/lib/postgresql/data:rw \
-    postgres:10
+    postgres:${DBTAG}
 
   # Wait few sec, before executing commands.
   sleep 10
@@ -464,7 +498,7 @@ then
       -e DBNAME=$DBNAME \
       -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
-      postgres:10
+      postgres:${DBTAG}
 
     # Hack to make gosu work for all users on the slave.
     docker exec -u root $DBHOST_SLAVE bash -c 'chown root:postgres /usr/local/bin/gosu'
@@ -489,6 +523,7 @@ echo ">>> startsection Database summary <<<"
 echo "============================================================================"
 echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
+echo "== DBTAG: ${DBTAG}"
 echo "== DBHOST: ${DBHOST}"
 echo "== DBHOST_SLAVE: ${DBHOST_SLAVE}"
 echo "== DBUSER: ${DBUSER}"
