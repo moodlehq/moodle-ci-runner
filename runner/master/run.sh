@@ -425,13 +425,20 @@ then
 
 elif [ "${DBTYPE}" == "oci" ]
 then
+  # Need to adjust how we use tmpfs database depending on the database tag.
+  # For newer versions, do this (no tmpfs, but apply system settings - it's impossible to have both together).
+  tmpfsinit=
+  tmpfsmount=
+  if [ "${DBTAG}" == "latest" ] || [ "${DBTAG}" == "11" ]
+  then
+      tmpfsinit="-v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh"
+      tmpfsmount="--tmpfs /var/lib/oracle --shm-size=2g"
+  fi
   docker run \
     --detach \
     --name ${DBHOST} \
     --network "${NETWORK}" \
-    -v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh \
-    --tmpfs /var/lib/oracle \
-    --shm-size=2g \
+    ${tmpfsinit} ${tmpfsmount} \
     -e ORACLE_DISABLE_ASYNCH_IO=true \
     moodlehq/moodle-db-oracle-r2:${DBTAG}
 
