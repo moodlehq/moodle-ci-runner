@@ -7,18 +7,6 @@ echo "==========================================================================
 
 sleep 5
 
-# We need to set this for some inane reason otherwise it fails to start mysql.
-# This seems to be a bug with the entrypoint.sh
-DATABASE_ALREADY_EXISTS='true'
-
-docker_temp_server_stop
-
-echo "Copying moodle.cnf"
-gosu root cp /config/moodle.cnf /etc/mysql/conf.d/
-
-echo "Restarting mysqld"
-docker_temp_server_start mysqld
-
 echo "Dumping ${DBHOST}"
 mysql -u root -pmoodle -h ${DBHOST} -e "FLUSH TABLES WITH READ LOCK;" moodle
 mysql -u root -pmoodle -h ${DBHOST} -e "SHOW MASTER STATUS;" moodle
@@ -38,14 +26,6 @@ echo "Current position is {$replfile} {$position}"
 echo "Restoring into client"
 mysql -u root -pmoodle moodle < /tmp/moodle.sql
 
-echo "Stopping server to apply slave configuration"
-docker_temp_server_stop
-gosu root cp /config/slave.cnf /etc/mysql/conf.d/
-
-echo "Restarting mysqld"
-docker_temp_server_start mysqld
-
-echo "Starting slave"
 mysql -u root -pmoodle moodle << EOSQL
 CHANGE MASTER TO
   MASTER_HOST='${DBHOST}',

@@ -1,0 +1,7 @@
+[mysqld]
+server-id = 2
+relay-log = /var/lib/mysql/mysql-relay-bin.log
+log_bin = /var/lib/mysql/mysql-bin.log
+
+# List of databases to replicate.
+binlog_do_db = moodle
