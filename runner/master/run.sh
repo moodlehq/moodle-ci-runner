@@ -376,8 +376,8 @@ then
       -e MYSQL_PASSWORD="${DBPASS}" \
       -e DBHOST_SLAVE=$DBHOST_SLAVE \
       --tmpfs /var/lib/mysql:rw \
-      -v $SCRIPTPATH/mysql.d/master/conf.d:/etc/mysql/conf.d \
-      -v $SCRIPTPATH/mysql.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      -v $SCRIPTPATH/mariadb.d/master/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mariadb.d/master/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
       mariadb:${DBTAG}
 
     echo "Starting slave"
@@ -391,14 +391,10 @@ then
       -e MYSQL_PASSWORD="${DBPASS}" \
       -e DBHOST=$DBHOST \
       -e DBHOST_SLAVE=$DBHOST_SLAVE \
-      -v $SCRIPTPATH/mysql.d/slave/conf.d:/etc/mysql/conf.d \
-      -v $SCRIPTPATH/mysql.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
+      -v $SCRIPTPATH/mariadb.d/slave/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mariadb.d/slave/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/mysql:rw \
       mariadb:${DBTAG}
-
-    # Hack to make gosu work for all users on the slave.
-    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:mysql /usr/local/bin/gosu'
-    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
   else
     echo "Starting standalone"
     docker run \
@@ -410,7 +406,7 @@ then
       -e MYSQL_USER="${DBUSER}" \
       -e MYSQL_PASSWORD="${DBPASS}" \
       --tmpfs /var/lib/mysql:rw \
-      -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
+      -v $SCRIPTPATH/mariadb.d/standalone/conf.d:/etc/mysql/conf.d \
       mariadb:${DBTAG}
   fi
 
