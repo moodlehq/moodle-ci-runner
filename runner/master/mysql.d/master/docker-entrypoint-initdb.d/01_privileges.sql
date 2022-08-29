@@ -1,8 +1,6 @@
-GRANT SHUTDOWN ON *.* TO 'multi_admin'@'localhost' IDENTIFIED BY 'multipass';
-CREATE USER 'replication'@'%' IDENTIFIED BY 'replication';
+CREATE USER 'replication'@'%' IDENTIFIED WITH mysql_native_password BY 'replication';
 GRANT REPLICATION SLAVE ON *.* TO 'replication'@'%';
 
-GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'moodle';
-GRANT ALL ON *.* TO 'moodle'@'%' IDENTIFIED BY 'moodle';
+ALTER USER 'root'@'%' IDENTIFIED BY 'moodle';
 
 FLUSH PRIVILEGES;
