@@ -462,46 +462,48 @@ then
   if [ "${DBSLAVES}" -ne 0 ]
   then
     export DBHOST_SLAVE="${DBHOST}_slave"
-  fi
 
-  docker run \
-    --detach \
-    --name ${DBHOST} \
-    --network "${NETWORK}" \
-    -e POSTGRES_USER=moodle \
-    -e POSTGRES_PASSWORD=moodle \
-    -e POSTGRES_HOST_AUTH_METHOD=trust \
-    -e POSTGRES_DB=initial \
-    -e DBHOST_SLAVE=$DBHOST_SLAVE \
-    -e DBNAME=$DBNAME \
-    -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
-    --tmpfs /var/lib/postgresql/data:rw \
-    postgres:${DBTAG}
+    echo "Starting master"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e POSTGRES_DB="${DBNAME}" \
+      -e POSTGRES_USER=moodle \
+      -e POSTGRES_PASSWORD=moodle \
+      -e DBHOST_SLAVE=$DBHOST_SLAVE \
+      --tmpfs /var/lib/postgresql/data:rw \
+      -v $SCRIPTPATH/pgsql.d/master:/docker-entrypoint-initdb.d \
+      postgres:${DBTAG}
 
-  # Wait few sec, before executing commands.
-  sleep 10
+    # Wait few sec, before executing commands.
+    sleep 10
 
-  if [ "${DBSLAVES}" -ne 0 ]
-  then
     echo "Starting slave"
     docker run \
       --detach \
       --name ${DBHOST_SLAVE} \
       --network "${NETWORK}" \
+      -e POSTGRES_DB="${DBNAME}" \
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
-      -e POSTGRES_HOST_AUTH_METHOD=trust \
-      -e POSTGRES_DB=initial \
       -e DBHOST=$DBHOST \
       -e DBHOST_SLAVE=$DBHOST_SLAVE \
-      -e DBNAME=$DBNAME \
-      -v $SCRIPTPATH/pgsql.d:/docker-entrypoint-initdb.d \
       --tmpfs /var/lib/postgresql/data:rw \
+      -v $SCRIPTPATH/pgsql.d/slave:/docker-entrypoint-initdb.d \
       postgres:${DBTAG}
-
-    # Hack to make gosu work for all users on the slave.
-    docker exec -u root $DBHOST_SLAVE bash -c 'chown root:postgres /usr/local/bin/gosu'
-    docker exec -u root $DBHOST_SLAVE bash -c 'chmod +s /usr/local/bin/gosu'
+  else
+    echo "Starting standalone"
+    docker run \
+      --detach \
+      --name ${DBHOST} \
+      --network "${NETWORK}" \
+      -e POSTGRES_DB="${DBNAME}" \
+      -e POSTGRES_USER=moodle \
+      -e POSTGRES_PASSWORD=moodle \
+      --tmpfs /var/lib/postgresql/data:rw \
+      -v $SCRIPTPATH/pgsql.d/standalone:/docker-entrypoint-initdb.d \
+      postgres:${DBTAG}
   fi
 
   # Wait few sec, before executing commands for all nodes to come up.
@@ -543,7 +545,6 @@ fi
 
 echo "============================================================================"
 echo ">>> stopsection <<<"
-
 
 echo
 echo ">>> startsection Starting supplemental services <<<"
