@@ -33,6 +33,14 @@ export PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
 # Plugin folder where the plugins to install will be downloaded.
 export PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
 
+# Select image versions for Firefox and Chrome
+SELVERSION="${SELVERSION:-3.141.59}"
+SELCHROMEIMAGE="${SELIMAGE:-selenium/standalone-chrome:${SELVERSION}}"
+SELFIREFOXIMAGE="${SELIMAGE:-selenium/standalone-firefox:${SELVERSION}}"
+
+# Temporarily switching to custom image to include our bugfix for zero size failures.
+SELCHROMEIMAGE="${SELIMAGE:-moodlehq/selenium-standalone-chrome:96.0-moodlehq}"
+
 mkdir -p "${PLUGINSDIR}"
 if [ -n "$PLUGINSTOINSTALL" ];
 then
@@ -257,6 +265,9 @@ echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
 echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
 echo "== Environment: ${ENVIROPATH}"
+echo "== Selenium version: ${SELVERSION}"
+echo "== Chrome image: ${SELCHROMEIMAGE}"
+echo "== Firefox image: ${SELFIREFOXIMAGE}"
 echo "============================================================================"
 
 # Setup the image cleanup.
@@ -671,19 +682,6 @@ then
   SHMMAP="--shm-size=2g"
 
   HASSELENIUM=1
-  SELVERSION="3.141.59"
-  # We are going brave here and go back to unpinned chrome version, because staying with
-  # the old Chrome 79 version (3.141.59-zinc) is making things really harder and harder.
-  # We are aware that, for headed runs, there are some zero-size errors still not fixed,
-  # but headless ones should run ok. For reference, the problems we are aware are being
-  # tracked (as of 14 Sep 2021) @:
-  #   - MDL-71108 : zero-size
-  #   - MDL-72306 : feedback
-  SELCHROMEIMAGE="selenium/standalone-chrome:${SELVERSION}"
-  SELFIREFOXIMAGE="selenium/standalone-firefox:${SELVERSION}"
-
-  # Temporarily switching to custom image to include our bugfix for zero size failures.
-  SELCHROMEIMAGE="moodlehq/selenium-standalone-chrome:96.0-moodlehq"
 
   # Newer versions of Firefox do not allow Marionette to be disabled.
   # Version 47.0.1 is the latest version of Firefox we can support when Marionette is disabled.
