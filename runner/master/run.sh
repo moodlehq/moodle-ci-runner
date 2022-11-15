@@ -34,12 +34,9 @@ export PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
 export PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
 
 # Select image versions for Firefox and Chrome
-SELVERSION="${SELVERSION:-3.141.59}"
+SELVERSION="${SELVERSION:-4}"
 SELCHROMEIMAGE="${SELIMAGE:-selenium/standalone-chrome:${SELVERSION}}"
 SELFIREFOXIMAGE="${SELIMAGE:-selenium/standalone-firefox:${SELVERSION}}"
-
-# Temporarily switching to custom image to include our bugfix for zero size failures.
-SELCHROMEIMAGE="${SELIMAGE:-moodlehq/selenium-standalone-chrome:96.0-moodlehq}"
 
 mkdir -p "${PLUGINSDIR}"
 if [ -n "$PLUGINSTOINSTALL" ];
