@@ -104,7 +104,7 @@ then
             DBTAG=5.7 # Because it's the master lowest supported version and we need it covered by default.
             ;;
         mssql | sqlsrv)
-            DBTAG=2017-latest # Because we havent't got newer versions to work yet.
+            DBTAG=latest # No pin, right now 2019-latest
             ;;
         oci)
             DBTAG=latest # No pin, right now this is 11.2
