@@ -38,7 +38,7 @@ if ($slave = getenv('DBHOST_SLAVE')) {
 }
 
 // Skip language upgrade during the on-sync period.
-$CFG->skiplangupgrade = true;
+$CFG->skiplangupgrade = false;
 
 // Enable tests needing language install/upgrade
 // only if we have language upgrades enabled (aka,
