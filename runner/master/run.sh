@@ -349,7 +349,7 @@ then
       -e MYSQL_DATABASE="${DBNAME}" \
       -e MYSQL_USER="${DBUSER}" \
       -e MYSQL_PASSWORD="${DBPASS}" \
-      --tmpfs /var/lib/mysql:rw \
+      --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=1024m \
       -v $SCRIPTPATH/mysql.d/standalone/conf.d:/etc/mysql/conf.d \
       mysql:${DBTAG}
   fi
@@ -405,7 +405,7 @@ then
       -e MYSQL_DATABASE="${DBNAME}" \
       -e MYSQL_USER="${DBUSER}" \
       -e MYSQL_PASSWORD="${DBPASS}" \
-      --tmpfs /var/lib/mysql:rw \
+      --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=1024m \
       -v $SCRIPTPATH/mariadb.d/standalone/conf.d:/etc/mysql/conf.d \
       mariadb:${DBTAG}
   fi
@@ -501,7 +501,7 @@ then
       -e POSTGRES_DB="${DBNAME}" \
       -e POSTGRES_USER=moodle \
       -e POSTGRES_PASSWORD=moodle \
-      --tmpfs /var/lib/postgresql/data:rw \
+      --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m \
       -v $SCRIPTPATH/pgsql.d/standalone:/docker-entrypoint-initdb.d \
       postgres:${DBTAG}
   fi
