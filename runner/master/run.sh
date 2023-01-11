@@ -101,7 +101,7 @@ then
             DBTAG=10.7 # Because there is a problem with the >= 10.8 images not working with older hosts OS.
             ;;
         mysqli)
-            DBTAG=5.7 # Because it's the master lowest supported version and we need it covered by default.
+            DBTAG=8.0 # Because it's the master lowest supported version and we need it covered by default.
             ;;
         mssql | sqlsrv)
             DBTAG=latest # No pin, right now 2019-latest
@@ -110,7 +110,7 @@ then
             DBTAG=latest # No pin, right now this is 11.2
             ;;
         pgsql)
-            DBTAG=12 # Because it's the master lowest supported version and we need it covered by default.
+            DBTAG=13 # Because it's the master lowest supported version and we need it covered by default.
             ;;
         *)
             echo "Wrong DBTYPE: ${DBTYPE}. Fix the run, or add support for that DB above"
