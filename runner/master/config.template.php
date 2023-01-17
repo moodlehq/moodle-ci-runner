@@ -167,7 +167,7 @@ class moodlehq_ci_runner {
     ) {
         global $CFG;
 
-        $CFG->behat_wwwroot   = "http://${behathostname}";
+        $CFG->behat_wwwroot   = "http://{$behathostname}";
         $CFG->behat_dataroot  = '/var/www/behatdata/run';
         $CFG->behat_prefix = 'b_';
 
