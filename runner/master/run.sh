@@ -205,6 +205,7 @@ export DBPASS="${DBPASS:-moodle}"
 export DBHOST="${DBHOST:-${DBTYPE}}"
 export DBHOST_SLAVE=""
 export DBNAME="moodle"
+export MOODLE_CONFIG=${MOODLE_CONFIG:-}
 
 echo "DBTYPE" >> "${ENVIROPATH}"
 echo "DBTAG" >> "${ENVIROPATH}"
@@ -225,6 +226,7 @@ echo "BEHAT_TIMING_FILENAME" >> "${ENVIROPATH}"
 echo "BEHAT_INCREASE_TIMEOUT" >> "${ENVIROPATH}"
 echo "DISABLE_MARIONETTE" >> "${ENVIROPATH}"
 echo "MLBACKEND_PYTHON_VERSION" >> "${ENVIROPATH}"
+echo "MOODLE_CONFIG" >> "${ENVIROPATH}"
 
 echo "============================================================================"
 echo "= Job summary <<<"
@@ -256,6 +258,7 @@ echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
 echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
 echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
+echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 

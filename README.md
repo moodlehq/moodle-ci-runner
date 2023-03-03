@@ -46,6 +46,7 @@ You also need to set several environment variables, depending on your testing re
 | `MOBILE_VERSION`    | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
 | `PLUGINSTOINSTALL`  | gitrepoplugin1\|gitfolderplugin1\|gitbranchplugin1;gitrepoplugin2\|gitfolderplugin2         | Empty               | External plugins to install.<br/>The following information is needed for each plugin: gitrepo (mandatory), folder (mandatory) and branch (optional).<br/>The plugin fields should be separated by "\|" and each plugin should be separated using ";".<br/>Example: "https://github.com/moodlehq/moodle-local_mobile.git\|local/mobile\|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git\|blocks/configurable_reports" |
 | `PLUGINSDIR`        | /path/to/your/plugins                                   | $WORKSPACE/plugins  | The location of the plugins checkout. |
+| `MOODLE_CONFIG`     | JSON STRING                                             | Empty               | Custom moodle config to use during the execution. For example, if you want to set `$CFG->noreplyaddress = 'campus@example.com';`, the value of this variable should be `{"noreplyaddress":"campus@example.com"}`. |
 
 Other args are also available too, but are not recommended.
 

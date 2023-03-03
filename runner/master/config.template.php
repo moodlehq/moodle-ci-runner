@@ -182,6 +182,21 @@ class moodlehq_ci_runner {
         if ($timeoutfactor) {
             $CFG->behat_increasetimeout = $timeoutfactor;
         }
+
+        self::configure_overrides();
+    }
+
+    /**
+     * Override configuration values.
+     */
+    public static function configure_overrides() {
+        global $CFG;
+
+        $overrides = json_decode(getenv('MOODLE_CONFIG') ?: '{}', true);
+
+        foreach ($overrides as $key => $value) {
+            $CFG->{$key} = $value;
+        }
     }
 
     /**
