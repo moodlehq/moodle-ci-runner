@@ -197,6 +197,7 @@ fi
 # Setup Environment
 UUID=$(uuid | sha1sum | awk '{print $1}')
 UUID=${UUID:0:16}
+IMAGICK=${IMAGICK:-}
 export DBHOST=database"${UUID}"
 export DBTYPE="${DBTYPE:-pgsql}"
 export DBTAG="${DBTAG:-latest}"
@@ -256,6 +257,7 @@ echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
 echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
 echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 echo "== TESTSUITE: ${TESTSUITE}"
+echo "== IMAGICK: ${IMAGICK}"
 echo "== Environment: ${ENVIROPATH}"
 echo "============================================================================"
 
@@ -785,6 +787,15 @@ docker run \
   -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
   -v "${OUTPUTDIR}":/shared \
   ${PHP_SERVER_DOCKER}
+
+# Install imagick extension
+if [ -n "$IMAGICK" ];
+then
+    docker exec "${WEBSERVER}" apt-get update
+    docker exec "${WEBSERVER}" apt-get install -y libmagickwand-dev --no-install-recommends
+    docker exec "${WEBSERVER}" pecl install imagick
+    docker exec "${WEBSERVER}" docker-php-ext-enable imagick
+fi
 
 # Copy code in place.
 echo "== Copying code in place"

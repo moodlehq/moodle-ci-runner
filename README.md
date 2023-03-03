@@ -46,6 +46,7 @@ You also need to set several environment variables, depending on your testing re
 | `MOBILE_VERSION`    | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
 | `PLUGINSTOINSTALL`  | gitrepoplugin1\|gitfolderplugin1\|gitbranchplugin1;gitrepoplugin2\|gitfolderplugin2         | Empty               | External plugins to install.<br/>The following information is needed for each plugin: gitrepo (mandatory), folder (mandatory) and branch (optional).<br/>The plugin fields should be separated by "\|" and each plugin should be separated using ";".<br/>Example: "https://github.com/moodlehq/moodle-local_mobile.git\|local/mobile\|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git\|blocks/configurable_reports" |
 | `PLUGINSDIR`        | /path/to/your/plugins                                   | $WORKSPACE/plugins  | The location of the plugins checkout. |
+| `IMAGICK`           | 1                                                       | Empty               | Install the `imagick` PHP extension on the docker PHP container. |
 
 Other args are also available too, but are not recommended.
 
