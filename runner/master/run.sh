@@ -421,7 +421,7 @@ then
   # For newer versions, do this (no tmpfs, but apply system settings - it's impossible to have both together).
   tmpfsinit=
   tmpfsmount=
-  if [ "${DBTAG}" == "latest" ] || [ "${DBTAG}" == "11" ]
+  if [ "${DBTAG}" == "11" ]
   then
       tmpfsinit="-v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh"
       tmpfsmount="--tmpfs /var/lib/oracle --shm-size=2g"
