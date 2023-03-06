@@ -107,7 +107,7 @@ then
             DBTAG=latest # No pin, right now 2019-latest
             ;;
         oci)
-            DBTAG=latest # No pin, right now this is 11.2
+            DBTAG=latest # No pin, right now this is 21c
             ;;
         pgsql)
             DBTAG=13 # Because it's the master lowest supported version and we need it covered by default.
