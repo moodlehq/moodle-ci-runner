@@ -144,9 +144,17 @@ then
     BEHAT_NUM_RERUNS=
     BEHAT_TIMING_FILENAME=
     BEHAT_INCREASE_TIMEOUT=
+    NAME=
 elif [ "${TESTTORUN}" == "behat" ]
 then
     TESTSUITE=
+
+    # If the --name option is going to be used, then disable any parallel execution, it's not worth
+    # instantiating N sites for just running one feature/scenario.
+    if [[ -n "${NAME}" ]] && [[ "${BEHAT_TOTAL_RUNS}" -gt 1 ]]; then
+        echo "Note: parallel option disabled because of NAME (--name) behat option being used."
+        BEHAT_TOTAL_RUNS=1
+    fi
 
     # If the composer.json contains instaclick then we must disable marionette and use an older version of firefox.
     hasinstaclick=$((`grep instaclick "${CODEDIR}"/composer.json | wc -l`))
