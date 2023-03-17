@@ -42,6 +42,9 @@ if (getenv('DBTYPE') === 'sqlsrv') {
         // Disable Encryption for now on sqlsrv.
         // It is on by default from msodbcsql18.
         'Encrypt' => false,
+
+        // Trust server certificates so self-signed certificates can be used.
+        'TrustServerCertificate' => true,
     ];
 }
 
