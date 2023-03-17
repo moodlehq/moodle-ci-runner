@@ -37,6 +37,14 @@ if ($slave = getenv('DBHOST_SLAVE')) {
     ];
 }
 
+if (getenv('DBTYPE') === 'sqlsrv') {
+    $CFG->dboptions['extrainfo'] = [
+        // Disable Encryption for now on sqlsrv.
+        // It is on by default from msodbcsql18.
+        'Encrypt' => false,
+    ];
+}
+
 // Skip language upgrade during the on-sync period.
 $CFG->skiplangupgrade = false;
 
