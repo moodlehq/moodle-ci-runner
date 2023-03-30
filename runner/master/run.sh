@@ -876,7 +876,6 @@ then
 
   echo php admin/tool/behat/cli/init.php \
       ${BEHAT_INIT_SUITE} \
-      --axe \
       -j="${BEHAT_TOTAL_RUNS}"
 
   docker exec -t "${WEBSERVER}" bash -c 'chown -R www-data:www-data /var/www/*'
@@ -884,7 +883,6 @@ then
   docker exec -t -u www-data "${WEBSERVER}" \
     php admin/tool/behat/cli/init.php \
       ${BEHAT_INIT_SUITE} \
-      --axe \
       -j="${BEHAT_TOTAL_RUNS}"
 else
   docker exec -t -u www-data "${WEBSERVER}" \
