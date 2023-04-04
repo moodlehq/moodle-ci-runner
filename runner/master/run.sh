@@ -1025,7 +1025,7 @@ then
             echo ">>> startsection Running behat again (rerun #${RERUN}) for failed steps on process ${RUN} <<<"
             echo "============================================================================"
 
-            docker exec -t -w /var/www/html "${WEBSERVER}" bash -c \
+            docker exec -t -w /var/www/html -u www-data "${WEBSERVER}" bash -c \
               "if [ ! -L \"behatrun${RUN}\" ]; then ln -s . \"behatrun${RUN}\"; fi"
 
             CMD=(vendor/bin/behat
