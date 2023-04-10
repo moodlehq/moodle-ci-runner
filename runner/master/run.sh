@@ -433,6 +433,13 @@ then
   then
       tmpfsinit="-v $SCRIPTPATH/oracle.d/tmpfs.sh:/docker-entrypoint-initdb.d/tmpfs.sh"
       tmpfsmount="--tmpfs /var/lib/oracle --shm-size=2g"
+  else
+      # Let's try to mount the whole (XE) database available  using tmpfs and
+      # use it. Note that we could use the pluggable XEPDB1 one, but we have run
+      # tests and there isn't any real benefit doing that. So we are going to
+      # continue using the XE database (CDB for Oracle 21c and up) always (unless
+      # we find in the future some other trick to make the PDB to perform better).
+      tmpfsmount="--mount type=tmpfs,destination=/opt/oracle/oradata/XE --shm-size=4g"
   fi
   docker run \
     --detach \
