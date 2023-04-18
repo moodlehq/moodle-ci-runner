@@ -251,7 +251,7 @@ class moodlehq_ci_runner {
             'capabilities' => [
                 'browserName' => 'chrome',
                 'extra_capabilities' => [
-                    'chromeOptions' => [
+                    'goog:chromeOptions' => [
                         'args' => [
                             // Disable the sandbox.
                             // https://peter.sh/experiments/chromium-command-line-switches/#no-sandbox
@@ -289,9 +289,11 @@ class moodlehq_ci_runner {
                     // https://chromedriver.chromium.org/capabilities
                     'capabilities' => [
                         'extra_capabilities' => [
-                            'chromeOptions' => [
+                            'goog:chromeOptions' => [
                                 'args' => [
-                                    'headless',
+                                    // Headless mode is going away with new Selenium versions and Chrome.
+                                    // This is backwards compatinble with older versions of Selenium.
+                                    'headless=new',
                                 ],
                             ],
                         ],
