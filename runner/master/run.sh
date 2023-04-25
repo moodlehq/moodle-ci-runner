@@ -575,6 +575,17 @@ export BBBMOCKURL="http://${BBBMOCK}"
 echo BBBMOCKURL >> "${ENVIROPATH}"
 docker logs ${BBBMOCK}
 
+MATRIXMOCK=matrixmock"${UUID}"
+docker run \
+  --detach \
+  --name ${MATRIXMOCK} \
+  --network "${NETWORK}" \
+  moodlehq/matrixsynapse_mock:latest
+
+export MATRIXMOCKURL="http://${MATRIXMOCK}"
+echo MATRIXMOCKURL >> "${ENVIROPATH}"
+docker logs ${MATRIXMOCK}
+
 if [ "${TESTTORUN}" == "phpunit" ]
 then
   EXTTESTNAME=exttests"${UUID}"
