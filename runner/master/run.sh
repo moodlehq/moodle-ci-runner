@@ -71,6 +71,12 @@ fi
 export PHP_VERSION="${PHP_VERSION:-7.1}"
 export PHP_SERVER_DOCKER="${PHP_SERVER_DOCKER:-moodlehq/moodle-php-apache:${PHP_VERSION}}"
 
+# If available, which commit hash is being tested.
+export GIT_COMMIT="N/A"
+if [ -d "${CODEDIR}"/.git ]; then
+    export GIT_COMMIT=$(cd "${CODEDIR}" && git rev-parse HEAD)
+fi
+
 # Which Moodle version (XY) is being used.
 export MOODLE_VERSION=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 # Which Mobile app version is used: latest (stable), next (master), x.y.z.
@@ -242,7 +248,9 @@ echo "== Build Id: ${BUILD_ID}"
 echo "== Output directory: ${OUTPUTDIR}"
 echo "== UUID: ${UUID}"
 echo "== Container prefix: ${UUID}"
-echo "== PHP Version: ${PHP_VERSION}"
+echo "== GIT commit: ${GIT_COMMIT}"
+echo "== PHP version: ${PHP_VERSION}"
+echo "== Moodle branch (version.php): ${MOODLE_VERSION}"
 echo "== DBTORUN: ${DBTORUN}"
 echo "== DBTYPE: ${DBTYPE}"
 echo "== DBTAG: ${DBTAG}"
