@@ -1021,6 +1021,7 @@ then
           echo ${CMD[@]}
           docker exec -u www-data "${WEBSERVER}" "${CMD[@]}"
           NEWEXITCODE=$?
+          EXITCODE=$NEWEXITCODE
           if [ "$NEWEXITCODE" -eq 0 ]
           then
             break;
