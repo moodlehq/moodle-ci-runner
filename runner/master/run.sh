@@ -783,7 +783,7 @@ then
 
       ITER=$(($ITER+1))
     done
-  elif [ "$BROWSER" == "goutte" ]
+  elif [ "$BROWSER" == "goutte" ] || [ "$BROWSER" == "browserkit" ]
   then
       export BROWSER=""
       HASSELENIUM=0
