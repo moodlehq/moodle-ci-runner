@@ -36,7 +36,7 @@ You also need to set several environment variables, depending on your testing re
 | `TESTTORUN`         | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which test will be run. |
 | `TAGS`              | A behat tag arg, or phpunit filter                      | Optional            | The tag argument to behat, or a valid argument to the phpunit `--filter`. |
 | `NAME`              | A behat name arg. Ignored for phpunit                   | Optional            | The name argument to behat. It will be ignored for phpunit. |
-| `BROWSER`           | `firefox`, `chrome`, `goutte`                           | `chrome`            | The browser to use for behat tests. |
+| `BROWSER`           | `firefox`, `chrome`, `browserkit`, `goutte` (deprecated)| `chrome`            | The browser to use for behat tests. |
 | `BROWSER_DEBUG`     | 1                                                       | Empty               | Increase verbosity for browsers which support this |
 | `BROWSER_HEADLESS`  | 1                                                       | Empty               | Run the browser in headless mode |
 | `BEHAT_TOTAL_RUNS`  | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
