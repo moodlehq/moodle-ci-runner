@@ -447,7 +447,7 @@ then
       # tests and there isn't any real benefit doing that. So we are going to
       # continue using the XE database (CDB for Oracle 21c and up) always (unless
       # we find in the future some other trick to make the PDB to perform better).
-      tmpfsmount="--mount type=tmpfs,destination=/opt/oracle/oradata/XE --shm-size=4g"
+      tmpfsmount="--mount type=tmpfs,destination=/opt/oracle/oradata --shm-size=6g"
   fi
   docker run \
     --detach \
