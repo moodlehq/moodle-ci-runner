@@ -135,7 +135,7 @@ function run() {
     # Run job checks (after modules env variables have been set).
     run_job_check "${jobtype}"
 
-    # Now it's time to run all the modules config functions (they are optional).
+    # Now it's time to run the job config and then the modules config functions (they are optional).
     run_modules_config "${jobtype}"
     run_job_config "${jobtype}"
 

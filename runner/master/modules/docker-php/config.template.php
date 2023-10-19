@@ -79,7 +79,7 @@ $CFG->phpunit_prefix = 't_';
 \moodlehq_ci_runner::set_behat_configuration(
     getenv('WEBSERVER'),
     getenv('BROWSER'),
-    getenv('BEHAT_TOTAL_RUNS'),
+    getenv('BEHAT_PARALLEL'),
     !empty(getenv('BEHAT_TIMING_FILENAME')),
     getenv('BEHAT_INCREASE_TIMEOUT')
 );
@@ -223,9 +223,6 @@ class moodlehq_ci_runner {
         // Set the default profile to use the first selenium URL only.
         $profile['wd_host'] = getenv('SELENIUMURL_1') . '/wd/hub';
 
-        // Work around for https://github.com/Behat/MinkExtension/issues/376.
-        $profile['capabilities']['marionette'] = true;
-
         $CFG->behat_profiles = [];
         $CFG->behat_profiles[$browser] = $profile;
 
@@ -323,11 +320,6 @@ class moodlehq_ci_runner {
                 'extra_capabilities' => [],
             ],
         ];
-
-        if (getenv('DISABLE_MARIONETTE')) {
-            // Disable marionette for the older instaclick driver.
-            $profile['capabilities']['extra_capabilities']['marionette'] = false;
-        }
 
         if (getenv('BROWSER_DEBUG')) {
             $profile = array_merge_recursive(
