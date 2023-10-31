@@ -55,6 +55,8 @@ function behat_to_env_file() {
 
         BEHAT_TIMING_FILENAME
         BEHAT_INCREASE_TIMEOUT
+
+        MOODLE_CONFIG
     )
     echo "${env[@]}"
 }
@@ -77,6 +79,7 @@ function behat_to_summary() {
     echo "== BEHAT_RERUNS: ${BEHAT_RERUNS}"
     echo "== BEHAT_TIMING_FILENAME: ${BEHAT_TIMING_FILENAME}"
     echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
+    echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
     echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
     echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
@@ -113,6 +116,7 @@ function behat_modules() {
         docker-selenium
         docker-ionic
         docker-php
+        moodle-config
         moodle-core-copy
         docker-healthy
         docker-summary

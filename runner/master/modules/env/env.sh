@@ -46,7 +46,10 @@ function env_setup() {
 
     # Add all the variables that the job type requires.
     for var in $(get_job_to_env_file "${JOBTYPE}"); do
-        echo "${var}"="${!var}" >> "${ENVIROPATH}"
+        # Docker does not support multiline env variables via --env-file, so we need to
+        # remove the newlines from the value. See unresolved: https://github.com/moby/moby/issues/12997
+        value="${!var//$'\n'/}"
+        echo "${var}=${value}" >> "${ENVIROPATH}"
     done
 }
 

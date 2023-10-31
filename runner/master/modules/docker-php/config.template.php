@@ -84,6 +84,11 @@ $CFG->phpunit_prefix = 't_';
     getenv('BEHAT_INCREASE_TIMEOUT')
 );
 
+// Apply custom configuration settings.
+if ($config = getenv('MOODLE_CONFIG')) {
+    \moodlehq_ci_runner::apply_config_settings($config);
+}
+
 define('PHPUNIT_LONGTEST', true);
 
 define('PHPUNIT_PATH_TO_SASSC', '/usr/bin/sassc');
@@ -197,6 +202,38 @@ class moodlehq_ci_runner {
 
         if ($timeoutfactor) {
             $CFG->behat_increasetimeout = $timeoutfactor;
+        }
+    }
+
+    /**
+     * Given a JSON-encoded $configuration, apply for those settings to the current configuration.
+     *
+     * Note that they are always of the form: "key": "value" and can be:
+     * - global settings: That will be applied to the main CFG. {"directorypermissions": "00777"}
+     * - plugin settings: That will be applied via GFG->forced_plugin_settings. {"antivirus_clamav/pathtoclam": "/usr/clamscan"}
+     *
+     * @param string $config JSON-encoded configuration pairs to be applied to current configuration.
+     * @return void
+     */
+    public static function apply_config_settings(string $config) {
+        global $CFG;
+
+        // We always want this set in order to allow behat to see custom components configurations.
+        $CFG->behat_extraallowedsettings = array('forced_plugin_settings');
+
+        $settings = @json_decode($config, true) ?: []; // Decode as associative array.
+        foreach ($settings as $setting => $value) {
+            if (strpos($setting, '/') === false) {
+                // This is a global config setting.
+                $CFG->{$setting} = $value;
+            } else {
+                // This is a component config setting.
+                list($plugin, $key) = explode('/', $setting);
+                if (!isset($CFG->forced_plugin_settings[$plugin])) {
+                    $CFG->forced_plugin_settings[$plugin] = [];
+                }
+                $CFG->forced_plugin_settings[$plugin][$key] = $value;
+            }
         }
     }
 

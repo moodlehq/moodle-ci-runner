@@ -43,6 +43,8 @@ function phpunit_to_env_file() {
         SOLRTESTNAME
 
         MLBACKENDTESTNAME
+
+        MOODLE_CONFIG
     )
     echo "${env[@]}"
 }
@@ -59,6 +61,7 @@ function phpunit_to_summary() {
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
+    echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
 }
 
 # This job type defines the following env variables
@@ -89,6 +92,7 @@ function phpunit_modules() {
         docker-solr
         docker-mlbackend
         docker-php
+        moodle-config
         moodle-core-copy
         docker-healthy
         docker-summary
