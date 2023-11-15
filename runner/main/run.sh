@@ -49,6 +49,12 @@ fi
 # Base directory where the code is located.
 CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 
+# Fail if CODEDIR does not exist.
+if [[ ! -d ${CODEDIR} ]]; then
+    exit_error "ERROR: CODEDIR directory does not exist: ${CODEDIR}"
+fi
+
+
 # BUILD_ID, if not defined use the current PID.
 BUILD_ID="${BUILD_ID:-$$}"
 
