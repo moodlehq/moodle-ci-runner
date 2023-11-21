@@ -38,8 +38,8 @@ function docker-php_check() {
 
 # Docker module init.
 function docker-php_config() {
-    # Apply some defaults.
-    PHP_VERSION="${PHP_VERSION:-8.0}"
+    # Apply some defaults (always set to the minimum version supported in the main branch).
+    PHP_VERSION="${PHP_VERSION:-8.1}"
     DOCKER_PHP="${DOCKER_PHP:-moodlehq/moodle-php-apache:${PHP_VERSION}}"
     WEBSERVER=webserver"${UUID}"
 }

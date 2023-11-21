@@ -393,6 +393,10 @@ function run_modules_teardown() {
     if [[ -z ${jobtype} ]]; then
         exit_error "No job type specified."
     fi
+    # And only if the jobtype (that may be incorrect) has modules, skip if not present.
+    if ! type "${jobtype}_modules" > /dev/null 2>&1; then
+        return 0 # This is executed by the trap, so we need to specify the exit code to allow it to continue.
+    fi
     # The teardown module functions are executed in reverse order.
     modules=$("${jobtype}_modules")
     reversed_modules="$(string_reverse_by_words "${modules}")"

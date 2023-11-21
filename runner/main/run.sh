@@ -36,7 +36,7 @@ verify_utilities awk grep head mktemp pwd sed sha1sum sort tac tr true uniq uuid
 
 # Check we are using bash 4.3 or higher.
 if [[ ${BASH_VERSINFO[0]} -lt 4 ]] || [[ ${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 3 ]]; then
-    exit_error "ERROR: Bash 4.3 or higher is required."
+    exit_error "Bash 4.3 or higher is required."
 fi
 
 # Base directory to be used as workspace for the execution.
@@ -51,7 +51,7 @@ CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 
 # Fail if CODEDIR does not exist.
 if [[ ! -d ${CODEDIR} ]]; then
-    exit_error "ERROR: CODEDIR directory does not exist: ${CODEDIR}"
+    exit_error "CODEDIR directory does not exist: ${CODEDIR}"
 fi
 
 
@@ -79,7 +79,7 @@ fi
 
 # Ensure that the job type is valid.
 if [[ ! -f ${BASEDIR}"/jobtypes/"${JOBTYPE}/${JOBTYPE}.sh ]]; then
-  exit_error "ERROR: Invalid jobtype: ${JOBTYPE}"
+  exit_error "Invalid jobtype: ${JOBTYPE}"
 fi
 
 # Caches directories, used for composer, to accelerate git operations...
