@@ -1,0 +1,130 @@
+name: Moodle CI Runner CI
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  collect:
+    name: Collect tests
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{steps.collect-tests.outputs.matrix }}
+    steps:
+      - name: Checking out moodl-ci-runner
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: moodle-ci-runner
+
+      - name: Collecting Bats tests
+        id: collect-tests
+        run: |
+          echo "matrix=$(cd moodle-ci-runner/test && find . -name '*.bats' -not -path '*/helpers/*' -printf '%P\n'| \
+            jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
+
+  test:
+    name: Test
+    needs: collect
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJson(needs.collect.outputs.matrix) }}
+    steps:
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install uuid
+
+      - name: Checking out moodle-ci-runner
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: moodle-ci-runner
+
+      - name: Checking out Moodle
+        uses: actions/checkout@v4
+        with:
+          repository: moodle/moodle
+          fetch-depth: 0 # We need a complete clone, because we use various commits / tags.
+          path: moodle
+
+      - name: Setup Bats
+        uses: brokenpip3/setup-bats-libs@1.5.2
+        with:
+          bats-version: 1.10.0
+          # Note we don't need any of the libraries because the ones we need (support and assert)
+          # are bundled within test/helpers as git submodules and have been checked out above.
+          support-path: false
+          assert-path: false
+          detik-install: false
+          file-install: false
+
+      - name: Run tests
+        env:
+          MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
+        run: |
+          bats --timing moodle-ci-runner/test/${{ matrix.test }}
+
+  coverage:
+    if: github.repository == 'moodlehq/moodle-ci-runner'
+    name: Code coverage
+    needs: test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install required packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install uuid kcov
+
+      - name: Checking out moodle-ci-runner
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: moodle-ci-runner
+
+      - name: Checking out Moodle
+        uses: actions/checkout@v4
+        with:
+          repository: moodle/moodle
+          fetch-depth: 0 # We need a complete clone, because we use various commits / tags.
+          path: moodle
+
+      - name: Setup Bats
+        uses: brokenpip3/setup-bats-libs@1.5.2
+        with:
+          bats-version: 1.10.0
+          # Note we don't need any of the libraries because the ones we need (support and assert)
+          # are bundled within test/helpers as git submodules and have been checked out above.
+          support-path: false
+          assert-path: false
+          detik-install: false
+          file-install: false
+
+      - name: Run tests (capturing code coverage)
+        env:
+          MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
+        run: |
+          kcov \
+            --clean \
+            --include-path ${{ github.workspace }}/moodle-ci-runner/runner/main \
+            --bash-parse-files-in-dir ${{ github.workspace }}/moodle-ci-runner/runner/main \
+            ${{ github.workspace }}/coverage \
+            bats ${{ github.workspace }}/moodle-ci-runner/test/
+
+      - name: Archive code coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage-report
+          path: ${{ github.workspace }}/coverage/*
+
+      - name: Display code coverage
+        run: |
+          value=$(jq -r '.percent_covered' < ${{ github.workspace }}/coverage/bats/coverage.json)
+          echo "Code coverage: $value%" | tee "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload code coverage (codecov)
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/bats/cobertura.xml
+          verbose: true
+
