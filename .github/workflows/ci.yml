@@ -13,12 +13,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          path: moodle-ci-runner
 
       - name: Collecting Bats tests
         id: collect-tests
         run: |
-          echo "matrix=$(cd moodle-ci-runner/test && find . -name '*.bats' -not -path '*/helpers/*' -printf '%P\n'| \
+          echo "matrix=$(cd test && find . -name '*.bats' -not -path '*/helpers/*' -printf '%P\n'| \
             jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   test:
@@ -39,7 +38,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          path: moodle-ci-runner
 
       - name: Checking out Moodle
         uses: actions/checkout@v4
@@ -63,7 +61,7 @@ jobs:
         env:
           MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
         run: |
-          bats --timing moodle-ci-runner/test/${{ matrix.test }}
+          bats --timing test/${{ matrix.test }}
 
   coverage:
     if: github.repository == 'moodlehq/moodle-ci-runner'
@@ -80,7 +78,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          path: moodle-ci-runner
 
       - name: Checking out Moodle
         uses: actions/checkout@v4
@@ -106,10 +103,10 @@ jobs:
         run: |
           kcov \
             --clean \
-            --include-path ${{ github.workspace }}/moodle-ci-runner/runner/main \
-            --bash-parse-files-in-dir ${{ github.workspace }}/moodle-ci-runner/runner/main \
+            --include-path ${{ github.workspace }}/runner/main \
+            --bash-parse-files-in-dir ${{ github.workspace }}/runner/main \
             ${{ github.workspace }}/coverage \
-            bats ${{ github.workspace }}/moodle-ci-runner/test/
+            bats ${{ github.workspace }}/test/
 
       - name: Archive code coverage
         uses: actions/upload-artifact@v3
