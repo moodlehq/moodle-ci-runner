@@ -63,8 +63,6 @@ After setting all the env. variables just run:
 
 ## Internal details
 
-_**⚠️ TODO:** Change all the occurrences of `split/runner` to `main/runner` in this document once this is merged upstream (to the main branch)._
-
 ### A little bit of history and justification
 Over the last months of 2023 this tool had a big refactor, from the original, unique, [monolithic script, see #8ea15ae](https://github.com/moodlehq/moodle-ci-runner/tree/8ea15ae6b26e12c8b0ca4bac80da2df7b1c647a2) that was doing everything perfectly ok, to a more modular design, enabling us to:
 
@@ -89,11 +87,11 @@ Note that it's quite interesting understanding the functions explained below, be
 To achieve all the above, a job MUST define the following functions (always using the job name as prefix for them):
 
 - **_env**: declare all the environmental variables that the job is in charge of configuring. Exclusively their very own ones, those configured by modules are made available without declaring them. Empty is allowed.<br>
-See, for example, the `phpunit_env()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/jobtypes/phpunit/phpunit.sh). The job is going to manage the test repetitions (`RUNCOUNT`), the `--filter` option (`PHPUNIT_FILTER`) and the `--testsuite` option (`PHPUNIT_TESTSUITE`).<br>
+See, for example, the `phpunit_env()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/jobtypes/phpunit/phpunit.sh). The job is going to manage the test repetitions (`RUNCOUNT`), the `--filter` option (`PHPUNIT_FILTER`) and the `--testsuite` option (`PHPUNIT_TESTSUITE`).<br>
 Of course, the job execution is going to use many other env. variables (say, for example, the database to run the tests, or the repository to be tested...) but as you can see, those aren't declared here. Some module will get that responsibility.<br>
 Special note about `EXITCODE`. All the job types must declare that variable. It's the one used by the **runner** de determine the outcome of a job execution.
 - **_modules**: similarly to the previous function, this function is really important because it defines the modules that a given job type uses. And, more important yet, it defines the order in which they will be used.<br>
-See, for example, the `phpunit_modules()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/jobtypes/phpunit/phpunit.sh). Most of the modules there will sound to you as typical in PHPUnit execution (we need env variables, docker and git services, a running database, various mock servers...).<br>
+See, for example, the `phpunit_modules()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/jobtypes/phpunit/phpunit.sh). Most of the modules there will sound to you as typical in PHPUnit execution (we need env variables, docker and git services, a running database, various mock servers...).<br>
 And, about the ordering, it's also obvious, dependencies must be observed or the job won't run. For example, we cannot instantiate the `docker-database+` container before the `docker` module has done its job, or cannot make a `docker-summary` before all the `docker-xxxx` containers have been launched.<br>
 Don't worry much about the modules and dependencies for now, we'll learn more about them later.
 - **_check**: this function is used to verify that all the dependencies of a job are satisfied. Usually it uses one of more of these utility functions:
@@ -103,9 +101,9 @@ Don't worry much about the modules and dependencies for now, we'll learn more ab
   - And then, how not, any custom check that you want to require. Imagine checking that a given site is up and running, or that today is Sunday, or any other thing that is a requirement for the job to be processed.<br>
   Any failing check will immediately stop the job execution process.
 - **_run**: this is the main execution point of a job. Must implement all the code needed to get it executed. As simple as that, this is the job ultimate reason to exist (everything before and after it are just configuration and setup steps).<br>
-See, for example, the `phpunit_run()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/jobtypes/phpunit/phpunit.sh). Basically, it prints some information, defines the exact (PHPUnit) command to be executed and launches it in the docker container (that some module has been in charge of create). Always setting up that `EXITCODE` that we already mentioned above.
+See, for example, the `phpunit_run()` [implementation](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/jobtypes/phpunit/phpunit.sh). Basically, it prints some information, defines the exact (PHPUnit) command to be executed and launches it in the docker container (that some module has been in charge of create). Always setting up that `EXITCODE` that we already mentioned above.
 
-Apart from the the mandatory functions listed above, a job also MAY define other functions to allow a safer and more controlled execution (always using the job name as prefix for them). For a job implementing all them, take a look to the [behat job](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/jobtypes/behat/behat.sh):
+Apart from the the mandatory functions listed above, a job also MAY define other functions to allow a safer and more controlled execution (always using the job name as prefix for them). For a job implementing all them, take a look to the [behat job](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/jobtypes/behat/behat.sh):
 
 - **_config**: while not mandatory, if a job has environmental variables (and practically all them have) then this function will become required. It is used to configure all those env variables, their defaults, applying any logic to them.<br>
 It is important to note that this function MUST NOT have any instantiation code, that's `_setup` mission.
@@ -116,19 +114,19 @@ It is important to note that this function MUST NOT have any instantiation code,
 
 #### Modules
 
-Modules are small (smaller than jobs), reusable units of work that can become part of a job. They can be as simple as defining a few environmental variables, see, for example, [the browser module](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/modules/browser/browser.sh) to really complex ones, like providing database support for any job (see the [docker-database](https://github.com/moodlehq/moodle-ci-runner/tree/split/runner/main/modules/docker-database) module).
+Modules are small (smaller than jobs), reusable units of work that can become part of a job. They can be as simple as defining a few environmental variables, see, for example, [the browser module](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/modules/browser/browser.sh) to really complex ones, like providing database support for any job (see the [docker-database](https://github.com/moodlehq/moodle-ci-runner/tree/main/runner/main/modules/docker-database) module).
 No matter of their complexity, all them share the very same API, where everything is organised using a few functions. Note that the modules API has been already explained in the Jobs section above, and everything applies exactly the same to them, just replacing job by module.
 
 To say it with other words, we can, basically, think about modules like **mini-jobs**, but without the `_modules` function (it cannot request other modules to be used) and without the `_run` function (main execution, only proper jobs can). Other than that, they are, basically, like jobs.
 
-It's recommended to take a look to [various of them](https://github.com/moodlehq/moodle-ci-runner/tree/split/runner/main/modules) to go understanding how they work
+It's recommended to take a look to [various of them](https://github.com/moodlehq/moodle-ci-runner/tree/main/runner/main/modules) to go understanding how they work
 
 To provide their functionality a module MUST implement the following functions (always using the module name as prefix for them):
 
 - **_env:**: declare all the environmental variables that the module is in charge of configuring. Exclusively their very own ones. Empty is allowed.
 - **_check**: this function is used to verify that all the dependencies of a module are satisfied. Look for the documentation above, for jobs, to know more about which aspects can be checked.
 
-Apart from the the mandatory functions listed above, a module also MAY define other functions to allow a safer and more controlled execution (always using the module name as prefix for them). For a module implementing all them, take a look to the, simple but complete, [env module](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/modules/env/env.sh):
+Apart from the the mandatory functions listed above, a module also MAY define other functions to allow a safer and more controlled execution (always using the module name as prefix for them). For a module implementing all them, take a look to the, simple but complete, [env module](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/modules/env/env.sh):
 
 - **_config**: while not mandatory, if a module has environmental variables (and many have) then this function will become required. It is used to configure all those env variables, their defaults, applying any logic to them.<br>
 It is important to note that this function MUST NOT have any instantiation code, that's `_setup` mission.
@@ -156,7 +154,7 @@ All the stuff above are executed within some well-defined stages (that surely yo
   - run job teardown (the job goes before the modules).
   - run the modules teardown (they are executed in the inverse order they are defined by the job).
 
-(the exact order of execution can be easily inspected in the [main run()](https://github.com/moodlehq/moodle-ci-runner/blob/split/runner/main/lib.sh) function of the runner, that is the one orchestrating everything)
+(the exact order of execution can be easily inspected in the [main run()](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/lib.sh) function of the runner, that is the one orchestrating everything)
 
 #### Runner 
 
