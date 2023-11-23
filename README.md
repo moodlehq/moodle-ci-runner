@@ -1,3 +1,5 @@
+[![Moodle CI Runner CI](https://github.com/moodlehq/moodle-ci-runner/actions/workflows/ci.yml/badge.svg)](https://github.com/moodlehq/moodle-ci-runner/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/moodlehq/moodle-ci-runner/graph/badge.svg?token=l6MRUPDhw3)](https://codecov.io/gh/moodlehq/moodle-ci-runner)
+
 # Moodle Test Runner
 
 This test runner was designed to be run within a CI environment to give a consistent interface for running both Behat, and PHPUnit tests for Moodle.
