@@ -29,8 +29,8 @@ mysql -u root -pmoodle moodle < /tmp/moodle.sql
 mysql -u root -pmoodle moodle << EOSQL
 CHANGE MASTER TO
   MASTER_HOST='${DBHOST}',
-  MASTER_USER='replica',
-  MASTER_PASSWORD='replica',
+  MASTER_USER='replication',
+  MASTER_PASSWORD='replication',
   MASTER_LOG_FILE='$replfile',
   MASTER_LOG_POS=$position;
 START SLAVE;
