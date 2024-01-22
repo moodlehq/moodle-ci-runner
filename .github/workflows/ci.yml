@@ -122,6 +122,7 @@ jobs:
       - name: Upload code coverage (codecov)
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/bats/cobertura.xml
           verbose: true
 
