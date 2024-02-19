@@ -23,6 +23,8 @@ function browser_env() {
         BROWSER
         BROWSER_DEBUG
         BROWSER_HEADLESS
+        BROWSER_CHROME_ARGS
+        BROWSER_FIREFOX_ARGS
     )
     echo "${env[@]}"
 }
@@ -43,4 +45,6 @@ function browser_config() {
     BROWSER="${BROWSER:-chrome}"
     BROWSER_DEBUG="${BROWSER_DEBUG:-}"
     BROWSER_HEADLESS="${BROWSER_HEADLESS:-}"
+    BROWSER_CHROME_ARGS="${BROWSER_CHROME_ARGS:-}"
+    BROWSER_FIREFOX_ARGS="${BROWSER_FIREFOX_ARGS:-}"
 }
