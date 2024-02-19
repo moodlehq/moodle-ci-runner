@@ -57,6 +57,13 @@ Apart from the "official" (production-ready) env vars above, worth mentioning th
 export TRY_SELENIARM=1
 ```
 
+Additionally, the `SELVERSION` env variable can be used to set the selenium version, but this is currently ignored when using Chrome. If you want to force it, also set the `USE_SELVERSION` variable:
+
+```
+export USE_SELVERSION=1
+export SELVERSION=120.0
+```
+
 Other options are also available, but they are not recommended.
 
 After setting all the env. variables just run:
