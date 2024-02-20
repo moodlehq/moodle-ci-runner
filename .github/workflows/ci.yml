@@ -120,7 +120,7 @@ jobs:
           echo "Code coverage: $value%" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Upload code coverage (codecov)
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/bats/cobertura.xml
