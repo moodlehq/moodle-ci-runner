@@ -341,6 +341,21 @@ class moodlehq_ci_runner {
             );
         }
 
+        if (getenv('BROWSER_CHROME_ARGS')) {
+            $profile = array_merge_recursive(
+                $profile,
+                [
+                    'capabilities' => [
+                        'extra_capabilities' => [
+                            'goog:chromeOptions' => [
+                                'args' => explode(',', getenv('BROWSER_CHROME_ARGS')),
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
         return $profile;
     }
 
@@ -400,6 +415,21 @@ class moodlehq_ci_runner {
                                 'args' => [
                                     '-headless',
                                 ],
+                            ],
+                        ],
+                    ],
+                ]
+            );
+        }
+
+        if (getenv('BROWSER_FIREFOX_ARGS')) {
+            $profile = array_merge_recursive(
+                $profile,
+                [
+                    'capabilities' => [
+                        'extra_capabilities' => [
+                            'moz:firefoxOptions' => [
+                                'args' => explode(',', getenv('BROWSER_FIREFOX_ARGS')),
                             ],
                         ],
                     ],

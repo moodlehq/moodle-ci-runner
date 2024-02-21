@@ -25,34 +25,43 @@ In order to run tests on your own machines, you need the following:
 
 You also need to set several environment variables, depending on your testing requirements:
 
-| Variable            | Options                                                 | Default             | Notes |
-| --------            | -------                                                 | -------             | ----- |
-| `WORKSPACE`         | /path/to/your/workspace                                 | random              | A temporal workspace will be created using `mktemp`. |
-| `CODEDIR`           | /path/to/your/code                                      | WORKSPACE/moodle.   | The location of the Moodle checkout. |
-| `BUILD_ID`          | STRING (e.g. 26736)                                     | process id          | Used to create a folder and store the output from your run. Recommend using an integer. |
-| `DBTYPE`            | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`             | The database to run. Note that `mssql` is only for PHP 5.6. |
-| `PHP_VERSION`       | The PHP version                                         | `8.0`               | The PHP version to run. |
-| `JOBTYPE`           | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which job will be run. |
-| `PHPUNIT_FILTER`    | A valid phpunit filter                                  | Optional            | A valid argument to the phpunit `--filter`. |
-| `PHPUNIT_TESTSUITE` | A valid phpunit testsuite                               | Optional            | A valid argument to the phpunit `--testsuite`. |
-| `BEHAT_TAGS`        | A behat tags arg                                        | Optional            | A valid argument to the behat `--tags`. |
-| `BEHAT_NAME`        | A behat name arg.                                       | Optional            | A valid argument to the behat `--name`. |
-| `BROWSER`           | `firefox`, `chrome`, `browserkit`, `goutte` (deprecated)| `chrome`            | The browser to use for behat tests. |
-| `BROWSER_DEBUG`     | 1                                                       | Empty               | Increase verbosity for browsers which support this |
-| `BROWSER_HEADLESS`  | 1                                                       | Empty               | Run the browser in headless mode |
-| `BEHAT_PARALLEL`    | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
-| `BEHAT_RERUNS`      | INTEGER                                                 | 1                   | For behat, the number reruns to perform for failed runs. 0 disables reruns. |
-| `BEHAT_SUITE`       | A behat suite, usually pointing to a Moodle theme       | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), and `classic` for 3.7 upwards. |
-| `RUNCOUNT`          | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
-|`MOODLE_CONFIG`      | JSON STRING                                             | Empty               | Custom Modle config to use during the execution. For example, if you want to set `$CFG->noreplyaddress = 'campus@example.com';`, the value of this variable should be `{"noreplyaddress":"campus@example.com"}`. |
-| `MOBILE_VERSION`    | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
-| `PLUGINSTOINSTALL`  | gitrepoplugin1\|gitfolderplugin1\|gitbranchplugin1;gitrepoplugin2\|gitfolderplugin2 | Empty | External plugins to install.<br/>The following information is needed for each plugin: gitrepo (mandatory), folder (mandatory) and branch (optional).<br/>The plugin fields should be separated by "\|" and each plugin should be separated using ";".<br/>Example: "https://github.com/moodlehq/moodle-local_mobile.git\|local/mobile\|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git\|blocks/configurable_reports" |
-| `PLUGINSDIR`        | /path/to/your/plugins                                   | WORKSPACE/plugins   | The location of the plugins checkout. |
+| Variable               | Options                                                 | Default             | Notes |
+| --------               | -------                                                 | -------             | ----- |
+| `WORKSPACE`            | /path/to/your/workspace                                 | random              | A temporal workspace will be created using `mktemp`. |
+| `CODEDIR`              | /path/to/your/code                                      | WORKSPACE/moodle.   | The location of the Moodle checkout. |
+| `BUILD_ID`             | STRING (e.g. 26736)                                     | process id          | Used to create a folder and store the output from your run. Recommend using an integer. |
+| `DBTYPE`               | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`             | The database to run. Note that `mssql` is only for PHP 5.6. |
+| `PHP_VERSION`          | The PHP version                                         | `8.0`               | The PHP version to run. |
+| `JOBTYPE`              | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which job will be run. |
+| `PHPUNIT_FILTER`       | A valid phpunit filter                                  | Optional            | A valid argument to the phpunit `--filter`. |
+| `PHPUNIT_TESTSUITE`    | A valid phpunit testsuite                               | Optional            | A valid argument to the phpunit `--testsuite`. |
+| `BEHAT_TAGS`           | A behat tags arg                                        | Optional            | A valid argument to the behat `--tags`. |
+| `BEHAT_NAME`           | A behat name arg.                                       | Optional            | A valid argument to the behat `--name`. |
+| `BROWSER`              | `firefox`, `chrome`, `browserkit`, `goutte` (deprecated)| `chrome`            | The browser to use for behat tests. |
+| `BROWSER_DEBUG`        | 1                                                       | Empty               | Increase verbosity for browsers which support this |
+| `BROWSER_HEADLESS`     | 1                                                       | Empty               | Run the browser in headless mode |
+| `BROWSER_CHROME_ARGS`  | Comma-separated args.                                | Empty               | Use additional chrome args |
+| `BROWSER_FIREFOX_ARGS` | Comma-separated args.                                | Empty               | Use additional firefox args |
+| `BEHAT_PARALLEL`       | INTEGER                                                 | 3                   | For behat, the number of parallel runs to perform. |
+| `BEHAT_RERUNS`         | INTEGER                                                 | 1                   | For behat, the number reruns to perform for failed runs. 0 disables reruns. |
+| `BEHAT_SUITE`          | A behat suite, usually pointing to a Moodle theme       | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), and `classic` for 3.7 upwards. |
+| `RUNCOUNT`             | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
+|`MOODLE_CONFIG`         | JSON STRING                                             | Empty               | Custom Modle config to use during the execution. For example, if you want to set `$CFG->noreplyaddress = 'campus@example.com';`, the value of this variable should be `{"noreplyaddress":"campus@example.com"}`. |
+| `MOBILE_VERSION`       | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |
+| `PLUGINSTOINSTALL`     | gitrepoplugin1\|gitfolderplugin1\|gitbranchplugin1;gitrepoplugin2\|gitfolderplugin2 | Empty | External plugins to install.<br/>The following information is needed for each plugin: gitrepo (mandatory), folder (mandatory) and branch (optional).<br/>The plugin fields should be separated by "\|" and each plugin should be separated using ";".<br/>Example: "https://github.com/moodlehq/moodle-local_mobile.git\|local/mobile\|MOODLE_37_STABLE;git@github.com:jleyva/moodle-block_configurablereports.git\|blocks/configurable_reports" |
+| `PLUGINSDIR`           | /path/to/your/plugins                                   | WORKSPACE/plugins   | The location of the plugins checkout. |
 
 Apart from the "official" (production-ready) env vars above, worth mentioning that **experimental support** for [Seleniarm](https://github.com/seleniumhq-community/docker-seleniarm) (multi-arch Selenium 4 images) has been added so, if you've an Arm64 / Aarch64 host, they can be enabled by setting this:
 
 ```
 export TRY_SELENIARM=1
+```
+
+Additionally, the `SELVERSION` env variable can be used to set the selenium version, but this is currently ignored when using Chrome. If you want to force it, also set the `USE_SELVERSION` variable:
+
+```
+export USE_SELVERSION=1
+export SELVERSION=120.0
 ```
 
 Other options are also available, but they are not recommended.
@@ -80,7 +89,7 @@ TL:DR; in one paragraph, this tool is able to execute different jobs (phpunit, b
 
 Let's describe those concepts with a little bit more of detail and understand all the APIs that are needed towards using them.
 
-#### Jobs 
+#### Jobs
 
 Jobs (job types) are the central piece of `moodle-ci-runner`. Everything that is executed by the runner is a job (phpunit, behat, ...). A job is in charge of defining and configuring its own env variables, also to declare which modules and in which order will be used. And then, of course, the code needed to setup (init), run and teardown (finish) the execution.
 
@@ -109,7 +118,7 @@ Apart from the the mandatory functions listed above, a job also MAY define other
 
 - **_config**: while not mandatory, if a job has environmental variables (and practically all them have) then this function will become required. It is used to configure all those env variables, their defaults, applying any logic to them.<br>
 It is important to note that this function MUST NOT have any instantiation code, that's `_setup` mission.
-- **_setup**: executed before the main `run` function is launched, this function is in charge of instantiating any artefact or system required. It can be anything, from creating or creating a file, to install the Moodle testing site. It's important to note that this function MUST NOT have any configuration logic, that's `_conf` mission. 
+- **_setup**: executed before the main `run` function is launched, this function is in charge of instantiating any artefact or system required. It can be anything, from creating or creating a file, to install the Moodle testing site. It's important to note that this function MUST NOT have any configuration logic, that's `_conf` mission.
 - **_teardown**: to complement the `_setup`, it's possible to, also, implement this function, that will be executed once the main `_run` function has ended. It aims to cleanup temp stuff that is not needed any more, or move things to reusable caches...
 - **_to\_env\_file**: the runner relies on a env file to pass all the information to the containers needing it. With this function we will define all the variables that must be added to that file (note that the `env` module is the one in charge of managing that env file.
 - **_to\_summary**: similarly to the previous, but more user-oriented, with this function we will define all the information (env variables mainly) to be sent to output, in a readable format (note that the `summary` module is the one in charge of managing that output).
@@ -138,7 +147,7 @@ It is important to note that this function MUST NOT have any instantiation code,
 
 #### Stages
 
-All the stuff above are executed within some well-defined stages (that surely you've already imagined from the name of the functions). 
+All the stuff above are executed within some well-defined stages (that surely you've already imagined from the name of the functions).
 
 - **env and check**: where all the environmental variables are declared and the checks executed. The exact order of affairs is:
   - declare job env variables (some modules may need them).
@@ -158,7 +167,7 @@ All the stuff above are executed within some well-defined stages (that surely yo
 
 (the exact order of execution can be easily inspected in the [main run()](https://github.com/moodlehq/moodle-ci-runner/blob/main/runner/main/lib.sh) function of the runner, that is the one orchestrating everything)
 
-#### Runner 
+#### Runner
 
 Apart from the explanations above that cover both the jobs and the modules there are a couple of scripts worth commenting:
 

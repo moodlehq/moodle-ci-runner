@@ -33,6 +33,7 @@ function docker-selenium_env() {
         SELENIUMURL_10
 
         TRY_SELENIARM # Only for testing purposes, decide if we want to try arm64/aarch64 images.
+        USE_SELVERSION
     )
     echo "${env[@]}"
 }
@@ -54,6 +55,9 @@ function docker-selenium_config() {
     # Only for testing purposes, decide if we want to try arm64/aarch64 images.
     # TODO: After testing, consider if we can make this the default for arm64, removing this conf.
     TRY_SELENIARM=${TRY_SELENIARM:-}
+
+    # TODO: Remove once SELVERSION is used by default in Chrome.
+    USE_SELVERSION=${USE_SELVERSION:-}
 
     # If, for any reason, BEHAT_PARALLEL is not a number or it's 0, we set it to 1.
     if [[ ! ${BEHAT_PARALLEL} =~ ^[0-9]+$ ]] || [[ ${BEHAT_PARALLEL} -eq 0 ]]; then
@@ -94,6 +98,10 @@ function docker-selenium_setup() {
     # Temporarily switching to custom image to include our bugfix for zero size failures.
     # TODO: Remove this once we can start using upstream images (selenium 4 or later).
     chromeimage="moodlehq/selenium-standalone-chrome:96.0-moodlehq"
+
+    if [[ -n ${USE_SELVERSION} ]]; then
+        chromeimage="selenium/standalone-chrome:${SELVERSION}"
+    fi
 
     # Only for testing purposes, we are going to introduce basic support for arm64 architecture.
     # Many of the docker images already are multi-arch, but not the selenium ones, that are using

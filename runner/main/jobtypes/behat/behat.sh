@@ -51,6 +51,8 @@ function behat_to_env_file() {
         BROWSER
         BROWSER_DEBUG
         BROWSER_HEADLESS
+        BROWSER_CHROME_ARGS
+        BROWSER_FIREFOX_ARGS
         BEHAT_PARALLEL
 
         BEHAT_TIMING_FILENAME
@@ -72,6 +74,8 @@ function behat_to_summary() {
     echo "== BROWSER: ${BROWSER}"
     echo "== BROWSER_DEBUG: ${BROWSER_DEBUG}"
     echo "== BROWSER_HEADLESS: ${BROWSER_HEADLESS}"
+    echo "== BROWSER_CHROME_ARGS: ${BROWSER_CHROME_ARGS}"
+    echo "== BROWSER_FIREFOX_ARGS: ${BROWSER_FIREFOX_ARGS}"
     echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
     echo "== BEHAT_TAGS: ${BEHAT_TAGS}"
     echo "== BEHAT_NAME: ${BEHAT_NAME}"
