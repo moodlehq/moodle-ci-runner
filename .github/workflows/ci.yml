@@ -47,7 +47,7 @@ jobs:
           path: moodle
 
       - name: Setup Bats
-        uses: brokenpip3/setup-bats-libs@1.5.2
+        uses: bats-core/bats-action@1.5.5
         with:
           bats-version: 1.10.0
           # Note we don't need any of the libraries because the ones we need (support and assert)
@@ -87,7 +87,7 @@ jobs:
           path: moodle
 
       - name: Setup Bats
-        uses: brokenpip3/setup-bats-libs@1.5.2
+        uses: bats-core/bats-action@1.5.5
         with:
           bats-version: 1.10.0
           # Note we don't need any of the libraries because the ones we need (support and assert)
