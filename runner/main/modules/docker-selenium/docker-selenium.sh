@@ -99,7 +99,9 @@ function docker-selenium_setup() {
     # TODO: Remove this once we can start using upstream images (selenium 4 or later).
     chromeimage="moodlehq/selenium-standalone-chrome:96.0-moodlehq"
 
-    if [[ -n ${USE_SELVERSION} ]] && { [[ ${USE_SELVERSION,,} == "true" ]] || [[ ${USE_SELVERSION} -gt 0 ]]; }; then
+    if [[ -n ${USE_SELVERSION} ]] && {
+        [[ ${USE_SELVERSION,,} == "true" ]] || {
+             [[ ${USE_SELVERSION} =~ ^[0-9]+$ ]] && [[ ${USE_SELVERSION} -gt 0 ]]; }; }; then
         chromeimage="selenium/standalone-chrome:${SELVERSION}"
     fi
 
