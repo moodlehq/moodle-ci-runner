@@ -54,7 +54,6 @@ if [[ ! -d ${CODEDIR} ]]; then
     exit_error "CODEDIR directory does not exist: ${CODEDIR}"
 fi
 
-
 # BUILD_ID, if not defined use the current PID.
 BUILD_ID="${BUILD_ID:-$$}"
 
@@ -81,6 +80,12 @@ fi
 if [[ ! -f ${BASEDIR}"/jobtypes/"${JOBTYPE}/${JOBTYPE}.sh ]]; then
   exit_error "Invalid jobtype: ${JOBTYPE}"
 fi
+
+# Some jobs may need to have a working, complete git repository,
+# standalone (without references) and with access to all branches
+# and commits. This variable can be used to define such behaviour
+# from the jobs (or the caller).
+FULLGIT="${FULLGIT:-}"
 
 # Caches directories, used for composer, to accelerate git operations...
 CACHEDIR="${CACHEDIR:-${HOME}/caches}"
