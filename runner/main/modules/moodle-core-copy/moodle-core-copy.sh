@@ -31,7 +31,7 @@ function moodle-core-copy_check() {
     verify_modules docker plugins docker-php
 
     # These env variables must be set for the module to work.
-    verify_env BASEDIR CODEDIR PLUGINSDIR WEBSERVER
+    verify_env BASEDIR CODEDIR PLUGINSDIR WEBSERVER FULLGIT
 }
 
 # Moodle core copy module config.
@@ -46,9 +46,47 @@ function moodle-core-copy_setup() {
     echo ">>> startsection Copying source files <<<"
     echo "============================================================================"
 
-    # Copy the code to the web server.
+    # TODO: Maybe make this a separate module, so it can be reused in other places.
+    # If we are going to need a working git clone, with access to the full history and
+    # without any dependency withing the container (git reference repo), this is the
+    # time to achieve it (before copying the code to the container).
+    # If it's a git repository, that has a reference repository, and we need the full
+    # history within the container, let's remove the dependency.
+    if [[ -n "$FULLGIT" ]] && [[ -d "${CODEDIR}/.git" ]] && [[ -r "${CODEDIR}/.git/objects/info/alternates" ]]; then
+        echo "== Removing the repository dependencies (reference repo)"
+        git -C "${CODEDIR}" repack -a && rm -f "${CODEDIR}/.git/objects/info/alternates"
+    fi
+
+    # Copy the code to the web server (and change owner)
     echo "== Copying code in place."
     docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
+    docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html
+
+    # TODO: Maybe make this a separate module, so it can be reused in other places.
+    # Once copied, if we are going to need access to the full history, we'll need to
+    # update refs (in case the repo was cloned with --branch or --single-branch) and
+    # un-shallow if needed to. Only if it's a git repository.
+    if [[ -n "$FULLGIT" ]] && [[ -d "${CODEDIR}/.git" ]]; then
+        # Before anything else, we only support https public repos, not ssh+git ones, coz we would need
+        # to play with ssh keys / known hosts or disable strict host checking, and that's not good.
+        if (! docker exec -u www-data "${WEBSERVER}" git config --get remote.origin.url | grep -q '^https'); then
+            exit_error "Only https public repositories are supported for this job, not ssh+git ones."
+        fi
+
+        # If the repository was cloned shallow (--depth), un-shallow it.
+        if (docker exec -u www-data "${WEBSERVER}" git rev-parse --is-shallow-repository); then
+            echo "== Unshallowing the repository."
+            docker exec -u www-data "${WEBSERVER}" git fetch --unshallow
+        fi
+        # Detect if the repo was cloned single-branch, update refs to get the full history.
+        remotefetchall="+refs/heads/*:refs/remotes/origin/*"
+        remote=$(docker exec -u www-data "${WEBSERVER}" git config --get-all remote.origin.fetch)
+        if [[ "${remote}" != "${remotefetchall}" ]]; then
+            echo "== Updating refs to get the full history."
+            docker exec -u www-data "${WEBSERVER}" git config remote.origin.fetch "${remotefetchall}"
+            docker exec -u www-data "${WEBSERVER}" git fetch origin
+        fi
+    fi
 
     # Copy the config.php in place
     echo "== Copying configuration in place."
