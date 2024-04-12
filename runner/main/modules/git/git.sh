@@ -21,6 +21,8 @@
 function git_env() {
     env=(
         GIT_COMMIT
+        GOOD_COMMIT
+        BAD_COMMIT
     )
     echo "${env[@]}"
 }
