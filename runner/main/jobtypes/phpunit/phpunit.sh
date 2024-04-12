@@ -62,6 +62,10 @@ function phpunit_to_summary() {
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
+    if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
+        echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
+        echo "== BAD_COMMIT: ${BAD_COMMIT}"
+    fi
 }
 
 # This job type defines the following env variables
@@ -106,7 +110,7 @@ function phpunit_check() {
     verify_modules $(phpunit_modules)
 
     # These env variables must be set for the job to work.
-    verify_env UUID ENVIROPATH WEBSERVER
+    verify_env UUID ENVIROPATH WEBSERVER GOOD_COMMIT BAD_COMMIT
 }
 
 # PHPUnit job type init.
@@ -116,23 +120,72 @@ function phpunit_config() {
     PHPUNIT_FILTER="${PHPUNIT_FILTER:-}"
     PHPUNIT_TESTSUITE="${PHPUNIT_TESTSUITE:-}"
     EXITCODE=0
+
+    # If GOOD_COMMIT and BAD_COMMIT are set, it means that we are going to run a bisect
+    # session, so we need to enable FULLGIT (to get access to complete repository clone).
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]]; then
+        FULLGIT="yes"
+        # Also, we don't want to allow repetitions in the bisect session.
+        RUNCOUNT=1
+    fi
 }
 
 # PHPUnit job type setup.
 function phpunit_setup() {
+    # If one of GOOD_COMMIT or BAD_COMMIT are not set, but the other is, error out.
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        exit_error "GOOD_COMMIT is set but BAD_COMMIT is not set."
+    fi
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]]; then
+        exit_error "BAD_COMMIT is set but GOOD_COMMIT is not set."
+    fi
+    # If both GOOD_COMMIT and BAD_COMMIT are set and they are the same, error out.
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]] && [[ "${GOOD_COMMIT}" == "${BAD_COMMIT}" ]]; then
+        exit_error "GOOD_COMMIT and BAD_COMMIT are set, but they are the same."
+    fi
+
+    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
+    # (for bisect sessions we don't have to setup the environment).
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        phpunit_setup_normal
+    fi
+}
+
+# PHPUnit job type setup for normal mode.
+function phpunit_setup_normal() {
     # Init the PHPUnit site.
     echo
     echo ">>> startsection Initialising PHPUnit environment at $(date)<<<"
     echo "============================================================================"
-    docker exec -t -u www-data "${WEBSERVER}" \
-        php admin/tool/phpunit/cli/init.php \
-            --force
+    local initcmd
+    phpunit_initcmd initcmd # By nameref.
+    docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
 
+# Returns (by nameref) an array with the command needed to init the PHPUnit site.
+function phpunit_initcmd() {
+    local -n cmd=$1
+    cmd=(
+        php
+        admin/tool/phpunit/cli/init.php
+    )
+}
+
 # PHPUnit job type run.
 function phpunit_run() {
+    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        phpunit_run_normal
+    else
+        # If GOOD_COMMIT and BAD_COMMIT are set, we are going to run a bisect session.
+        phpunit_run_bisect
+    fi
+}
+
+# PHPUnit job tye run for normal mode.
+function phpunit_run_normal() {
     # Run the job type.
     echo
     if [[ RUNCOUNT -gt 1 ]]; then
@@ -142,8 +195,76 @@ function phpunit_run() {
     fi
     echo "============================================================================"
     # Build the complete command
-    local cmd=(
-        php vendor/bin/phpunit
+    local runcmd
+    phpunit_runcmd runcmd # By nameref.
+
+    echo "Running: ${runcmd[*]}"
+
+    # Run the command RUNCOUNT times.
+    local iter=1
+    while [[ ${iter} -le ${RUNCOUNT} ]]; do
+        echo
+        echo ">>> PHPUnit run ${iter} at $(date) <<<"
+        docker exec -t -u www-data "${WEBSERVER}" "${runcmd[@]}"
+        EXITCODE=$((EXITCODE + $?))
+        iter=$((iter+1))
+    done
+
+    echo "============================================================================"
+    echo ">>> stopsection <<<"
+}
+
+# PHPUnit job tye run for bisect mode.
+function phpunit_run_bisect() {
+    # Run the job type.
+    echo
+    echo ">>> startsection Starting PHPUnit bisect session at $(date) <<<"
+    echo "=== Good commit: ${GOOD_COMMIT}"
+    echo "=== Bad commit: ${BAD_COMMIT}"
+    echo "============================================================================"
+    # Start the bisect session.
+    docker exec -t -u www-data "${WEBSERVER}" \
+        git bisect start "${BAD_COMMIT}" "${GOOD_COMMIT}"
+
+    # Build the int command.
+    local initcmd
+    phpunit_initcmd initcmd # By nameref.
+
+    # Build the run command.
+    local runcmd
+    phpunit_runcmd runcmd # By nameref.
+
+    # Generate the bisect.sh script that we are going to use to run the phpunit bisect session.
+    # (it runs both init and run commands together).
+    docker exec -i -u www-data "${WEBSERVER}" \
+        bash -c "cat > bisect.sh" <<- EOF
+			#!/bin/bash
+			${initcmd[@]} >/dev/null 2>&1; ${runcmd[@]}
+			exitcode=\$?
+			echo "============================================================================"
+			exit \$exitcode
+			EOF
+
+    # Run the bisect session.
+    echo "============================================================================"
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect run bash bisect.sh
+    EXITCODE=$?
+
+    # Finish the bisect session.
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect reset
+
+    echo "============================================================================"
+    echo ">>> stopsection <<<"
+}
+
+# Returns (by nameref) an array with the command needed to run the PHPUnit tests.
+function phpunit_runcmd() {
+    local -n cmd=$1
+    cmd=(
+        php
+        vendor/bin/phpunit
         --disallow-test-output
         --fail-on-risky
         --log-junit /shared/log.junit
@@ -155,19 +276,4 @@ function phpunit_run() {
     if [[ -n "${PHPUNIT_TESTSUITE}" ]]; then
         cmd+=(--testsuite "${PHPUNIT_TESTSUITE}")
     fi
-
-    echo "Running: ${cmd[*]}"
-
-    # Run the command RUNCOUNT times.
-    local iter=1
-    while [[ ${iter} -le ${RUNCOUNT} ]]; do
-        echo
-        echo ">>> PHPUnit run ${iter} at $(date) <<<"
-        docker exec -t "${WEBSERVER}" "${cmd[@]}"
-        EXITCODE=$((EXITCODE + $?))
-        iter=$((iter+1))
-    done
-
-    echo "============================================================================"
-    echo ">>> stopsection <<<"
 }

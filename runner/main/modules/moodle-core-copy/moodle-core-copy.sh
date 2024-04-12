@@ -74,7 +74,7 @@ function moodle-core-copy_setup() {
         fi
 
         # If the repository was cloned shallow (--depth), un-shallow it.
-        if (docker exec -u www-data "${WEBSERVER}" git rev-parse --is-shallow-repository); then
+        if (docker exec -u www-data "${WEBSERVER}" git rev-parse --is-shallow-repository | grep -q 'true'); then
             echo "== Unshallowing the repository."
             docker exec -u www-data "${WEBSERVER}" git fetch --unshallow
         fi
@@ -91,17 +91,20 @@ function moodle-core-copy_setup() {
     # Copy the config.php in place
     echo "== Copying configuration in place."
     docker cp "${BASEDIR}/modules/docker-php/config.template.php" "${WEBSERVER}":/var/www/html/config.php
+    docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html/config.php
 
     # Copy the plugins in place.
     if [[ -n "$PLUGINSTOINSTALL" ]]; then
-      echo "== Copying external plugins in place."
-      docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
+        echo "== Copying external plugins in place."
+        docker cp "${PLUGINSDIR}"/. "${WEBSERVER}":/var/www/html
+        docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html
     fi
 
     # Copy composer-phar if available in caches.
     if [[ -f "${COMPOSERCACHE}/composer.phar" ]]; then
-      echo "== Copying composer.phar in place."
-      docker cp "${COMPOSERCACHE}/composer.phar" "${WEBSERVER}":/var/www/html/composer.phar
+        echo "== Copying composer.phar in place."
+        docker cp "${COMPOSERCACHE}/composer.phar" "${WEBSERVER}":/var/www/html/composer.phar
+        docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html/composer.phar
     fi
 
     echo "============================================================================"

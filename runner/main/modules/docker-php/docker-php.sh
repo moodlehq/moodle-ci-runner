@@ -58,6 +58,9 @@ function docker-php_setup() {
       -v "${SHAREDDIR}":/shared \
       "${DOCKER_PHP}"
 
+    # Ensure that the whole .composer directory is writable to all (www-data needs to write there).
+    docker exec "${WEBSERVER}" chmod -R go+rw /var/www/.composer
+
     echo
     echo "Webserver logs:"
     docker logs "${WEBSERVER}"
