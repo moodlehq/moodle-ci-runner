@@ -132,18 +132,6 @@ function phpunit_config() {
 
 # PHPUnit job type setup.
 function phpunit_setup() {
-    # If one of GOOD_COMMIT or BAD_COMMIT are not set, but the other is, error out.
-    if [[ -n "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
-        exit_error "GOOD_COMMIT is set but BAD_COMMIT is not set."
-    fi
-    if [[ -z "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]]; then
-        exit_error "BAD_COMMIT is set but GOOD_COMMIT is not set."
-    fi
-    # If both GOOD_COMMIT and BAD_COMMIT are set and they are the same, error out.
-    if [[ -n "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]] && [[ "${GOOD_COMMIT}" == "${BAD_COMMIT}" ]]; then
-        exit_error "GOOD_COMMIT and BAD_COMMIT are set, but they are the same."
-    fi
-
     # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
     # (for bisect sessions we don't have to setup the environment).
     if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
@@ -250,6 +238,13 @@ function phpunit_run_bisect() {
     docker exec -u www-data "${WEBSERVER}" \
         git bisect run bash bisect.sh
     EXITCODE=$?
+
+    # Print the bisect logs, for the records.
+    echo
+    echo "============================================================================"
+    echo "Bisect logs and reset:"
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect log
 
     # Finish the bisect session.
     docker exec -u www-data "${WEBSERVER}" \

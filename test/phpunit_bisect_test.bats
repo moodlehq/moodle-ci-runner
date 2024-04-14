@@ -57,6 +57,7 @@ teardown() {
     assert_output --partial "52811000310e7c663fcb75d61b90756f9ded6c7a is the first bad commit"
     assert_output --partial "MDL-67271 core: Add test to find missing SVG icons"
     assert_output --partial "3 files changed, 70 insertions(+), 2 deletions(-)"
+    assert_output --partial "Bisect logs and reset:"
     assert_output --partial "Exporting all docker logs for UUID"
     assert_output --partial "Stopping and removing all docker containers"
     assert_output --partial "== Exit code: 0"

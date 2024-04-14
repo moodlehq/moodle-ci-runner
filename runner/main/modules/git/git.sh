@@ -47,3 +47,19 @@ function git_config() {
         GIT_COMMIT=$(cd "${CODEDIR}" && git rev-parse HEAD)
     fi
 }
+
+# Git module setup.
+function git_setup() {
+    # If one of GOOD_COMMIT or BAD_COMMIT are not set, but the other is, error out.
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        exit_error "GOOD_COMMIT is set but BAD_COMMIT is not set."
+    fi
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]]; then
+        exit_error "BAD_COMMIT is set but GOOD_COMMIT is not set."
+    fi
+
+    # If both GOOD_COMMIT and BAD_COMMIT are set and they are the same, error out.
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]] && [[ "${GOOD_COMMIT}" == "${BAD_COMMIT}" ]]; then
+        exit_error "GOOD_COMMIT and BAD_COMMIT are set, but they are the same."
+    fi
+}
