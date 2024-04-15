@@ -84,6 +84,10 @@ function behat_to_summary() {
     echo "== BEHAT_TIMING_FILENAME: ${BEHAT_TIMING_FILENAME}"
     echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
+    if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
+        echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
+        echo "== BAD_COMMIT: ${BAD_COMMIT}"
+    fi
     echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
     echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
     echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
@@ -134,7 +138,7 @@ function behat_check() {
     verify_modules $(behat_modules)
 
     # These env variables must be set for the job to work.
-    verify_env UUID WORKSPACE SHAREDDIR ENVIROPATH WEBSERVER
+    verify_env UUID WORKSPACE SHAREDDIR ENVIROPATH WEBSERVER GOOD_COMMIT BAD_COMMIT
 }
 
 # Behat job type init.
@@ -162,10 +166,30 @@ function behat_config() {
         print_warning "BEHAT_PARALLEL is not a number or it's 0, setting it to 1."
         BEHAT_PARALLEL=1
     fi
+
+    # If GOOD_COMMIT and BAD_COMMIT are set, it means that we are going to run a bisect
+    # session, so we need to enable FULLGIT (to get access to complete repository clone).
+    if [[ -n "${GOOD_COMMIT}" ]] && [[ -n "${BAD_COMMIT}" ]]; then
+        FULLGIT="yes"
+        # Also, we don't want to allow repetitions, parallels, reruns or timing in the bisect session.
+        RUNCOUNT=1
+        BEHAT_PARALLEL=1
+        BEHAT_RERUNS=0
+        BEHAT_TIMING_FILENAME=
+    fi
 }
 
-# Behat job setup.
+# Behat job type setup.
 function behat_setup() {
+    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
+    # (for bisect sessions we don't have to setup the environment).
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        behat_setup_normal
+    fi
+}
+
+# Behat job type setup for normal mode.
+function behat_setup_normal() {
     # If there is a timing filename configured, look for it within the workspace/timing folder.
     # And copy it to the shared folder that the docker-php container will use.
     if [[ -n "${BEHAT_TIMING_FILENAME}" ]]; then
@@ -184,33 +208,47 @@ function behat_setup() {
     echo
     echo ">>> startsection Initialising Behat environment at $(date)<<<"
     echo "============================================================================"
+    local initcmd
+    behat_initcmd initcmd # By nameref.
+
+    echo "Running: ${initcmd[*]}"
+
+    docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
+    echo "============================================================================"
+    echo ">>> stopsection <<<"
+}
+
+# Returns (by nameref) an array with the command needed to init the Behat site.
+function behat_initcmd() {
+    local -n cmd=$1
     # We need to determine the init suite to use.
     local initsuite=""
     if [[ -n "$BEHAT_SUITE" ]]; then
         initsuite="-a=${BEHAT_SUITE}"
     fi
-    # Setup server folder permissions.
-    docker exec -t "${WEBSERVER}" bash -c 'chown -R www-data:www-data /var/www/*'
+
     # Build the complete init command.
-    local cmd=(
+    cmd=(
         php admin/tool/behat/cli/init.php
         "${initsuite}"
         -j="${BEHAT_PARALLEL}"
         --axe
     )
-
-    echo "Running: ${cmd[*]}"
-
-    docker exec -t -u www-data "${WEBSERVER}" \
-        "${cmd[@]}"
-
-    echo "============================================================================"
-    echo ">>> stopsection <<<"
 }
 
 # Behat job type run.
 function behat_run() {
-    # Run the job type.
+    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
+    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
+        behat_run_normal
+    else
+        # If GOOD_COMMIT and BAD_COMMIT are set, we are going to run a bisect session.
+        behat_run_bisect
+    fi
+}
+
+# PHPUnit job tye run for normal mode.
+function behat_run_normal() {    # Run the job type.
     echo
     if [[ RUNCOUNT -gt 1 ]]; then
         echo ">>> startsection Starting ${RUNCOUNT} Behat main runs at $(date) <<<"
@@ -296,6 +334,77 @@ function behat_run() {
             echo ">>> stopsection <<<"
         done
     done
+}
+
+# Behat job tye run for bisect mode.
+function behat_run_bisect() {
+    # Run the job type.
+    echo
+    echo ">>> startsection Starting Behat bisect session at $(date) <<<"
+    echo "=== Good commit: ${GOOD_COMMIT}"
+    echo "=== Bad commit: ${BAD_COMMIT}"
+    echo "============================================================================"
+    # Start the bisect session.
+    docker exec -t -u www-data "${WEBSERVER}" \
+        git bisect start "${BAD_COMMIT}" "${GOOD_COMMIT}"
+
+    # Build the int command.
+    local initcmd
+    behat_initcmd initcmd # By nameref.
+
+    # Build the run command.
+    local runcmd
+    behat_main_command runcmd # By nameref.
+
+    # Prepare the commands to be injected into shell script (not needed for direct execution, only when injecting).
+    # (any element having spaces/ampersands needs to be explicitly quoted, --tags and --name are the usual suspects).
+    for i in "${!runcmd[@]}"; do
+        # Only if the element is an name=value option.
+        if [[ ${runcmd[$i]} == --*=* ]]; then
+            # Split the option in name and value.
+            local name="${runcmd[$i]%%=*}"
+            local value="${runcmd[$i]#*=}"
+            # If the value has spaces, quote it.
+            if [[ ${value} == *" "* ]]; then
+                runcmd[$i]="${name}=\"${value}\""
+            fi
+            # If the value has ampersand, quote it.
+            if [[ ${value} == *"&"* ]]; then
+                runcmd[$i]="${name}=\"${value}\""
+            fi
+        fi
+    done
+
+    # Generate the bisect.sh script that we are going to use to run the behat bisect session.
+    # (it runs both init and run commands together).
+    docker exec -i -u www-data "${WEBSERVER}" \
+        bash -c "cat > bisect.sh" <<- EOF
+			#!/bin/bash
+			${initcmd[@]} >/dev/null 2>&1; ${runcmd[@]}
+			exitcode=\$?
+			echo "============================================================================"
+			exit \$exitcode
+			EOF
+
+    # Run the bisect session.
+    echo "============================================================================"
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect run bash bisect.sh
+    EXITCODE=$?
+
+    # Print the bisect logs, for the records.
+    echo
+    echo "============================================================================"
+    echo "Bisect logs and reset:"
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect log
+
+    # Finish the bisect session.
+    docker exec -u www-data "${WEBSERVER}" \
+        git bisect reset
+
+    echo "============================================================================"
+    echo ">>> stopsection <<<"
 }
 
 # Behat job type teardown.
