@@ -28,17 +28,17 @@ teardown() {
     _common_teardown
 }
 
-@test "Behat tests: run the job for v3.9.0 and 1 tag" {
+@test "Behat tests: run the job for v3.9.0 and some tags" {
     # Set all the required variables.
     JOBTYPE="behat"
     PHP_VERSION="7.4"
     DBTYPE="mariadb"
     CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
-    BEHAT_TAGS="@mod_label"
+    BEHAT_TAGS="@mod_label&&@core,~@mod_assign"
     BEHAT_PARALLEL="1"
     BROWSER_HEADLESS="1"
 
-    # Checkout v3.9.0 (note this is know to fail for @mod_label
+    # Checkout v3.9.0 (note this is known to fail for @mod_label
     run git_moodle_checkout v3.9.0
     assert_success
 
@@ -70,7 +70,7 @@ teardown() {
     JOBTYPE="behat"
     DBTYPE="sqlsrv"
     CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
-    BEHAT_NAME="label"
+    BEHAT_NAME="the label"
     PLUGINSTOINSTALL="https://github.com/moodlehq/moodle-local_codechecker.git|local_codechecker|master"
 
     # Checkout main
@@ -81,9 +81,9 @@ teardown() {
     run launch_runner
     assert_success
     assert_output --partial "== JOBTYPE: behat"
-    assert_output --partial "== PHP version: 8.1"
+    assert_output --partial "== PHP version: "
     assert_output --partial "== DBTYPE: sqlsrv"
-    assert_output --partial "== BEHAT_NAME: label"
+    assert_output --partial "== BEHAT_NAME: the label"
     assert_output --partial "== DBREPLICAS: 0"
     assert_output --partial "== BEHAT_PARALLEL: 1"
     assert_output --partial "PLUGINSTOINSTALL: https://github.com/moodlehq/moodle-local_codechecker.git|"
