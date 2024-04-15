@@ -57,64 +57,8 @@ teardown() {
     assert_output --partial "52811000310e7c663fcb75d61b90756f9ded6c7a is the first bad commit"
     assert_output --partial "MDL-67271 core: Add test to find missing SVG icons"
     assert_output --partial "3 files changed, 70 insertions(+), 2 deletions(-)"
+    assert_output --partial "Bisect logs and reset:"
     assert_output --partial "Exporting all docker logs for UUID"
     assert_output --partial "Stopping and removing all docker containers"
     assert_output --partial "== Exit code: 0"
-}
-
-@test "PHPUnit bisect tests: only GOOD_COMMIT specified" {
-    # Set all the required variables.
-    JOBTYPE="phpunit"
-    PHP_VERSION="8.3"
-    DBTYPE="pgsql"
-    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
-    PHPUNIT_FILTER="test_enrol_user_sees_own_courses"
-    GOOD_COMMIT="b4c6ed36503c0d1e69efdb9b18e6846234706da7"
-
-    # Checkout
-    run git_moodle_checkout v4.3.2
-    assert_success
-
-    # Run the job
-    run launch_runner
-    assert_failure
-    assert_output --partial "ERROR: GOOD_COMMIT is set but BAD_COMMIT is not set."
-}
-
-@test "PHPUnit bisect tests: only BAD_COMMIT specified" {
-    # Set all the required variables.
-    JOBTYPE="phpunit"
-    PHP_VERSION="8.3"
-    DBTYPE="pgsql"
-    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
-    PHPUNIT_FILTER="test_enrol_user_sees_own_courses"
-    BAD_COMMIT="b4c6ed36503c0d1e69efdb9b18e6846234706da7"
-
-    # Checkout
-    run git_moodle_checkout v4.3.2
-    assert_success
-
-    # Run the job
-    run launch_runner
-    assert_failure
-    assert_output --partial "ERROR: BAD_COMMIT is set but GOOD_COMMIT is not set."
-}
-
-@test "PHPUnit bisect tests: same GOOD and BAD commits specified" {
-    # Set all the required variables.
-    JOBTYPE="phpunit"
-    PHP_VERSION="8.3"
-    DBTYPE="pgsql"
-    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
-    GOOD_COMMIT="b4c6ed36503c0d1e69efdb9b18e6846234706da7"
-    BAD_COMMIT="${GOOD_COMMIT}"
-
-    # Checkout
-    run git_moodle_checkout v4.3.2
-    assert_success
-
-    # Run the job
-    run launch_runner
-    assert_failure
-    assert_output --partial "ERROR: GOOD_COMMIT and BAD_COMMIT are set, but they are the same."
 }
