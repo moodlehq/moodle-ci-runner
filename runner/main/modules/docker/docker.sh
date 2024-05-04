@@ -31,10 +31,6 @@ function docker_check() {
         exit_error "Docker is not installed. Please install it and try again."
     fi
 
-    if ! docker-compose --version > /dev/null 2>&1; then
-        exit_error "Docker Compose is not installed. Please install it and try again."
-    fi
-
     # These env variables must be set for the module to work.
     verify_env UUID
 }
