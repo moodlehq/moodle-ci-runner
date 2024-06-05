@@ -107,6 +107,14 @@ function moodle-core-copy_setup() {
         docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html/composer.phar
     fi
 
+    # Copy local_ci if available to /tmp/local_ci, we'll execute all the scripts from there.
+    # (perform some basic validation, we don't want to copy the wrong stuff)
+    if [[ -n "${LOCAL_CI_PATH}" ]] && [[ -d "${LOCAL_CI_PATH}" ]]  && [[ -d "${LOCAL_CI_PATH}/tracker_automations" ]]; then
+        echo "== Copying local_ci in place."
+        docker cp "${LOCAL_CI_PATH}" "${WEBSERVER}":/tmp/local_ci
+        docker exec "${WEBSERVER}" chown -R www-data:www-data /tmp/local_ci
+    fi
+
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
