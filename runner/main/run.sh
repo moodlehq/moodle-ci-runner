@@ -91,6 +91,11 @@ fi
 # from the jobs (or the caller).
 FULLGIT="${FULLGIT:-}"
 
+# Some jobs may need to have moodle-local_ci available. This variable
+# defines where a valid moodle-local_ci checkout is located, so it can
+# be used by the jobs or copied within the PHP container (/tmp/local_ci)
+LOCAL_CI_PATH="${LOCAL_CI_PATH:-}"
+
 # Caches directories, used for composer, to accelerate git operations...
 CACHEDIR="${CACHEDIR:-${HOME}/caches}"
 COMPOSERCACHE="${COMPOSERCACHE:-${CACHEDIR}/composer}"

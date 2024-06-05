@@ -32,7 +32,7 @@ jobs:
       - name: Install required packages
         run: |
           sudo apt-get update
-          sudo apt-get install uuid
+          sudo apt-get install uuid dc
 
       - name: Checking out moodle-ci-runner
         uses: actions/checkout@v4
@@ -45,6 +45,12 @@ jobs:
           repository: moodle/moodle
           fetch-depth: 0 # We need a complete clone, because we use various commits / tags.
           path: moodle
+
+      - name: Checking out moodle-local_ci
+        uses: actions/checkout@v4
+        with:
+          repository: moodlehq/moodle-local_ci
+          path: local_ci
 
       - name: Setup Bats
         uses: bats-core/bats-action@1.5.5
@@ -60,6 +66,7 @@ jobs:
       - name: Run tests
         env:
           MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
+          LOCAL_CI_PATH: ${{ github.workspace }}/local_ci
         run: |
           bats --timing test/${{ matrix.test }}
 
@@ -72,7 +79,7 @@ jobs:
       - name: Install required packages
         run: |
           sudo apt-get update
-          sudo apt-get install uuid kcov
+          sudo apt-get install uuid dc kcov
 
       - name: Checking out moodle-ci-runner
         uses: actions/checkout@v4
@@ -85,6 +92,12 @@ jobs:
           repository: moodle/moodle
           fetch-depth: 0 # We need a complete clone, because we use various commits / tags.
           path: moodle
+
+      - name: Checking out moodle-local_ci
+        uses: actions/checkout@v4
+        with:
+          repository: moodlehq/moodle-local_ci
+          path: local_ci
 
       - name: Setup Bats
         uses: bats-core/bats-action@1.5.5
@@ -100,6 +113,7 @@ jobs:
       - name: Run tests (capturing code coverage)
         env:
           MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
+          LOCAL_CI_PATH: ${{ github.workspace }}/local_ci
         run: |
           kcov \
             --clean \
