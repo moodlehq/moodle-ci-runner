@@ -28,7 +28,7 @@ function env_env() {
 # Environment module checks.
 function env_check() {
     # These env variables must be set for the module to work.
-    verify_env JOBTYPE SHAREDDIR
+    verify_env JOBTYPE SHAREDDIR BUILD_ID
 }
 
 # Environment module config.
@@ -43,6 +43,13 @@ function env_setup() {
     # Reset the environment file.
     rm -f "${ENVIROPATH}"
     touch "${ENVIROPATH}"
+
+    # Always add the BUILD_ID, in case it's needed by any of the scripts out from the runner.
+    echo "BUILD_ID=${BUILD_ID}" >> "${ENVIROPATH}"
+
+    # TODO: Remove this once https://github.com/moodlehq/moodle-local_ci/issues/303 is fixed.
+    # Always make BUILD_NUMBER available, some old scripts use it.
+    echo "BUILD_NUMBER=${BUILD_NUMBER}" >> "${ENVIROPATH}"
 
     # Add all the variables that the job type requires.
     for var in $(get_job_to_env_file "${JOBTYPE}"); do

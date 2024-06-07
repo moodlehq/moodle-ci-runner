@@ -57,6 +57,10 @@ fi
 # BUILD_ID, if not defined use the current PID.
 BUILD_ID="${BUILD_ID:-$$}"
 
+# TODO: Remove this once https://github.com/moodlehq/moodle-local_ci/issues/303 is fixed.
+# Always make BUILD_NUMBER available, some old scripts use it.
+BUILD_NUMBER="${BUILD_ID}"
+
 # Base directory to be shared with some containers that will read/write information there (timing, environment, logs... etc.).
 SHAREDDIR="${WORKSPACE}"/"${BUILD_ID}"
 
