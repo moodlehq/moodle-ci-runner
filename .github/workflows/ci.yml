@@ -73,8 +73,12 @@ jobs:
   coverage:
     if: github.repository == 'moodlehq/moodle-ci-runner'
     name: Code coverage
-    needs: test
+    needs: collect
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJson(needs.collect.outputs.matrix) }}
     steps:
       - name: Install required packages
         run: |
@@ -120,18 +124,7 @@ jobs:
             --include-path ${{ github.workspace }}/runner/main \
             --bash-parse-files-in-dir ${{ github.workspace }}/runner/main \
             ${{ github.workspace }}/coverage \
-            bats ${{ github.workspace }}/test/
-
-      - name: Archive code coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report
-          path: ${{ github.workspace }}/coverage/*
-
-      - name: Display code coverage
-        run: |
-          value=$(jq -r '.percent_covered' < ${{ github.workspace }}/coverage/bats/coverage.json)
-          echo "Code coverage: $value%" | tee "$GITHUB_STEP_SUMMARY"
+            bats --timing ${{ github.workspace }}/test/${{ matrix.test }}
 
       - name: Upload code coverage (codecov)
         uses: codecov/codecov-action@v4
