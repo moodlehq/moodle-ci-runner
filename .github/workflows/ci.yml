@@ -17,7 +17,8 @@ jobs:
       - name: Collecting Bats tests
         id: collect-tests
         run: |
-          echo "matrix=$(cd test && find . -name '*.bats' -not -path '*/helpers/*' -printf '%P\n'| \
+          # Get all the test files without extension.
+          echo "matrix=$(cd test && find . -iname '*.bats' -not -path '*/helpers/*' -exec basename {} .bats ';' | \
             jq -R -s -c 'split("\n")[:-1]')" >> $GITHUB_OUTPUT
 
   test:
@@ -68,7 +69,7 @@ jobs:
           MOODLE_CI_RUNNER_GITDIR: ${{ github.workspace }}/moodle
           LOCAL_CI_PATH: ${{ github.workspace }}/local_ci
         run: |
-          bats --timing test/${{ matrix.test }}
+          bats --timing test/${{ matrix.test }}.bats
 
   coverage:
     if: github.repository == 'moodlehq/moodle-ci-runner'
@@ -124,12 +125,12 @@ jobs:
             --include-path ${{ github.workspace }}/runner/main \
             --bash-parse-files-in-dir ${{ github.workspace }}/runner/main \
             ${{ github.workspace }}/coverage \
-            bats --timing ${{ github.workspace }}/test/${{ matrix.test }}
+            bats --timing ${{ github.workspace }}/test/${{ matrix.test }}.bats
 
       - name: Upload code coverage (codecov)
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}/coverage
-          verbose: true
+          flags: ${{ matrix.test }}
 
