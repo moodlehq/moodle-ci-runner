@@ -5,7 +5,7 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   collect:
     name: Collect tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{steps.collect-tests.outputs.matrix }}
     steps:
@@ -24,7 +24,7 @@ jobs:
   test:
     name: Test
     needs: collect
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -54,9 +54,9 @@ jobs:
           path: local_ci
 
       - name: Setup Bats
-        uses: bats-core/bats-action@1.5.5
+        uses: bats-core/bats-action@2.0.0
         with:
-          bats-version: 1.10.0
+          bats-version: 1.11.0
           # Note we don't need any of the libraries because the ones we need (support and assert)
           # are bundled within test/helpers as git submodules and have been checked out above.
           support-path: false
@@ -75,7 +75,7 @@ jobs:
     if: github.repository == 'moodlehq/moodle-ci-runner'
     name: Code coverage
     needs: collect
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -105,9 +105,9 @@ jobs:
           path: local_ci
 
       - name: Setup Bats
-        uses: bats-core/bats-action@1.5.5
+        uses: bats-core/bats-action@2.0.0
         with:
-          bats-version: 1.10.0
+          bats-version: 1.11.0
           # Note we don't need any of the libraries because the ones we need (support and assert)
           # are bundled within test/helpers as git submodules and have been checked out above.
           support-path: false
@@ -125,7 +125,7 @@ jobs:
             --include-path ${{ github.workspace }}/runner/main \
             --bash-parse-files-in-dir ${{ github.workspace }}/runner/main \
             ${{ github.workspace }}/coverage \
-            bats --timing ${{ github.workspace }}/test/${{ matrix.test }}.bats
+            bats ${{ github.workspace }}/test/${{ matrix.test }}.bats
 
       - name: Upload code coverage (codecov)
         uses: codecov/codecov-action@v4
