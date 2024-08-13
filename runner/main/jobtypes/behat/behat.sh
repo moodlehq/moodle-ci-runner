@@ -322,7 +322,7 @@ function behat_run_normal() {    # Run the job type.
             echo "Running: ${reruncmd[*]}"
 
             # And run it.
-            if ! docker exec -t -u www-data "${WEBSERVER}" "${reruncmd[@]}"; then
+            if ! docker exec -t -u www-data -e WINDOWSCALE=1.5 "${WEBSERVER}" "${reruncmd[@]}"; then
                 # Rerun failed, let's feed the exit code again.
                 EXITCODE=$((EXITCODE + processmask))
             fi
@@ -527,7 +527,7 @@ function behat_rerun_command() {
     # and, also, it automatically handles the file system links for the web server.
     # (output is a little bit uglier, but consistent with the main run).
     _reruncmd=(
-        WINDOWSCALE=1.5 php admin/tool/behat/cli/run.php --rerun
+        php admin/tool/behat/cli/run.php --rerun
     )
 
     # Add the config, options and profile.
