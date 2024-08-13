@@ -322,7 +322,7 @@ function behat_run_normal() {    # Run the job type.
             echo "Running: ${reruncmd[*]}"
 
             # And run it.
-            if ! docker exec -t -u www-data "${WEBSERVER}" "${reruncmd[@]}"; then
+            if ! docker exec -t -u www-data -e WINDOWSCALE=1.5 "${WEBSERVER}" "${reruncmd[@]}"; then
                 # Rerun failed, let's feed the exit code again.
                 EXITCODE=$((EXITCODE + processmask))
             fi
