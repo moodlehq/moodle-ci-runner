@@ -527,7 +527,7 @@ function behat_rerun_command() {
     # and, also, it automatically handles the file system links for the web server.
     # (output is a little bit uglier, but consistent with the main run).
     _reruncmd=(
-        php admin/tool/behat/cli/run.php --rerun
+        WINDOWSCALE=1.5 php admin/tool/behat/cli/run.php --rerun
     )
 
     # Add the config, options and profile.
