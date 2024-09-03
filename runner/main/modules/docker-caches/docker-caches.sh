@@ -58,7 +58,7 @@ function docker-caches_setup() {
         --detach \
         --name "${REDISTESTNAME}" \
         --network "${NETWORK}" \
-    redis:3
+    redis:5
     echo "Redis URL: ${REDISTESTNAME}"
     echo "Redis logs:"
     docker logs "${REDISTESTNAME}"
