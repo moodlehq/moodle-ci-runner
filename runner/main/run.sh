@@ -48,6 +48,12 @@ fi
 
 # Base directory where the code is located.
 CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
+APACHE_DOCUMENT_ROOT="${APACHE_DOCUMENT_ROOT:-/var/www/html}"
+PUBLICROOT="${PUBLICROOT:-}"
+if [[ -d "${CODEDIR}/public" ]]; then
+    PUBLICROOT="public/"
+    APACHE_DOCUMENT_ROOT="/var/www/html/public"
+fi
 
 # Fail if CODEDIR does not exist.
 if [[ ! -d ${CODEDIR} ]]; then
