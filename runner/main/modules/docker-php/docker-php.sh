@@ -58,6 +58,7 @@ function docker-php_setup() {
       -v "${SHAREDDIR}":/shared \
       "${DOCKER_PHP}"
 
+    # Update the document root.
     docker exec "${WEBSERVER}" bash -c "sed -ri -e 's@/var/www/html@${APACHE_DOCUMENT_ROOT}@g' /etc/apache2/sites-available/*.conf"
     docker exec "${WEBSERVER}" bash -c "sed -ri -e 's@/var/www/@${APACHE_DOCUMENT_ROOT}@g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf"
     docker exec "${WEBSERVER}" apachectl graceful
