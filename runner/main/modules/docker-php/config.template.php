@@ -51,7 +51,14 @@ if (getenv('DBTYPE') === 'sqlsrv') {
 // Skip language upgrade during the on-sync period.
 $CFG->skiplangupgrade = false;
 
-$CFG->wwwroot   = 'http://host.name';
+// Enable tests needing language install/upgrade
+// only if we have language upgrades enabled (aka,
+// when we aren't skipping them).
+if (empty($CFG->skiplangupgrade)) {
+    define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
+}
+
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
