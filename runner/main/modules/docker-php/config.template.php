@@ -58,7 +58,7 @@ if (empty($CFG->skiplangupgrade)) {
     define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
 }
 
-$CFG->wwwroot   = 'http://host.name';
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
