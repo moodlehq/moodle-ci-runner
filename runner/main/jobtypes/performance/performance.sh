@@ -71,6 +71,7 @@ function performance_modules() {
         moodle-core-copy
         docker-healthy
         docker-summary
+        docker-jmeter
     )
     echo "${modules[@]}"
 }
@@ -112,12 +113,6 @@ function performance_setup_normal() {
     # Set up the environment.
     cd moodle-performance-comparison
     composer install
-
-    # Pull the JMeter Docker image.
-    docker pull justb4/jmeter
-
-    # Run the JMeter container.
-    docker run -d --name jmeter-container justb4/jmeter
 
     # Init the Performance site.
     echo
