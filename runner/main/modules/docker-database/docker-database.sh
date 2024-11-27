@@ -131,10 +131,10 @@ function database_apply_default_dbtag() {
     if [[ "${DBTAG}" == "auto" ]]; then
         case ${DBTYPE} in
             mariadb)
-                DBTAG=10.7 # Because there is a problem with the >= 10.8 images not working with older hosts OS.
+                DBTAG=10.11 # Because it's the primary lowest supported version and we need it covered by default.
                 ;;
             mysqli)
-                DBTAG=8.0 # Because it's the primary lowest supported version and we need it covered by default.
+                DBTAG=8.4 # Because it's the primary lowest supported version and we need it covered by default.
                 ;;
             sqlsrv)
                 DBTAG=latest # No pin, right now 2019-latest
@@ -143,7 +143,7 @@ function database_apply_default_dbtag() {
                 DBTAG=latest # No pin, right now this is 21c
                 ;;
             pgsql)
-                DBTAG=13 # Because it's the primary lowest supported version and we need it covered by default.
+                DBTAG=14 # Because it's the primary lowest supported version and we need it covered by default.
                 ;;
             *)
                 exit_error "Wrong DBTYPE: ${DBTYPE}. Fix it, or add support for that DBTYPE above"
