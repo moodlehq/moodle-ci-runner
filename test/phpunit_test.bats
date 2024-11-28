@@ -74,7 +74,7 @@ teardown() {
     run launch_runner
     assert_success
     assert_output --partial "== JOBTYPE: phpunit"
-    assert_output --partial "== PHP version: 8.1"
+    assert_output --partial "== PHP version: 8.2"
     assert_output --partial "== DBTYPE: mysqli"
     assert_output --partial "== PHPUNIT_FILTER: label"
     assert_output --partial "== DBREPLICAS: 0"
