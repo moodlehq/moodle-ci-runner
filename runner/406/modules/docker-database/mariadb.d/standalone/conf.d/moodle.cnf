@@ -1,0 +1,22 @@
+[client]
+default-character-set = utf8mb4
+
+[mysqld]
+innodb_file_per_table = 1
+
+skip-log-bin
+
+character-set-server = utf8mb4
+collation-server = utf8mb4_bin
+skip-character-set-client-handshake
+
+key_buffer_size = 768M
+table_open_cache = 12000
+sort_buffer_size = 4M
+read_buffer_size = 1M
+
+[mysql]
+default-character-set = utf8mb4
+
+[isamchk]
+key_buffer = 16M
