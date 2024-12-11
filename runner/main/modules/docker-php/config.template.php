@@ -51,13 +51,6 @@ if (getenv('DBTYPE') === 'sqlsrv') {
 // Skip language upgrade during the on-sync period.
 $CFG->skiplangupgrade = false;
 
-// Enable tests needing language install/upgrade
-// only if we have language upgrades enabled (aka,
-// when we aren't skipping them).
-if (empty($CFG->skiplangupgrade)) {
-    define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
-}
-
 $CFG->wwwroot   = 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
@@ -87,6 +80,13 @@ $CFG->phpunit_prefix = 't_';
 // Apply custom configuration settings.
 if ($config = getenv('MOODLE_CONFIG')) {
     \moodlehq_ci_runner::apply_config_settings($config);
+}
+
+// Enable tests needing language install/upgrade
+// only if we have language upgrades enabled (aka,
+// when we aren't skipping them).
+if (empty($CFG->skiplangupgrade)) {
+    define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
 }
 
 define('PHPUNIT_LONGTEST', true);
