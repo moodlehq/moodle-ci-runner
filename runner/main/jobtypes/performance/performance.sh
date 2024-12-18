@@ -107,23 +107,18 @@ function performance_setup_normal() {
     # Create an empty timing file.
     touch "${SHAREDDIR}"/timing.json
 
-    # Clone the moodle-performance-comparison repository.
-    git clone https://github.com/moodlehq/moodle-performance-comparison.git
-
-    # Set up the environment.
-    cd moodle-performance-comparison
-    composer install
-
     # Init the Performance site.
     echo
     echo ">>> startsection Initialising Performance environment at $(date)<<<"
     echo "============================================================================"
     local initcmd
     performance_initcmd initcmd # By nameref.
-
     echo "Running: ${initcmd[*]}"
-
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
+
+    echo "Creating test data"
+    performance_generate_test_data
+
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
@@ -139,6 +134,63 @@ function performance_initcmd() {
     cmd=(
         php admin/cli/install_database.php --agree-license --fullname="Moodle Performance Test" --shortname="moodle" --adminuser=admin --adminpass=adminpass --
     )
+}
+
+function performance_generate_test_data() {
+    local phpcmd="php"
+
+    # Generate courses.
+    docker exec -t -u www-data "${WEBSERVER}" ${phpcmd} admin/tool/generator/cli/maketestsite.php \
+        --size="XS" \
+        --fixeddataset \
+        --bypasscheck \
+        --filesizelimit="1000"
+    echo "NETWORK: ${NETWORK}"
+
+    # Variables
+#    WEBSERVER="your_webserver_container"
+#    phpcmd="php"
+#    SHAREDDIR="/path/to/shared/dir"  # Replace with actual shared directory
+    SIZE="XS"
+    SHORTNAME="testcourse_3"
+
+# Generate the test plan files and capture the output
+testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" ${phpcmd} admin/tool/generator/cli/maketestplan.php \
+    --size='XS' \
+    --shortname='testcourse_3' \
+    --bypasscheck)
+
+# Display the captured output
+echo "Captured Output:"
+echo "${testplanfiles}"
+
+# Extract URLs and download files to ${SHAREDDIR}
+urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
+for url in ${urls}; do
+    # Extract the filename from the URL
+    filename=$(basename "${url}")
+    echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
+    curl -o "${SHAREDDIR}/${filename}" "${url}"
+done
+
+echo "All files downloaded to ${SHAREDDIR}."
+    # Uncomment and handle the test plan files if needed.
+    # local testplanfiles="$(${testplancommand})"
+    # if [[ "$testplanfiles" == *"testplan"* ]]; then
+    #     local files=( $testplanfiles )
+    #     if [ "${#files[*]}" -ne 2 ]; then
+    #         echo "Error: There was a problem generating the test plan." >&2
+    #         exit 1
+    #     fi
+    #     ${curlcmd} \
+    #         -o $FILE_NAME_TEST_PLAN ${files[0]} \
+    #         -o $FILE_NAME_USERS ${files[1]} \
+    #         --silent || \
+    #         throw_error "There was a problem getting the test plan files. Check your wwwroot setting."
+    # else
+    #     echo "Error: There was a problem generating the test plan." >&2
+    #     exit 1
+    # fi
 }
 
 #function performance_datacmd() {
