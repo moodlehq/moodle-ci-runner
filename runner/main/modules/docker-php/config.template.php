@@ -57,7 +57,7 @@ $CFG->skiplangupgrade = false;
 if (empty($CFG->skiplangupgrade)) {
     define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
 }
-
+echo "WWWROOT: " . getenv('MOODLE_WWWROOT') . "\n";
 $CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
@@ -74,7 +74,8 @@ $CFG->passwordpolicy = 0;
 
 $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
 $CFG->phpunit_prefix = 't_';
-
+// Set the generated users password to avoid the default non-loggeable one.
+$CFG->tool_generator_users_password = '%%toolgeneratorpassword%%';
 // Configure behat.
 \moodlehq_ci_runner::set_behat_configuration(
     getenv('WEBSERVER'),
