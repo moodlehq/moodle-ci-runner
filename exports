@@ -3,45 +3,13 @@ export WORKSPACE=/home/simey/moodlehq/moodle-ci-runner/workspace
 export CODEDIR=/home/simey/www/docker_integration_main
 
 # The test to run
-#export TESTTORUN=phpunit
-#export TESTTORUN=install
 export JOBTYPE=performance
-
-# The browser to use for Behat tests
-#export BROWSER=firefox
-#export BROWSER=chrome
-#export BROWSER_HEADLESS=0
-#export BEHAT_TOTAL_RUNS=3
 
 # The build id - this is used to generated the chash
 export BUILD_ID="1"
 
 # The Database to use
-#export DBTYPE=mysqli
-#export DBTYPE=mariadb
-#export DBTYPE=oci
 export DBTYPE=pgsql
-#export DBTYPE=sqlsrv
-
-# Database slaces
-export DBREPLICAS=0
-#export DBTAG=latest
-
-# Any Behat Tags to run
-#export TAGS='@javascript&&@mod_workshop&&@arn'
-#export TAGS=core_notes
-#export TAGS=arn
-#export TAGS=filter
-#export TAGS="@install"
-#export BEHAT_NAME="We can use calculated grade totals"
-
+export DBTAG=14
 # PHP Version
-export PHP_VERSION=8.1
-
-# Install the moodle mobile app plugin.
-#export PLUGINSTOINSTALL="https://github.com/moodlehq/moodle-local_moodlemobileapp.git|local/moodlemobileapp|"
-#export MOBILE_VERSION="latest"
-
-
-#export GOOD_COMMIT="7f450dcea36d752e62ab169cbeaf830ecb54c70f"
-#export BAD_COMMIT="29ab56c4d28ccdc82722595fac1a1d739e6f2a0d"
+export PHP_VERSION=8.3
