@@ -151,27 +151,36 @@ function performance_generate_test_data() {
 
     # Generate the test plan files and capture the output
     local testplancmd
-    perfomance_testplan_generator_command testplancmd # By nameref.
+    performance_testplan_generator_command testplancmd # By nameref.
     echo "Running: ${testplancmd[*]}"
-    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
+    testplanfiles=$(docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
 
     # Display the captured output
     echo "Captured Output:"
     echo "${testplanfiles}"
+    echo "${SHAREDDIR}"
+    # Ensure the directory exists and is writable
+    if [ ! -d "${SHAREDDIR}" ]; then
+        echo "Directory ${SHAREDDIR} does not exist. Creating it..."
+        mkdir -p "${SHAREDDIR}"
+    fi
+
+    if [ ! -w "${SHAREDDIR}" ]; then
+        echo "Directory ${SHAREDDIR} is not writable. Please check permissions."
+        exit 1
+    fi
 
     # Extract URLs and download files to ${SHAREDDIR}
     urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
     for url in ${urls}; do
+        # Trim any whitespace or newline characters from the URL
+        url=$(echo "${url}" | tr -d '\r\n')
         # Extract the filename from the URL
         filename=$(basename "${url}")
-        echo "Downloading: ${url} to /shared/${filename}"
-        docker exec -it -u www-data "${WEBSERVER}" curl -o "/shared/${filename}" "${url}"
+        echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
+        docker exec -i -t -u www-data "${WEBSERVER}" curl -o "${SHAREDDIR}/${filename}" "${url}"
     done
 }
-
-#function performance_datacmd() {
-#
-#}
 
 # Performance job type run.
 function performance_run() {
@@ -215,26 +224,26 @@ function performance_main_command() {
 
     # TODO: Get all of these values from somewhere?
     # Build the complete perf command for the run.
-    _cmd=(
-        jmeter \
-            -n \
-            -j "/shared/logs/jmeter.log" \
-            -t "$testplanfile" \
-            -Jusersfile="$testusersfile" \
-            -Jgroup="$group" \
-            -Jdesc="$description" \
-            -Jsiteversion="$siteversion" \
-            -Jsitebranch="$sitebranch" \
-            -Jsitecommit="$sitecommit" \
-            $samplerinitstr \
-            $includelogsstr \
-            $users \
-            $loops \
-            $rampup \
-            $throughput \
-            > $runoutput || \
-            throw_error $jmetererrormsg
-    )
+_cmd=(
+    jmeter
+    -n
+    -j "/shared/logs/jmeter.log"
+    -t "$testplanfile"
+    -Jusersfile="$testusersfile"
+    -Jgroup="$group"
+    -Jdesc="$description"
+    -Jsiteversion="$siteversion"
+    -Jsitebranch="$sitebranch"
+    -Jsitecommit="$sitecommit"
+    $samplerinitstr
+    $includelogsstr
+    $users
+    $loops
+    $rampup
+    $throughput
+)
+
+"${_cmd[@]}" > "$runoutput" || throw_error "$jmetererrormsg"
 }
 
 function perfomance_testsite_generator_command() {
@@ -257,7 +266,7 @@ function performance_testplan_generator_command() {
     _cmd=(
         php admin/tool/generator/cli/maketestplan.php \
             --size="${SITESIZE}" \
-            --shortname="${COURSENAME}" \
+            --shortname="testcourse_3" \
             --bypasscheck
     )
 }
