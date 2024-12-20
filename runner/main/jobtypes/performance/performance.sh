@@ -212,7 +212,7 @@ function performance_run() {
 
     echo "${dockerrunargs[@]}"
     echo docker run ${dockerrunargs[@]} -- ${jmeterruncmd[@]}
-    docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} > "${runoutput}"
+    docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
     EXITCODE=$?
     echo "============================================================================"
     echo "============================================================================"
