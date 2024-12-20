@@ -77,14 +77,16 @@ $CFG->phpunit_prefix = 't_';
 // Set the generated users password to avoid the default non-loggeable one.
 $CFG->tool_generator_users_password = '%%toolgeneratorpassword%%';
 
-// Configure behat.
-\moodlehq_ci_runner::set_behat_configuration(
-    getenv('WEBSERVER'),
-    getenv('BROWSER'),
-    getenv('BEHAT_PARALLEL'),
-    !empty(getenv('BEHAT_TIMING_FILENAME')),
-    getenv('BEHAT_INCREASE_TIMEOUT')
-);
+if (\moodlehq_ci_runner::job_type_matches('behat')) {
+    // Configure behat.
+    \moodlehq_ci_runner::set_behat_configuration(
+        getenv('WEBSERVER'),
+        getenv('BROWSER'),
+        getenv('BEHAT_PARALLEL'),
+        !empty(getenv('BEHAT_TIMING_FILENAME')),
+        getenv('BEHAT_INCREASE_TIMEOUT')
+    );
+}
 
 // Apply custom configuration settings.
 if ($config = getenv('MOODLE_CONFIG')) {
@@ -171,6 +173,13 @@ require_once(__DIR__ . '/lib/setup.php');
  * Configuration utility for the CI runner.
  */
 class moodlehq_ci_runner {
+    public static function job_type_matches(string $type): bool {
+        $jobtype = getenv('JOBTYPE');
+        if ($jobtype) {
+            return ($jobtype === $type);
+        }
+        return true;
+    }
 
     /**
      * Set behat configuration.
