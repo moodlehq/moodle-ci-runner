@@ -60,6 +60,7 @@ function docker-jmeter_run_args() {
     # Start the jmeter server
     _cmd=(
             --name "${JMETER}" \
+            --network "${NETWORK}" \
     	    -v "${SHAREDDIR}:/shared" \
 	        -w /shared \
             alpine/jmeter:2.11
