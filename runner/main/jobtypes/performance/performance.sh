@@ -91,7 +91,7 @@ function performance_config() {
     EXITCODE=0
 
     export MOODLE_WWWROOT="http://${WEBSERVER}"
-    export SITESIZE="${SITESIZE:-XS}"
+    export SITESIZE="${SITESIZE:-S}"
     export COURSENAME="performance_course"
 }
 
@@ -152,7 +152,9 @@ function performance_generate_test_data() {
     # Generate the test plan files and capture the output
     local testplancmd
     performance_testplan_generator_command testplancmd # By nameref.
-    echo "Running: ${testplancmd[*]}"
+    echo "Running: docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
+    echo "_===> PAUSING - Hit Enter to run test <===_"
+    read
     testplanfiles=$(docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
 
     # Display the captured output
@@ -166,7 +168,7 @@ function performance_generate_test_data() {
     mkdir -p "${SHAREDDIR}/results"
     mkdir -p "${SHAREDDIR}/runs"
 
-    chmod -R 777 "${SHAREDDIR}"
+    chmod -R 2777 "${SHAREDDIR}"
 
     # Extract URLs and download files to ${SHAREDDIR}
     urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
@@ -211,7 +213,7 @@ function performance_run() {
     docker-jmeter_run_args dockerrunargs # By nameref
 
     echo "${dockerrunargs[@]}"
-    echo docker run ${dockerrunargs[@]} -- ${jmeterruncmd[@]}
+    echo docker run ${dockerrunargs[@]} ${jmeterruncmd[@]}
     docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
     EXITCODE=$?
     echo "============================================================================"
@@ -271,7 +273,7 @@ function performance_main_command() {
             -Jsiteversion="$siteversion" \
             -Jsitebranch="$sitebranch" \
             -Jsitecommit="$sitecommit" \
-            -Jusers=50 -Jloops=1 -Jrampup=10 -Jthroughput=1 \
+            -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
             $samplerinitstr $includelogsstr
         )
             #$includelogsstr $users $loops $rampup $throughput
@@ -293,11 +295,34 @@ function perfomance_testsite_generator_command() {
 function performance_testplan_generator_command() {
     local -n _cmd=$1 # Return by nameref.
 
+    case "${SITESIZE}" in
+    'XS')
+        targetcourse='testcourse_3'
+        ;;
+     'S')
+        targetcourse='testcourse_12'
+        ;;
+     'M')
+        targetcourse='testcourse_73'
+        ;;
+     'L')
+        targetcourse='testcourse_277'
+        ;;
+    'XL')
+        targetcourse='testcourse_1065'
+        ;;
+   'XXL')
+        targetcourse='testcourse_4177'
+        ;;
+       *)
+	;;
+    esac
+
     # Build the complete perf command for the run.
     _cmd=(
         php admin/tool/generator/cli/maketestplan.php \
             --size="${SITESIZE}" \
-            --shortname="testcourse_3" \
+            --shortname="${targetcourse}" \
             --bypasscheck
     )
 }
