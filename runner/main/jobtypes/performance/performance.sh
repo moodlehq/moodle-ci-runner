@@ -151,27 +151,34 @@ function performance_generate_test_data() {
 
     # Generate the test plan files and capture the output
     local testplancmd
-    perfomance_testplan_generator_command testplancmd # By nameref.
+    performance_testplan_generator_command testplancmd # By nameref.
     echo "Running: ${testplancmd[*]}"
-    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
+    testplanfiles=$(docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
 
     # Display the captured output
     echo "Captured Output:"
     echo "${testplanfiles}"
+    echo "${SHAREDDIR}"
+
+    # Ensure the directory exists and is writable
+    mkdir -p "${SHAREDDIR}/planfiles"
+    mkdir -p "${SHAREDDIR}/logs"
+    mkdir -p "${SHAREDDIR}/results"
+    mkdir -p "${SHAREDDIR}/runs"
+
+    chmod -R 777 "${SHAREDDIR}"
 
     # Extract URLs and download files to ${SHAREDDIR}
     urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
     for url in ${urls}; do
+        # Trim any whitespace or newline characters from the URL
+        url=$(echo "${url}" | tr -d '\r\n')
         # Extract the filename from the URL
         filename=$(basename "${url}")
-        echo "Downloading: ${url} to /shared/${filename}"
-        docker exec -it -u www-data "${WEBSERVER}" curl -o "/shared/${filename}" "${url}"
+        echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
+        docker exec -i -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
     done
 }
-
-#function performance_datacmd() {
-#
-#}
 
 # Performance job type run.
 function performance_run() {
@@ -183,14 +190,43 @@ function performance_run() {
     fi
     echo "============================================================================"
 
-    # Calculate the command to run. The function will return the command in the passed array.
-    local cmd=
-    performance_main_command cmd # By nameref.
+    datestring=`date '+%Y%m%d%H%M'`
+    # Get the plan file name.
+    testplanfile=`ls "${SHAREDDIR}"/planfiles/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    testusersfile=`ls "${SHAREDDIR}"/planfiles/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    group="${MOODLE_BRANCH}"
+    description="${MOODLE_BRANCH}"
+    siteversion=""
+    sitebranch="${MOODLE_BRANCH}"
+    sitecommit="${MOODLE_BRANCH}"
+    runoutput="${SHAREDDIR}/results/$datestring.output"
 
-    echo "Running: ${cmd[*]}"
+    # Calculate the command to run. The function will return the command in the passed array.
+    local jmeterruncmd=
+    performance_main_command jmeterruncmd # By nameref.
+
+    echo "Running: ${jmeterruncmd[*]}"
     echo ">>> Performance run at $(date) <<<"
-    docker exec -t "${JMETER}" "${cmd[@]}"
+    local dockerrunargs=
+    docker-jmeter_run_args dockerrunargs # By nameref
+
+    echo "${dockerrunargs[@]}"
+    echo docker run ${dockerrunargs[@]} -- ${jmeterruncmd[@]}
+    docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} > "${runoutput}"
     EXITCODE=$?
+    echo "============================================================================"
+    echo "============================================================================"
+    echo "============================================================================"
+read
+
+    # Grep the logs looking for errors and warnings.
+    for errorkey in ERROR WARN; do
+      # Also checking that the errorkey is the log entry type.
+      if grep $errorkey "${SHAREDDIR}/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
+        echo "Error: \"$errorkey\" found in jmeter logs, read $logfile to see the full trace."
+        EXITCODE=1
+      fi
+    done
 
     echo "============================================================================"
     echo "== Date: $(date)"
@@ -213,10 +249,19 @@ function performance_teardown() {
 function performance_main_command() {
     local -n _cmd=$1 # Return by nameref.
 
+    # Uses the test plan specified in the CLI call.
+    logfile="logs/jmeter.$datestring.log"
+
+    includelogs=1
+
+    # Include logs string.
+    includelogsstr="-Jincludelogs=$includelogs"
+    samplerinitstr="-Jbeanshell.listener.init=recorderfunctions.bsf"
+
+
     # TODO: Get all of these values from somewhere?
     # Build the complete perf command for the run.
-    _cmd=(
-        jmeter \
+        _cmd=(
             -n \
             -j "/shared/logs/jmeter.log" \
             -t "$testplanfile" \
@@ -226,15 +271,10 @@ function performance_main_command() {
             -Jsiteversion="$siteversion" \
             -Jsitebranch="$sitebranch" \
             -Jsitecommit="$sitecommit" \
-            $samplerinitstr \
-            $includelogsstr \
-            $users \
-            $loops \
-            $rampup \
-            $throughput \
-            > $runoutput || \
-            throw_error $jmetererrormsg
-    )
+            -Jusers=50 -Jloops=1 -Jrampup=10 -Jthroughput=1 \
+            $samplerinitstr $includelogsstr
+        )
+            #$includelogsstr $users $loops $rampup $throughput
 }
 
 function perfomance_testsite_generator_command() {
@@ -257,7 +297,7 @@ function performance_testplan_generator_command() {
     _cmd=(
         php admin/tool/generator/cli/maketestplan.php \
             --size="${SITESIZE}" \
-            --shortname="${COURSENAME}" \
+            --shortname="testcourse_3" \
             --bypasscheck
     )
 }

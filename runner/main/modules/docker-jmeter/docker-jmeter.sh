@@ -47,15 +47,21 @@ function docker-jmeter_setup() {
     echo "============================================================================"
 
     # Start the jmeter server
-    docker run \
-        --detach \
-        --name "${JMETER}" \
-        justb4/jmeter
+    docker pull alpine/jmeter:2.11
 
-    echo "JMETER: URL: ${JMETERTESTURL}"
-    echo "JMETER logs:"
-    docker logs "${JMETER}"
+    cp -rf "${BASEDIR}"/modules/docker-jmeter/libraries/* "${SHAREDDIR}"
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
+}
+
+function docker-jmeter_run_args() {
+    local -n _cmd=$1 # Return by nameref.
+    # Start the jmeter server
+    _cmd=(
+            --name "${JMETER}" \
+    	    -v "${SHAREDDIR}:/shared" \
+	        -w /shared \
+            alpine/jmeter:2.11
+    )
 }
