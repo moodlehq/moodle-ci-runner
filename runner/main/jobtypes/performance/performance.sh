@@ -220,7 +220,7 @@ function performance_run() {
     for errorkey in ERROR WARN; do
       # Also checking that the errorkey is the log entry type.
       if grep $errorkey "${SHAREDDIR}/output/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
-        echo "Error: \"$errorkey\" found in jmeter logs, read $logfile to see the full trace."
+        echo "Error: \"$errorkey\" found in jmeter logs, read log file to see the full trace."
         EXITCODE=1
       fi
     done
