@@ -177,7 +177,7 @@ function performance_generate_test_data() {
         # Extract the filename from the URL
         filename=$(basename "${url}")
         echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
-        docker exec -i -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
+        docker exec -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
     done
 }
 
