@@ -31,6 +31,7 @@ function performance_to_env_file() {
         DBHOST_DBREPLICA
         WEBSERVER
         MOODLE_WWWROOT
+        SITESIZE
     )
     echo "${env[@]}"
 }
@@ -152,8 +153,8 @@ function performance_generate_test_data() {
     # Generate the test plan files and capture the output
     local testplancmd
     performance_testplan_generator_command testplancmd # By nameref.
-    echo "Running: docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
-    testplanfiles=$(docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
+    echo "Running: docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
+    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
 
     # Display the captured output
     echo "Captured Output:"
