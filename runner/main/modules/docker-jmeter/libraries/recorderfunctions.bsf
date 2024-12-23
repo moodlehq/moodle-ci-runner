@@ -4,7 +4,7 @@ import org.apache.jmeter.util.JMeterUtils;      // http://jakarta.apache.org/jme
 
 
 testStarted(){
-    String filenamepath = "runs/tmpfilename.php";
+    String filenamepath = "output/runs/rundata.php";
     FileWriter fstream = new FileWriter(filenamepath, true);
     BufferedWriter out = new BufferedWriter(fstream);
     out.write("<?php\n");
@@ -12,7 +12,7 @@ testStarted(){
 }
 
 testEnded(){
-    File from = new File("runs/tmpfilename.php");
+    File from = new File("output/runs/rundata.php");
     File to = new File(JMeterUtils.getProperty("filepath"));
     from.renameTo(to);
     to.setReadable(true, false);

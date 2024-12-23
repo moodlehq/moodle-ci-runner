@@ -75,7 +75,7 @@ $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
 $CFG->phpunit_prefix = 't_';
 
 // Set the generated users password to avoid the default non-loggeable one.
-$CFG->tool_generator_users_password = '%%toolgeneratorpassword%%';
+$CFG->tool_generator_users_password = 'toolgeneratorpassword';
 
 if (\moodlehq_ci_runner::job_type_matches('behat')) {
     // Configure behat.

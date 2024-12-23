@@ -153,8 +153,6 @@ function performance_generate_test_data() {
     local testplancmd
     performance_testplan_generator_command testplancmd # By nameref.
     echo "Running: docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
-    echo "_===> PAUSING - Hit Enter to run test <===_"
-    read
     testplanfiles=$(docker exec -i -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
 
     # Display the captured output
@@ -164,9 +162,9 @@ function performance_generate_test_data() {
 
     # Ensure the directory exists and is writable
     mkdir -p "${SHAREDDIR}/planfiles"
-    mkdir -p "${SHAREDDIR}/logs"
-    mkdir -p "${SHAREDDIR}/results"
-    mkdir -p "${SHAREDDIR}/runs"
+    mkdir -p "${SHAREDDIR}/output/logs"
+    mkdir -p "${SHAREDDIR}/output/results"
+    mkdir -p "${SHAREDDIR}/output/runs"
 
     chmod -R 2777 "${SHAREDDIR}"
 
@@ -201,7 +199,7 @@ function performance_run() {
     siteversion=""
     sitebranch="${MOODLE_BRANCH}"
     sitecommit="${MOODLE_BRANCH}"
-    runoutput="${SHAREDDIR}/results/$datestring.output"
+    runoutput="${SHAREDDIR}/output/results/$datestring.output"
 
     # Calculate the command to run. The function will return the command in the passed array.
     local jmeterruncmd=
@@ -216,15 +214,11 @@ function performance_run() {
     echo docker run ${dockerrunargs[@]} ${jmeterruncmd[@]}
     docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
     EXITCODE=$?
-    echo "============================================================================"
-    echo "============================================================================"
-    echo "============================================================================"
-read
 
     # Grep the logs looking for errors and warnings.
     for errorkey in ERROR WARN; do
       # Also checking that the errorkey is the log entry type.
-      if grep $errorkey "${SHAREDDIR}/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
+      if grep $errorkey "${SHAREDDIR}/output/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
         echo "Error: \"$errorkey\" found in jmeter logs, read $logfile to see the full trace."
         EXITCODE=1
       fi
@@ -239,8 +233,6 @@ read
 
 # Performance job type teardown.
 function performance_teardown() {
-    # Need to copy the results from the jmeter test into the shared directory.
-    # cp "${SHAREDDIR}"/timing.json "${timingpath}"
     echo "TODO: Copy results to results directory for persistence into S3"
 }
 
@@ -251,12 +243,8 @@ function performance_teardown() {
 function performance_main_command() {
     local -n _cmd=$1 # Return by nameref.
 
-    # Uses the test plan specified in the CLI call.
-    logfile="logs/jmeter.$datestring.log"
-
-    includelogs=1
-
     # Include logs string.
+    includelogs=1
     includelogsstr="-Jincludelogs=$includelogs"
     samplerinitstr="-Jbeanshell.listener.init=recorderfunctions.bsf"
 
@@ -265,7 +253,7 @@ function performance_main_command() {
     # Build the complete perf command for the run.
         _cmd=(
             -n \
-            -j "/shared/logs/jmeter.log" \
+            -j "/shared/output/logs/jmeter.log" \
             -t "$testplanfile" \
             -Jusersfile="$testusersfile" \
             -Jgroup="$group" \
@@ -276,7 +264,6 @@ function performance_main_command() {
             -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
             $samplerinitstr $includelogsstr
         )
-            #$includelogsstr $users $loops $rampup $throughput
 }
 
 function perfomance_testsite_generator_command() {

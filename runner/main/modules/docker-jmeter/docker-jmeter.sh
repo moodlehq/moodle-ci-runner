@@ -47,7 +47,7 @@ function docker-jmeter_setup() {
     echo "============================================================================"
 
     # Start the jmeter server
-    docker pull alpine/jmeter:2.11
+    docker pull alpine/jmeter:latest
 
     cp -rf "${BASEDIR}"/modules/docker-jmeter/libraries/* "${SHAREDDIR}"
 
@@ -64,6 +64,6 @@ function docker-jmeter_run_args() {
             -u `id -u` \
     	    -v "${SHAREDDIR}:/shared" \
 	        -w /shared \
-            alpine/jmeter:2.11
+            alpine/jmeter:latest
     )
 }
