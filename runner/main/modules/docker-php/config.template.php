@@ -51,7 +51,13 @@ if (getenv('DBTYPE') === 'sqlsrv') {
 // Skip language upgrade during the on-sync period.
 $CFG->skiplangupgrade = false;
 
-$CFG->wwwroot   = 'http://host.name';
+// Enable tests needing language install/upgrade
+// only if we have language upgrades enabled (aka,
+// when we aren't skipping them).
+if (empty($CFG->skiplangupgrade)) {
+    define('TOOL_LANGIMPORT_REMOTE_TESTS', true);
+}
+$CFG->wwwroot   = getenv('MOODLE_WWWROOT') ?: 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
@@ -68,14 +74,19 @@ $CFG->passwordpolicy = 0;
 $CFG->phpunit_dataroot  = '/var/www/phpunitdata';
 $CFG->phpunit_prefix = 't_';
 
-// Configure behat.
-\moodlehq_ci_runner::set_behat_configuration(
-    getenv('WEBSERVER'),
-    getenv('BROWSER'),
-    getenv('BEHAT_PARALLEL'),
-    !empty(getenv('BEHAT_TIMING_FILENAME')),
-    getenv('BEHAT_INCREASE_TIMEOUT')
-);
+// Set the generated users password to avoid the default non-loggeable one.
+$CFG->tool_generator_users_password = 'toolgeneratorpassword';
+
+if (\moodlehq_ci_runner::job_type_matches('behat')) {
+    // Configure behat.
+    \moodlehq_ci_runner::set_behat_configuration(
+        getenv('WEBSERVER'),
+        getenv('BROWSER'),
+        getenv('BEHAT_PARALLEL'),
+        !empty(getenv('BEHAT_TIMING_FILENAME')),
+        getenv('BEHAT_INCREASE_TIMEOUT')
+    );
+}
 
 // Apply custom configuration settings.
 if ($config = getenv('MOODLE_CONFIG')) {
@@ -169,6 +180,13 @@ require_once(__DIR__ . '/lib/setup.php');
  * Configuration utility for the CI runner.
  */
 class moodlehq_ci_runner {
+    public static function job_type_matches(string $type): bool {
+        $jobtype = getenv('JOBTYPE');
+        if ($jobtype) {
+            return ($jobtype === $type);
+        }
+        return true;
+    }
 
     /**
      * Set behat configuration.
