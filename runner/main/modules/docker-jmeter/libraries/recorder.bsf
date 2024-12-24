@@ -155,7 +155,7 @@ EscapeQuotes(String text) {
 Runnable mr = MoodleResult(ctx);
 
 // Get the file (it is created in testStarted).
-String filenamepath = "runs/tmpfilename.php";
+String filenamepath = "output/runs/rundata.php";
 
 // We add the run info when starting the first thread
 if (JMeterUtils.getProperty("headerprinted") == null) {
