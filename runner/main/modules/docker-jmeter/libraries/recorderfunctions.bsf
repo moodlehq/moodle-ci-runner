@@ -10,11 +10,3 @@ testStarted(){
     out.write("<?php\n");
     out.close();
 }
-
-testEnded(){
-    File from = new File("output/runs/rundata.php");
-    File to = new File(JMeterUtils.getProperty("filepath"));
-    from.renameTo(to);
-    to.setReadable(true, false);
-    to.setWritable(true, false);
-}
