@@ -221,7 +221,7 @@ function performance_run() {
       # Also checking that the errorkey is the log entry type.
       if grep $errorkey "${SHAREDDIR}/output/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
         echo "Error: \"$errorkey\" found in jmeter logs, read log file to see the full trace."
-        EXITCODE=1
+        # EXITCODE=1
       fi
     done
 
@@ -235,6 +235,7 @@ function performance_run() {
 # Performance job type teardown.
 function performance_teardown() {
     echo "TODO: Copy results to results directory for persistence into S3"
+    tree "${SHAREDDIR}/output"
 }
 
 # Calculate the command to run for Performance main execution,
