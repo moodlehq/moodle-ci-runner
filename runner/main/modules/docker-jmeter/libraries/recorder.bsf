@@ -193,54 +193,10 @@ WritePhpLine(String line) {
 Runnable mr = MoodleResult(ctx);
 
 // We add the run info when starting the first thread
-DebugValue("Checking if header printed");
 if (JMeterUtils.getProperty("headerprinted") == null) {
-    DebugValue("Header not printed - adding it now");
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
-    DebugValue(mr.headerToString());
-
-    DebugValue("Host:");
-    DebugValue(vars.get("host"));
-
-    DebugValue("Site path:");
-    DebugValue(vars.get("sitepath"));
-
-    DebugValue("Group:");
-    DebugValue(props.get("group"));
-
-    DebugValue("Run Desec:");
-    DebugValue(props.get("desc"));
-
-    DebugValue("Users:");
-    DebugValue(vars.get("users"));
-
-    DebugValue("Loops:");
-    DebugValue(vars.get("loops"));
-
-    DebugValue("Rampup:");
-    DebugValue(vars.get("rampup"));
-
-    DebugValue("Throughput:");
-    DebugValue(vars.get("throughput"));
-
-    DebugValue("Size:");
-    DebugValue(vars.get("size"));
-
-    DebugValue("Base:");
-    DebugValue(vars.get("moodleversion"));
-
-    DebugValue("Site version:");
-    DebugValue(props.get("siteversion"));
-
-    DebugValue("Site branch:");
-    DebugValue(props.get("sitebranch"));
-
-    DebugValue("Site Commit:");
-    DebugValue(props.get("sitecommit"));
-
-    DebugValue("All done");
 
     WritePhpValue("host", vars.get("host"));
     WritePhpValue("sitepath", vars.get("sitepath"));
@@ -258,12 +214,8 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
 
     // Send the run timestamp to set it as run filename.
     props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
-    DebugValue("Header now printed");
-} else {
-    DebugValue("Header printed");
 }
 
 WritePhpLine(mr.toPHP());
 
 print(mr.toString());
-DebugValue(mr.toString());

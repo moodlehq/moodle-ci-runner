@@ -116,6 +116,11 @@ function performance_setup_normal() {
     echo "Running: ${initcmd[*]}"
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
+    # Copy the site normalisation script and execute it.
+    echo "Copying and executing the site normalisation script"
+    docker cp "${BASEDIR}/jobtypes/performance/normalise_site.php" "${WEBSERVER}:/var/www/html/normalise_site.php"
+    docker exec -t -u www-data "${WEBSERVER}" php /var/www/html/normalise_site.php
+
     echo "Creating test data"
     performance_generate_test_data
 
@@ -196,11 +201,11 @@ function performance_run() {
     testplanfile=`ls "${SHAREDDIR}"/planfiles/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     testusersfile=`ls "${SHAREDDIR}"/planfiles/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     group="${MOODLE_BRANCH}"
-    description="${MOODLE_BRANCH}"
+    description="${GIT_COMMIT}"
     siteversion=""
     sitebranch="${MOODLE_BRANCH}"
-    sitecommit="${MOODLE_BRANCH}"
-    runoutput="${SHAREDDIR}/output/results/$datestring.output"
+    sitecommit="${GIT_COMMIT}"
+    runoutput="${SHAREDDIR}/output/logs/run.log"
 
     # Calculate the command to run. The function will return the command in the passed array.
     local jmeterruncmd=
