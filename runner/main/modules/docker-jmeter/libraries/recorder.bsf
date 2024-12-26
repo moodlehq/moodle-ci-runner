@@ -152,7 +152,7 @@ EscapeQuotes(String text) {
 }
 
 DebugValue(DebugValue) {
-    if (DebugValue === null) {
+    if (DebugValue == null) {
         DebugValue = '[NULL]';
     }
 
