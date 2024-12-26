@@ -177,55 +177,55 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     LogString(mr.headerToString());
 
     LogString("Host:");
-    LogString(vars.get('host'));
+    LogString(vars.get("host"));
     LogString("$host = '"+vars.get("host")+"';\n");
 
     LogString("Site path:");
-    LogString(vars.get('sitepath'));
+    LogString(vars.get("sitepath"));
     LogString("$sitepath = '"+vars.get("sitepath")+"';\n");
 
     LogString("Group:");
-    LogString(props.get('group'));
+    LogString(props.get("group"));
     LogString("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
 
     LogString("Run Desec:");
-    LogString(props.get('desc'));
+    LogString(props.get("desc"));
     LogString("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
 
     LogString("Users:");
-    LogString(vars.get('users'));
+    LogString(vars.get("users"));
     LogString("$users = '"+vars.get("users")+"';\n");
 
     LogString("Loops:");
-    LogString(vars.get('loops'));
+    LogString(vars.get("loops"));
     LogString("$loopcount = '"+vars.get("loops")+"';\n");
 
     LogString("Rampup:");
-    LogString(vars.get('rampup'));
+    LogString(vars.get("rampup"));
     LogString("$rampup = '"+vars.get("rampup")+"';\n");
 
     LogString("Throughput:");
-    LogString(vars.get('throughput'));
+    LogString(vars.get("throughput"));
     LogString("$throughput = '"+vars.get("throughput")+"';\n");
 
     LogString("Size:");
-    LogString(vars.get('size'));
+    LogString(vars.get("size"));
     LogString("$size = '"+vars.get("size")+"';\n");
 
     LogString("Base:");
-    LogString(vars.get('moodleversion'));
+    LogString(vars.get("moodleversion"));
     LogString("$baseversion = '"+vars.get("moodleversion")+"';\n");
 
     LogString("Site version:");
-    LogString(props.get('siteversion'));
+    LogString(props.get("siteversion"));
     LogString("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
 
     LogString("Site branch:");
-    LogString(props.get('sitebranch'));
+    LogString(props.get("sitebranch"));
     LogString("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
 
     LogString("Site Commit:");
-    LogString(props.get('sitecommit'));
+    LogString(props.get("sitecommit"));
     LogString("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
 
     LogString("All done");
