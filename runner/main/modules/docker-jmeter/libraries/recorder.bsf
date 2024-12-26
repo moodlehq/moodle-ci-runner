@@ -153,7 +153,7 @@ EscapeQuotes(String text) {
 
 DebugValue(value) {
     if (value == null) {
-        value = '[NULL]';
+        value = "[NULL]";
     }
 
     String logPath = "output/logs/debug.log";
@@ -165,11 +165,11 @@ DebugValue(value) {
 }
 
 WritePhpValue(String key, null value) {
-    WritePhpValue(key, '');
+    WritePhpValue(key, "");
 }
 
 WritePhpValue(String key, null value, bool escape) {
-    WritePhpValue(key, '', escape);
+    WritePhpValue(key, "", escape);
 }
 
 WritePhpValue(String key, String value) {
