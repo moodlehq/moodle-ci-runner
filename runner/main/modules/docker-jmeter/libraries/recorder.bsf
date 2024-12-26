@@ -6,7 +6,6 @@ import org.apache.jmeter.threads.JMeterContext; // http://jakarta.apache.org/jme
 import org.apache.jmeter.samplers.SampleResult; // http://jakarta.apache.org/jmeter/api/org/apache/jmeter/samplers/SampleResult.html
 
 MoodleResult(JMeterContext ctx) {
-
     Integer thread = ctx.getThreadNum();
     SampleResult result = ctx.getPreviousResult();
 
@@ -156,16 +155,17 @@ Runnable mr = MoodleResult(ctx);
 
 // Get the file (it is created in testStarted).
 String filenamepath = "output/runs/rundata.php";
+FileWriter fstream = new FileWriter(filenamepath, true);
+BufferedWriter out = new BufferedWriter(fstream);
 
 // We add the run info when starting the first thread
+print('Checking if header printed');
 if (JMeterUtils.getProperty("headerprinted") == null) {
-
+    print('Header not printed - adding it now');
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
 
-    FileWriter fstream = new FileWriter(filenamepath, true);
-    BufferedWriter out = new BufferedWriter(fstream);
     out.write("$host = '"+vars.get("host")+"';\n");
     out.write("$sitepath = '"+vars.get("sitepath")+"';\n");
     out.write("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
@@ -179,14 +179,11 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     out.write("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
     out.write("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
     out.write("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
-    out.close();
 
     // Send the run timestamp to set it as run filename.
     props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
 }
 
-FileWriter fstream = new FileWriter(filenamepath, true);
-BufferedWriter out = new BufferedWriter(fstream);
 out.write(mr.toPHP());
 out.close();
 
