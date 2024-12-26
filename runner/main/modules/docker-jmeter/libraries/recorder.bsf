@@ -151,109 +151,122 @@ EscapeQuotes(String text) {
     return text.replace("'", "\\'");
 }
 
-LogString(String logString) {
+DebugValue(DebugValue) {
+    if (DebugValue === null) {
+        DebugValue = '[NULL]';
+    }
+
     String logPath = "output/logs/debug.log";
     FileWriter logStream = new FileWriter(logPath, true);
     BufferedWriter debugWriter = new BufferedWriter(logStream);
-    debugWriter.write(logString);
+    debugWriter.write(DebugValue);
     debugWriter.write("\n");
     debugWriter.close();
 }
 
+WritePhpValue(String key, null value) {
+    WritePhpValue(key, '');
+}
+
+WritePhpValue(String key, null value, bool escape) {
+    WritePhpValue(key, '', escape);
+}
+
+WritePhpValue(String key, String value) {
+    WritePhpLine(key, value, false);
+}
+
+WritePhpValue(String key, String value, bool escape) {
+    if (escape) {
+        value = EscapeQuotes(value);
+    }
+
+    WritePhpLine("$" + key + " = '" + value + "';");
+}
+
+WritePhpLine(String line) {
+    String filenamepath = "output/runs/rundata.php";
+    FileWriter fstream = new FileWriter(filenamepath, true);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write(line);
+    out.write("\n");
+    out.close();
+}
+
 Runnable mr = MoodleResult(ctx);
 
-// Get the file (it is created in testStarted).
-String filenamepath = "output/runs/rundata.php";
-FileWriter fstream = new FileWriter(filenamepath, true);
-BufferedWriter out = new BufferedWriter(fstream);
-
 // We add the run info when starting the first thread
-LogString("Checking if header printed");
+DebugValue("Checking if header printed");
 if (JMeterUtils.getProperty("headerprinted") == null) {
-    LogString("Header not printed - adding it now");
+    DebugValue("Header not printed - adding it now");
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
-    LogString(mr.headerToString());
+    DebugValue(mr.headerToString());
 
-    LogString("Host:");
-    LogString(vars.get("host"));
-    LogString("$host = '"+vars.get("host")+"';\n");
+    DebugValue("Host:");
+    DebugValue(vars.get("host"));
 
-    LogString("Site path:");
-    LogString(vars.get("sitepath"));
-    LogString("$sitepath = '"+vars.get("sitepath")+"';\n");
+    DebugValue("Site path:");
+    DebugValue(vars.get("sitepath"));
 
-    LogString("Group:");
-    LogString(props.get("group"));
-    LogString("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
+    DebugValue("Group:");
+    DebugValue(props.get("group"));
 
-    LogString("Run Desec:");
-    LogString(props.get("desc"));
-    LogString("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
+    DebugValue("Run Desec:");
+    DebugValue(props.get("desc"));
 
-    LogString("Users:");
-    LogString(vars.get("users"));
-    LogString("$users = '"+vars.get("users")+"';\n");
+    DebugValue("Users:");
+    DebugValue(vars.get("users"));
 
-    LogString("Loops:");
-    LogString(vars.get("loops"));
-    LogString("$loopcount = '"+vars.get("loops")+"';\n");
+    DebugValue("Loops:");
+    DebugValue(vars.get("loops"));
 
-    LogString("Rampup:");
-    LogString(vars.get("rampup"));
-    LogString("$rampup = '"+vars.get("rampup")+"';\n");
+    DebugValue("Rampup:");
+    DebugValue(vars.get("rampup"));
 
-    LogString("Throughput:");
-    LogString(vars.get("throughput"));
-    LogString("$throughput = '"+vars.get("throughput")+"';\n");
+    DebugValue("Throughput:");
+    DebugValue(vars.get("throughput"));
 
-    LogString("Size:");
-    LogString(vars.get("size"));
-    LogString("$size = '"+vars.get("size")+"';\n");
+    DebugValue("Size:");
+    DebugValue(vars.get("size"));
 
-    LogString("Base:");
-    LogString(vars.get("moodleversion"));
-    LogString("$baseversion = '"+vars.get("moodleversion")+"';\n");
+    DebugValue("Base:");
+    DebugValue(vars.get("moodleversion"));
 
-    LogString("Site version:");
-    LogString(props.get("siteversion"));
-    LogString("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
+    DebugValue("Site version:");
+    DebugValue(props.get("siteversion"));
 
-    LogString("Site branch:");
-    LogString(props.get("sitebranch"));
-    LogString("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
+    DebugValue("Site branch:");
+    DebugValue(props.get("sitebranch"));
 
-    LogString("Site Commit:");
-    LogString(props.get("sitecommit"));
-    LogString("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
+    DebugValue("Site Commit:");
+    DebugValue(props.get("sitecommit"));
 
-    LogString("All done");
+    DebugValue("All done");
 
-    out.write("$host = '"+vars.get("host")+"';\n");
-    out.write("$sitepath = '"+vars.get("sitepath")+"';\n");
-    out.write("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
-    out.write("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
-    out.write("$users = '"+vars.get("users")+"';\n");
-    out.write("$loopcount = '"+vars.get("loops")+"';\n");
-    out.write("$rampup = '"+vars.get("rampup")+"';\n");
-    out.write("$throughput = '"+vars.get("throughput")+"';\n");
-    out.write("$size = '"+vars.get("size")+"';\n");
-    out.write("$baseversion = '"+vars.get("moodleversion")+"';\n");
-    out.write("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
-    out.write("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
-    out.write("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
-
+    WritePhpValue("host", vars.get("host"));
+    WritePhpValue("sitepath", vars.get("sitepath"));
+    WritePhpValue("group", props.get("group"));
+    WritePhpValue("rundesc", props.get("desc"));
+    WritePhpValue("users", vars.get("users"));
+    WritePhpValue("loopcount", vars.get("loops"));
+    WritePhpValue("rampup", vars.get("rampup"));
+    WritePhpValue("throughput", vars.get("throughput"));
+    WritePhpValue("size", vars.get("size"));
+    WritePhpValue("baseversion", vars.get("moodleversion"));
+    WritePhpValue("siteversion", props.get("siteversion"), true);
+    WritePhpValue("sitebranch", props.get("sitebranch"), true);
+    WritePhpValue("sitecommit", props.get("sitecommit"));
 
     // Send the run timestamp to set it as run filename.
     props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
-    LogString("Header now printed");
+    DebugValue("Header now printed");
 } else {
-    LogString("Header printed");
+    DebugValue("Header printed");
 }
 
-out.write(mr.toPHP());
-out.close();
+WritePhpLine(mr.toPHP());
 
 print(mr.toString());
-LogString(mr.toString());
+DebugValue(mr.toString());
