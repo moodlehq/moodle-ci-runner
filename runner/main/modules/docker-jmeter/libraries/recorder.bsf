@@ -168,7 +168,7 @@ WritePhpValue(String key, value) {
     if (value == null) {
         value = "";
     }
-    WritePhpLine(key, value, false);
+    WritePhpValue(key, value, false);
 }
 
 WritePhpValue(String key, value, boolean escape) {
