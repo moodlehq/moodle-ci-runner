@@ -151,15 +151,15 @@ EscapeQuotes(String text) {
     return text.replace("'", "\\'");
 }
 
-DebugValue(DebugValue) {
-    if (DebugValue == null) {
-        DebugValue = '[NULL]';
+DebugValue(value) {
+    if (value == null) {
+        value = '[NULL]';
     }
 
     String logPath = "output/logs/debug.log";
     FileWriter logStream = new FileWriter(logPath, true);
     BufferedWriter debugWriter = new BufferedWriter(logStream);
-    debugWriter.write(DebugValue);
+    debugWriter.write(value);
     debugWriter.write("\n");
     debugWriter.close();
 }
