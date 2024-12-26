@@ -235,9 +235,11 @@ function performance_run() {
 # Performance job type teardown.
 function performance_teardown() {
     echo "TODO: Copy results to results directory for persistence into S3"
+    echo "Git commit is ${GIT_COMMIT}"
     tree "${SHAREDDIR}/output"
     mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}"
     cp -rf "${SHAREDDIR}/output" "${WORKSPACE}/results/${GIT_COMMIT}"
+    tree "${WORKSPACE}/results"
 }
 
 # Calculate the command to run for Performance main execution,
