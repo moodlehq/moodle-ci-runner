@@ -164,20 +164,17 @@ DebugValue(value) {
     debugWriter.close();
 }
 
-WritePhpValue(String key, null value) {
-    WritePhpValue(key, "");
-}
-
-WritePhpValue(String key, null value, bool escape) {
-    WritePhpValue(key, "", escape);
-}
-
-WritePhpValue(String key, String value) {
+WritePhpValue(String key, value) {
+    if (value == null) {
+        value = "";
+    }
     WritePhpLine(key, value, false);
 }
 
-WritePhpValue(String key, String value, bool escape) {
-    if (escape) {
+WritePhpValue(String key, value, bool escape) {
+    if (value == null) {
+        value = "";
+    } else if (escape) {
         value = EscapeQuotes(value);
     }
 
