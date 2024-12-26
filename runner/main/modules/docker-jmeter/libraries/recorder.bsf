@@ -159,9 +159,9 @@ FileWriter fstream = new FileWriter(filenamepath, true);
 BufferedWriter out = new BufferedWriter(fstream);
 
 // We add the run info when starting the first thread
-System.out.println('Checking if header printed');
+System.out.println("Checking if header printed");
 if (JMeterUtils.getProperty("headerprinted") == null) {
-    print('Header not printed - adding it now');
+    print("Header not printed - adding it now");
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
