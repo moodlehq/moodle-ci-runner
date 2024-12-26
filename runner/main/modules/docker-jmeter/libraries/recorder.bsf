@@ -151,6 +151,14 @@ EscapeQuotes(String text) {
     return text.replace("'", "\\'");
 }
 
+LogString(String logString) {
+    String logPath = "output/logs/debug.log";
+    FileWriter fstream = new FileWriter(logPath, true);
+    BufferedWriter out = new BufferedWriter(fstream);
+    out.write(logString);
+    out.close();
+}
+
 Runnable mr = MoodleResult(ctx);
 
 // Get the file (it is created in testStarted).
@@ -159,12 +167,13 @@ FileWriter fstream = new FileWriter(filenamepath, true);
 BufferedWriter out = new BufferedWriter(fstream);
 
 // We add the run info when starting the first thread
-System.out.println("Checking if header printed");
+LogString("Checking if header printed");
 if (JMeterUtils.getProperty("headerprinted") == null) {
-    print("Header not printed - adding it now");
+    LogString("Header not printed - adding it now");
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
+    LogString(mr.headerToString());
 
     out.write("$host = '"+vars.get("host")+"';\n");
     out.write("$sitepath = '"+vars.get("sitepath")+"';\n");
