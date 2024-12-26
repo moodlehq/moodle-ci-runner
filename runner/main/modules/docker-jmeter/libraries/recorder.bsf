@@ -153,10 +153,11 @@ EscapeQuotes(String text) {
 
 LogString(String logString) {
     String logPath = "output/logs/debug.log";
-    FileWriter fstream = new FileWriter(logPath, true);
-    BufferedWriter out = new BufferedWriter(fstream);
-    out.write(logString);
-    out.close();
+    FileWriter logStream = new FileWriter(logPath, true);
+    BufferedWriter debugWriter = new BufferedWriter(logStream);
+    debugWriter.write(logString);
+    debugWriter.write("\n");
+    debugWriter.close();
 }
 
 Runnable mr = MoodleResult(ctx);
@@ -189,11 +190,29 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     out.write("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
     out.write("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
 
+    LogString("$host = '"+vars.get("host")+"';\n");
+    LogString("$sitepath = '"+vars.get("sitepath")+"';\n");
+    LogString("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
+    LogString("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
+    LogString("$users = '"+vars.get("users")+"';\n");
+    LogString("$loopcount = '"+vars.get("loops")+"';\n");
+    LogString("$rampup = '"+vars.get("rampup")+"';\n");
+    LogString("$throughput = '"+vars.get("throughput")+"';\n");
+    LogString("$size = '"+vars.get("size")+"';\n");
+    LogString("$baseversion = '"+vars.get("moodleversion")+"';\n");
+    LogString("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
+    LogString("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
+    LogString("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
+
     // Send the run timestamp to set it as run filename.
     props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
+    LogString("Header now printed");
+} else {
+    LogString("Header printed");
 }
 
 out.write(mr.toPHP());
 out.close();
 
 print(mr.toString());
+LogString(mr.toString());
