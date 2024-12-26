@@ -176,6 +176,60 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     print(mr.headerToString());
     LogString(mr.headerToString());
 
+    LogString("Host:");
+    LogString(vars.get('host'));
+    LogString("$host = '"+vars.get("host")+"';\n");
+
+    LogString("Site path:");
+    LogString(vars.get('sitepath'));
+    LogString("$sitepath = '"+vars.get("sitepath")+"';\n");
+
+    LogString("Group:");
+    LogString(props.get('group'));
+    LogString("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
+
+    LogString("Run Desec:");
+    LogString(props.get('desc'));
+    LogString("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
+
+    LogString("Users:");
+    LogString(vars.get('users'));
+    LogString("$users = '"+vars.get("users")+"';\n");
+
+    LogString("Loops:");
+    LogString(vars.get('loops'));
+    LogString("$loopcount = '"+vars.get("loops")+"';\n");
+
+    LogString("Rampup:");
+    LogString(vars.get('rampup'));
+    LogString("$rampup = '"+vars.get("rampup")+"';\n");
+
+    LogString("Throughput:");
+    LogString(vars.get('throughput'));
+    LogString("$throughput = '"+vars.get("throughput")+"';\n");
+
+    LogString("Size:");
+    LogString(vars.get('size'));
+    LogString("$size = '"+vars.get("size")+"';\n");
+
+    LogString("Base:");
+    LogString(vars.get('moodleversion'));
+    LogString("$baseversion = '"+vars.get("moodleversion")+"';\n");
+
+    LogString("Site version:");
+    LogString(props.get('siteversion'));
+    LogString("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
+
+    LogString("Site branch:");
+    LogString(props.get('sitebranch'));
+    LogString("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
+
+    LogString("Site Commit:");
+    LogString(props.get('sitecommit'));
+    LogString("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
+
+    LogString("All done");
+
     out.write("$host = '"+vars.get("host")+"';\n");
     out.write("$sitepath = '"+vars.get("sitepath")+"';\n");
     out.write("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
@@ -190,19 +244,6 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     out.write("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
     out.write("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
 
-    LogString("$host = '"+vars.get("host")+"';\n");
-    LogString("$sitepath = '"+vars.get("sitepath")+"';\n");
-    LogString("$group = '"+EscapeQuotes(props.get("group"))+"';\n");
-    LogString("$rundesc = '"+EscapeQuotes(props.get("desc"))+"';\n");
-    LogString("$users = '"+vars.get("users")+"';\n");
-    LogString("$loopcount = '"+vars.get("loops")+"';\n");
-    LogString("$rampup = '"+vars.get("rampup")+"';\n");
-    LogString("$throughput = '"+vars.get("throughput")+"';\n");
-    LogString("$size = '"+vars.get("size")+"';\n");
-    LogString("$baseversion = '"+vars.get("moodleversion")+"';\n");
-    LogString("$siteversion = '"+EscapeQuotes(props.get("siteversion"))+"';\n");
-    LogString("$sitebranch = '"+EscapeQuotes(props.get("sitebranch"))+"';\n");
-    LogString("$sitecommit = '"+EscapeQuotes(props.get("sitecommit"))+"';\n");
 
     // Send the run timestamp to set it as run filename.
     props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
