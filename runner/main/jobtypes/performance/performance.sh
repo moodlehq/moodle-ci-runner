@@ -241,7 +241,7 @@ function performance_teardown() {
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
     mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}/runs"
     cp -rf "${SHAREDDIR}/output/logs" "${WORKSPACE}/results/${GIT_COMMIT}/logs"
-    cp "${WORKSPACE}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/rundata.php"
+    cp "${SHAREDDIR}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/rundata.php"
     tree "${WORKSPACE}/results"
 }
 
