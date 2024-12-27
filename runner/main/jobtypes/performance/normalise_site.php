@@ -5,8 +5,8 @@
  */
 
 define('CLI_SCRIPT', true);
-require_once(__DIR__ . '/moodle/config.php');
-require_once(__DIR__ . '/moodle/lib/adminlib.php');
+require_once(__DIR__ . '/config.php');
+require_once(__DIR__ . '/lib/adminlib.php');
 
 $settings = array(
     'debugdisplay', 'enablenotes', 'enableblogs', 'enablebadges', 'enableoutcomes',
