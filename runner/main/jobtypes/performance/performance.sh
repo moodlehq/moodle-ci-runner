@@ -98,7 +98,6 @@ function performance_config() {
 
 # Performance job type setup.
 function performance_setup() {
-    RUN_STARTTIME=$(date +%s)
     # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
     # (for bisect sessions we don't have to setup the environment).
     if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
@@ -239,10 +238,10 @@ function performance_run() {
 
 # Performance job type teardown.
 function performance_teardown() {
-    echo "Storing data with a timestamp of ${RUN_STARTTIME} and git commit of '${GIT_COMMIT}'"
+    echo "Storing data with a git commit of '${GIT_COMMIT}'"
     mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}/runs"
     cp -rf "${SHAREDDIR}/output/logs" "${WORKSPACE}/results/${GIT_COMMIT}/logs"
-    cp "${WORKSPACE}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/${RUN_STARTTIME}.php"
+    cp "${WORKSPACE}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/rundata.php"
     tree "${WORKSPACE}/results"
 }
 
