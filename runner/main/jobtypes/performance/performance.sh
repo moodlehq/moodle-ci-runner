@@ -241,7 +241,7 @@ function performance_teardown() {
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
     # We use the storage directory to store data for long term comparison.
-    TARGET="${WORKSPACE}/storage/${MOODLE_BRANCH}/${SITESIZE}"
+    TARGET="${WORKSPACE}/performance/storage/${MOODLE_BRANCH}/${SITESIZE}"
     mkdir -p "${TARGET}"
     cp -rf "${SHAREDDIR}/output/runs/rundata.php" "${TARGET}/${GIT_COMMIT}.php"
 }
