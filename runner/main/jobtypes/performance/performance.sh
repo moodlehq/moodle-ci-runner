@@ -98,6 +98,7 @@ function performance_config() {
 
 # Performance job type setup.
 function performance_setup() {
+    RUN_STARTTIME=$(date +%s)
     # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
     # (for bisect sessions we don't have to setup the environment).
     if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
@@ -169,7 +170,6 @@ function performance_generate_test_data() {
     # Ensure the directory exists and is writable
     mkdir -p "${SHAREDDIR}/planfiles"
     mkdir -p "${SHAREDDIR}/output/logs"
-    mkdir -p "${SHAREDDIR}/output/results"
     mkdir -p "${SHAREDDIR}/output/runs"
 
     chmod -R 2777 "${SHAREDDIR}"
@@ -239,11 +239,10 @@ function performance_run() {
 
 # Performance job type teardown.
 function performance_teardown() {
-    echo "TODO: Copy results to results directory for persistence into S3"
-    echo "Git commit is ${GIT_COMMIT}"
-    tree "${SHAREDDIR}/output"
-    mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}"
-    cp -rf "${SHAREDDIR}/output" "${WORKSPACE}/results/${GIT_COMMIT}"
+    echo "Storing data with a timestamp of ${RUN_STARTTIME} and git commit of '${GIT_COMMIT}'"
+    mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}/runs"
+    cp -rf "${SHAREDDIR}/output/logs" "${WORKSPACE}/results/${GIT_COMMIT}/logs"
+    cp "${WORKSPACE}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/${RUN_STARTTIME}.php"
     tree "${WORKSPACE}/results"
 }
 
