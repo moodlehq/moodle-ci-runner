@@ -198,6 +198,7 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
 
+    WritePhpValue("starttime", (System.currentTimeMillis() / 1000L).toString());
     WritePhpValue("host", vars.get("host"));
     WritePhpValue("sitepath", vars.get("sitepath"));
     WritePhpValue("group", props.get("group"));
@@ -211,9 +212,6 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     WritePhpValue("siteversion", props.get("siteversion"), true);
     WritePhpValue("sitebranch", props.get("sitebranch"), true);
     WritePhpValue("sitecommit", props.get("sitecommit"));
-
-    // Send the run timestamp to set it as run filename.
-    props.put("filepath", "runs/" + vars.get("runtimestamp") + ".php");
 }
 
 WritePhpLine(mr.toPHP());

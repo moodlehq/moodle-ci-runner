@@ -239,10 +239,11 @@ function performance_run() {
 # Performance job type teardown.
 function performance_teardown() {
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
-    mkdir -p "${WORKSPACE}/results/${GIT_COMMIT}/runs"
-    cp -rf "${SHAREDDIR}/output/logs" "${WORKSPACE}/results/${GIT_COMMIT}/logs"
-    cp "${SHAREDDIR}/output/runs/rundata.php" "${WORKSPACE}/results/${GIT_COMMIT}/runs/rundata.php"
-    tree "${WORKSPACE}/results"
+
+    # We use the storage directory to store data for long term comparison.
+    TARGET="${WORKSPACE}/storage/${MOODLE_BRANCH}/${SITESIZE}"
+    mkdir -p "${TARGET}"
+    cp -rf "${SHAREDDIR}/output/runs/rundata.php" "${TARGET}/${GIT_COMMIT}.php"
 }
 
 # Calculate the command to run for Performance main execution,
@@ -259,6 +260,7 @@ function performance_main_command() {
 
 
     # TODO: Get all of these values from somewhere?
+    # In particular where to get users, loops, rampup, and throughput from?
     # Build the complete perf command for the run.
         _cmd=(
             -n \
