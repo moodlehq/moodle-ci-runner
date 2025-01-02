@@ -238,12 +238,20 @@ function performance_run() {
 
 # Performance job type teardown.
 function performance_teardown() {
+    DATADIR="${SHAREDDIR}/output/runs"
+    cp "${BASEDIR}/jobtypes/performance/format_rundata.php" "${DATADIR}/format_rundata.php"
+    docker run \
+        -v "${DATADIR}:/shared" \
+        -w /shared \
+        php:8.3-cli \
+        php /shared/format_rundata.php rundata.php
+
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
     # We use the storage directory to store data for long term comparison.
-    TARGET="${WORKSPACE}/performance/storage/${MOODLE_BRANCH}/${SITESIZE}"
-    mkdir -p "${TARGET}"
-    cp -rf "${SHAREDDIR}/output/runs/rundata.php" "${TARGET}/${GIT_COMMIT}.php"
+    TARGETDIR=`dirname "${TARGET}"`
+    mkdir -p "${WORKSPACE}/${TARGETDIR}"
+    cp -rf "${DATADIR}/rundata.json" "${TARGET_FILE}"
 }
 
 # Calculate the command to run for Performance main execution,
