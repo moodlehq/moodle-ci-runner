@@ -32,6 +32,7 @@ function performance_to_env_file() {
         WEBSERVER
         MOODLE_WWWROOT
         SITESIZE
+        TARGET_FILE
     )
     echo "${env[@]}"
 }
@@ -46,6 +47,7 @@ function performance_to_summary() {
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
     echo "== SITESIZE: ${SITESIZE}"
+    echo "== TARGET_FILE: ${TARGET_FILE}"
 }
 
 # This job type defines the following env variables
@@ -249,7 +251,7 @@ function performance_teardown() {
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
     # We use the storage directory to store data for long term comparison.
-    TARGETDIR=`dirname "${TARGET}"`
+    TARGETDIR=`dirname "${TARGET_FILE}"`
     mkdir -p "${WORKSPACE}/${TARGETDIR}"
     cp -rf "${DATADIR}/rundata.json" "${TARGET_FILE}"
 }
