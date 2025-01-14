@@ -263,7 +263,6 @@ function phpunit_runcmd() {
         --disallow-test-output
         --fail-on-risky
         --log-junit /shared/log.junit
-        --verbose
     )
     if [[ -n "${PHPUNIT_FILTER}" ]]; then
         cmd+=(--filter "${PHPUNIT_FILTER}")
