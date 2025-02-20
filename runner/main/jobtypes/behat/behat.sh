@@ -57,6 +57,7 @@ function behat_to_env_file() {
 
         BEHAT_TIMING_FILENAME
         BEHAT_INCREASE_TIMEOUT
+        BEHAT_INIT_ARGS
 
         MOODLE_CONFIG
     )
@@ -83,6 +84,7 @@ function behat_to_summary() {
     echo "== BEHAT_RERUNS: ${BEHAT_RERUNS}"
     echo "== BEHAT_TIMING_FILENAME: ${BEHAT_TIMING_FILENAME}"
     echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
+    echo "== BEHAT_INIT_ARGS: ${BEHAT_INIT_ARGS}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
         echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
@@ -104,6 +106,7 @@ function behat_env() {
         BEHAT_RERUNS
         BEHAT_TIMING_FILENAME
         BEHAT_INCREASE_TIMEOUT
+        BEHAT_INIT_ARGS
         EXITCODE
     )
     echo "${env[@]}"
@@ -152,6 +155,7 @@ function behat_config() {
     BEHAT_RERUNS="${BEHAT_RERUNS:-1}"
     BEHAT_INCREASE_TIMEOUT="${BEHAT_INCREASE_TIMEOUT:-}"
     BEHAT_TIMING_FILENAME="${BEHAT_TIMING_FILENAME:-}"
+    BEHAT_INIT_ARGS="${BEHAT_INIT_ARGS:-}"
     EXITCODE=0
 
     # If the --name option is going to be used, then disable any parallel execution, it's not worth
@@ -234,6 +238,9 @@ function behat_initcmd() {
         -j="${BEHAT_PARALLEL}"
         --axe
     )
+    if [[ -n "${BEHAT_INIT_ARGS}" ]]; then
+        cmd+=( "${BEHAT_INIT_ARGS}")
+    fi
 }
 
 # Behat job type run.
