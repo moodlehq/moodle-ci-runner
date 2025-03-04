@@ -59,6 +59,8 @@ function behat_to_env_file() {
         BEHAT_INCREASE_TIMEOUT
         BEHAT_INIT_ARGS
 
+        MLBACKENDTESTNAME
+
         MOODLE_CONFIG
     )
     echo "${env[@]}"
@@ -71,6 +73,7 @@ function behat_to_summary() {
     echo "== DBTYPE: ${DBTYPE}"
     echo "== DBTAG: ${DBTAG}"
     echo "== DBREPLICAS: ${DBREPLICAS}"
+    echo "== MLBACKEND_PYTHON_VERSION: ${MLBACKEND_PYTHON_VERSION}"
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== BROWSER: ${BROWSER}"
     echo "== BROWSER_DEBUG: ${BROWSER_DEBUG}"
@@ -126,6 +129,7 @@ function behat_modules() {
         docker-mocks
         docker-selenium
         docker-ionic
+        docker-mlbackend
         docker-php
         moodle-config
         moodle-core-copy
