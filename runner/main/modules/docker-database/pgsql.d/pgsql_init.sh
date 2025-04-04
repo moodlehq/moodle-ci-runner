@@ -28,7 +28,7 @@ function pgsql_config_standalone() {
         -e POSTGRES_DB="${DBNAME}" \
         -e POSTGRES_USER=moodle \
         -e POSTGRES_PASSWORD=moodle \
-        --mount type=tmpfs,dst=/var/lib/postgresql/data,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/pgsql.d/standalone:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 
@@ -48,7 +48,7 @@ function pgsql_config_with_replicas() {
         -e POSTGRES_USER=moodle \
         -e POSTGRES_PASSWORD=moodle \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
-        --mount type=tmpfs,dst=/var/lib/postgresql/data,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/pgsql.d/primary:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 
@@ -66,7 +66,7 @@ function pgsql_config_with_replicas() {
         -e POSTGRES_PASSWORD=moodle \
         -e DBHOST="${DBHOST}" \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
-        --mount type=tmpfs,dst=/var/lib/postgresql/data,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/postgresql/data:rw,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/pgsql.d/replica:/docker-entrypoint-initdb.d" \
         postgres:"${DBTAG}"
 

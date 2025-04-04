@@ -29,7 +29,7 @@ function mysqli_config_standalone() {
         -e MYSQL_ROOT_PASSWORD="${DBPASS}" \
         -e MYSQL_USER="${DBUSER}" \
         -e MYSQL_PASSWORD="${DBPASS}" \
-        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/mysqli.d/standalone/conf.d:/etc/mysql/conf.d" \
         mysql:"${DBTAG}"
 
@@ -50,7 +50,7 @@ function mysqli_config_with_replicas() {
         -e MYSQL_USER="${DBUSER}" \
         -e MYSQL_PASSWORD="${DBPASS}" \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
-        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/mysqli.d/primary/conf.d:/etc/mysql/conf.d" \
         -v "${BASEDIR}/modules/docker-database/mysqli.d/primary/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d" \
         mysql:"${DBTAG}"
@@ -72,7 +72,7 @@ function mysqli_config_with_replicas() {
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
         -v "${BASEDIR}/modules/docker-database/mysqli.d/replica/conf.d:/etc/mysql/conf.d" \
         -v "${BASEDIR}/modules/docker-database/mysqli.d/replica/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d" \
-        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
+        --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=4096m \
         mysql:"${DBTAG}"
 
     # Wait few secs, before executing commands.
