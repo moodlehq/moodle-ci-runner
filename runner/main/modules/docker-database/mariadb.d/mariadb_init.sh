@@ -29,7 +29,7 @@ function mariadb_config_standalone() {
         -e MYSQL_DATABASE="${DBNAME}" \
         -e MYSQL_USER="${DBUSER}" \
         -e MYSQL_PASSWORD="${DBPASS}" \
-        --tmpfs /var/lib/mysql:rw,noexec,nosuid,size=1024m \
+        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/mariadb.d/standalone/conf.d:/etc/mysql/conf.d" \
         mariadb:"${DBTAG}"
 
@@ -50,7 +50,7 @@ function mariadb_config_with_replicas() {
         -e MYSQL_USER="${DBUSER}" \
         -e MYSQL_PASSWORD="${DBPASS}" \
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
-        --tmpfs /var/lib/mysql:rw \
+        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
         -v "${BASEDIR}/modules/docker-database/mariadb.d/primary/conf.d:/etc/mysql/conf.d" \
         -v "${BASEDIR}/modules/docker-database/mariadb.d/primary/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d" \
         mariadb:"${DBTAG}"
@@ -72,7 +72,7 @@ function mariadb_config_with_replicas() {
         -e DBHOST_DBREPLICA="${DBHOST_DBREPLICA}" \
         -v "${BASEDIR}/modules/docker-database/mariadb.d/replica/conf.d:/etc/mysql/conf.d" \
         -v "${BASEDIR}/modules/docker-database/mariadb.d/replica/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d" \
-        --tmpfs /var/lib/mysql:rw \
+        --mount type=tmpfs,dst=/var/lib/mysql,noexec,nosuid,size=4096m \
         mariadb:"${DBTAG}"
 
     # Wait few secs, before executing commands.
