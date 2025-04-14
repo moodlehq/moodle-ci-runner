@@ -305,12 +305,14 @@ class moodlehq_ci_runner {
                             // cannot upgrade until Chrome 89 is released due to another bug in Chromedriver.
                             'no-gpu',
 
-                            // Disable the Password manager.
+                            // Disable the Password save popup.
                             'disable-save-password-bubble',
                         ],
                         'prefs' => [
                             // Disable the Credential service.
                             'credentials_enable_service' => false,
+                            // Disable the Password manager.
+                            'profile.password_manager_enabled' => false,
                         ],
                     ],
                 ],
