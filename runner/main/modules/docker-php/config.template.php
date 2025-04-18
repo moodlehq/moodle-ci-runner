@@ -313,6 +313,8 @@ class moodlehq_ci_runner {
                             'credentials_enable_service' => false,
                             // Disable the Password manager.
                             'profile.password_manager_enabled' => false,
+                            // Disable the Password manager leak detection.
+                            'profile.password_manager_leak_detection' => false,
                         ],
                     ],
                 ],
