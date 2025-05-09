@@ -37,6 +37,7 @@ function git_moodle_checkout() {
     # Checkout a branch, tag or commit in the moodle.git repository.
     # $1: Branch, tag or commit to checkout.
     local branch="$1"
+    local remote="$2"
 
     if [[ -z ${branch} ]]; then
         echo "Please, specify a branch, tag or commit to checkout."
@@ -48,8 +49,18 @@ function git_moodle_checkout() {
         exit 1
     fi
 
-    # Checkout the branch or tag.
-    git -C "${MOODLE_CI_RUNNER_GITDIR}" --git-dir .git checkout -f --quiet "${branch}" || exit 1
+
+    if [[ -n ${remote} ]]; then
+        # Check if the remote is valid.
+        git -C "${MOODLE_CI_RUNNER_GITDIR}" fetch "${remote}" "${branch}" || {
+            echo "Unable to fetch ${remote} {$branch}."
+            exit 1
+        }
+        git -C "${MOODLE_CI_RUNNER_GITDIR}" --git-dir .git checkout -f --quiet FETCH_HEAD || exit 1
+    else
+        # Checkout the branch or tag.
+        git -C "${MOODLE_CI_RUNNER_GITDIR}" --git-dir .git checkout -f --quiet "${branch}" || exit 1
+    fi
 }
 
 function launch_runner() {
