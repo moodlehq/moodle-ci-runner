@@ -37,11 +37,7 @@ function moodle-core-copy_check() {
 # Moodle core copy module config.
 function moodle-core-copy_config() {
     # Get the Moodle branch from code, so we can make decisions based on it.
-    if [[ -d "${CODEDIR}/public" ]]; then
-        MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/public/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
-    else
-        MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
-    fi
+    MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
 }
 
 # Moodle core copy module setup.

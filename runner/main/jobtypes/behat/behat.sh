@@ -45,8 +45,6 @@ function behat_to_env_file() {
         SELENIUMURL_10
 
         WEBSERVER
-        APACHE_DOCUMENT_ROOT
-        PUBLICROOT
 
         IONICURL
 
@@ -153,7 +151,6 @@ function behat_check() {
 # Behat job type init.
 function behat_config() {
     # Apply some defaults.
-    PUBLICROOT="${PUBLICROOT:-}"
     RUNCOUNT="${RUNCOUNT:-1}"
     BEHAT_SUITE="${BEHAT_SUITE:-}"
     BEHAT_TAGS="${BEHAT_TAGS:-}"
@@ -240,7 +237,7 @@ function behat_initcmd() {
 
     # Build the complete init command.
     cmd=(
-        php ${PUBLICROOT}admin/tool/behat/cli/init.php
+        php admin/tool/behat/cli/init.php
         "${initsuite}"
         -j="${BEHAT_PARALLEL}"
         --axe
@@ -465,7 +462,7 @@ function behat_main_command() {
 
     # Let's build the complete behat command for the 1st (parallel) run.
     _cmd=(
-        php ${PUBLICROOT}admin/tool/behat/cli/run.php
+        php admin/tool/behat/cli/run.php
     )
 
     # Add the options and profile.
@@ -541,7 +538,7 @@ function behat_rerun_command() {
     # and, also, it automatically handles the file system links for the web server.
     # (output is a little bit uglier, but consistent with the main run).
     _reruncmd=(
-        php ${PUBLICROOT}admin/tool/behat/cli/run.php --rerun
+        php admin/tool/behat/cli/run.php --rerun
     )
 
     # Add the config, options and profile.

@@ -20,8 +20,6 @@
 # PHPUnit needed variables to go to the env file.
 function phpunit_to_env_file() {
     local env=(
-        PUBLICROOT
-
         DBTYPE
         DBTAG
         DBHOST
@@ -159,7 +157,7 @@ function phpunit_initcmd() {
     local -n cmd=$1
     cmd=(
         php
-        ${PUBLICROOT}admin/tool/phpunit/cli/init.php
+        admin/tool/phpunit/cli/init.php
     )
 }
 
