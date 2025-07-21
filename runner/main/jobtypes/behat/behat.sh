@@ -134,6 +134,7 @@ function behat_modules() {
         docker-mlbackend
         docker-php
         moodle-config
+        moodle-flaky-tests
         moodle-core-copy
         docker-healthy
         docker-summary
@@ -477,9 +478,11 @@ function behat_main_command() {
         _cmd+=(--suite="${BEHAT_SUITE}")
     fi
 
-    # Add the tags to run.
+    # Add the tags to run, excluding flaky scenarios.
     if [[ -n "${BEHAT_TAGS}" ]]; then
-        _cmd+=(--tags="${BEHAT_TAGS}")
+        _cmd+=(--tags="${BEHAT_TAGS}&&~@flaky")
+    else
+        _cmd+=(--tags="~@flaky")
     fi
 
     # Add the name to run.
