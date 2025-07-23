@@ -134,6 +134,7 @@ function behat_modules() {
         docker-mlbackend
         docker-php
         moodle-config
+        moodle-skip-tag-injector
         moodle-core-copy
         docker-healthy
         docker-summary
