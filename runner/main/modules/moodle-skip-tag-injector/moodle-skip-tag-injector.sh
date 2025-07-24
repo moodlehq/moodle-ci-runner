@@ -19,23 +19,29 @@ function moodle-skip-tag-injector_check() {
 
 function moodle-skip-tag-injector_config() {
 
+    # Verifies whether the PATHTOSKIPTAGINJECTOR environment variable is set.
+    if [[ -z "${PATHTOSKIPTAGINJECTOR}" ]]; then
+        echo "Warning: PATHTOSKIPTAGINJECTOR not defined. Skipping the skip tag injector."
+        return
+    fi
+
     # Check if PATHTOSKIPTAGINJECTOR exists and is a directory.
     if [[ ! -d "${PATHTOSKIPTAGINJECTOR}" ]]; then
-        echo "Error: PATHTOSKIPTAGINJECTOR '${PATHTOSKIPTAGINJECTOR}' does not exist or is not a directory."
-        exit 1
+        echo "Error: PATHTOSKIPTAGINJECTOR '${PATHTOSKIPTAGINJECTOR}' does not exist or is not a directory, skipping."
+        return
     fi
 
     # Check if the script exists.
     SKIP_TAG_INJECTOR_SCRIPT="${PATHTOSKIPTAGINJECTOR}/inject_skip_tag"
     if [[ ! -x "${SKIP_TAG_INJECTOR_SCRIPT}" ]]; then
         echo "Error: Script '${SKIP_TAG_INJECTOR_SCRIPT}' not found or not executable."
-        exit 1
+        return
     fi
 
     # Use the BROWSER environment variable.
     if [[ -z "${BROWSER}" ]]; then
         echo "Error: BROWSER environment variable is not set."
-        exit 1
+        return
     fi
 
     # Call the script for the specified branch and browser.
