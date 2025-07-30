@@ -45,7 +45,7 @@ teardown() {
     assert [ -f "${RUNNER_DIR}/runner/main/run.sh" ]
     assert [ -d "${MOODLE_CI_RUNNER_GITDIR}" ]
     assert [ -f "${MOODLE_CI_RUNNER_GITDIR}/config-dist.php" ]
-    assert [ -f "${MOODLE_CI_RUNNER_GITDIR}/admin/environment.xml" ]
+    assert [ -f "${MOODLE_CI_RUNNER_GITDIR}/public/admin/environment.xml" ]
 
     # Verify that git_moodle_checkout() is working as expected (branch, tag, commit).
     run git_moodle_checkout origin/MOODLE_39_STABLE

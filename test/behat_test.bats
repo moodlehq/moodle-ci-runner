@@ -92,6 +92,6 @@ teardown() {
     assert_output --partial "Setting up docker-mocks module..."
     assert_output --partial "Setting up docker-selenium module..."
     assert_output --partial "Acceptance tests site installed"
-    assert_output --partial "Running: php admin/tool/behat/cli/run.php"
+    assert_output --partial "Running: php public/admin/tool/behat/cli/run.php"
     assert_output --partial "== Exit code: 0"
 }
