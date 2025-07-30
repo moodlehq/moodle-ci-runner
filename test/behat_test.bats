@@ -71,7 +71,7 @@ teardown() {
     DBTYPE="sqlsrv"
     CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
     BEHAT_NAME="the label"
-    PLUGINSTOINSTALL="https://github.com/moodlehq/moodle-local_codechecker.git|local_codechecker|master"
+    PLUGINSTOINSTALL="https://github.com/moodlehq/moodle-local_codechecker.git|local_codechecker|main"
 
     # Checkout main
     run git_moodle_checkout main
@@ -87,7 +87,7 @@ teardown() {
     assert_output --partial "== DBREPLICAS: 0"
     assert_output --partial "== BEHAT_PARALLEL: 1"
     assert_output --partial "PLUGINSTOINSTALL: https://github.com/moodlehq/moodle-local_codechecker.git|"
-    assert_output --partial "Cloning https://github.com/moodlehq/moodle-local_codechecker.git/master"
+    assert_output --partial "Cloning https://github.com/moodlehq/moodle-local_codechecker.git/main"
     assert_output --partial "Axe accessibility tests are enabled by default"
     assert_output --partial "Setting up docker-mocks module..."
     assert_output --partial "Setting up docker-selenium module..."
