@@ -19,9 +19,7 @@
 
 # This module defines the following env variables.
 function moodle-core-copy_env() {
-    env=(
-        MOODLE_BRANCH
-    )
+    env=()
     echo "${env[@]}"
 }
 
@@ -31,17 +29,7 @@ function moodle-core-copy_check() {
     verify_modules docker plugins docker-php
 
     # These env variables must be set for the module to work.
-    verify_env BASEDIR CODEDIR PLUGINSDIR WEBSERVER FULLGIT LOCAL_CI_PATH
-}
-
-# Moodle core copy module config.
-function moodle-core-copy_config() {
-    # Get the Moodle branch from code, so we can make decisions based on it.
-    if [[ -d "${CODEDIR}/public" ]]; then
-        MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/public/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
-    else
-        MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
-    fi
+    verify_env BASEDIR CODEDIR PLUGINSDIR WEBSERVER FULLGIT LOCAL_CI_PATH MOODLE_BRANCH
 }
 
 # Moodle core copy module setup.
