@@ -143,7 +143,7 @@ function database_apply_default_dbtag() {
                 DBTAG=latest # No pin, right now this is 21c
                 ;;
             pgsql)
-                DBTAG=14 # Because it's the primary lowest supported version and we need it covered by default.
+                DBTAG=15 # Because it's the primary lowest supported version and we need it covered by default.
                 ;;
             *)
                 exit_error "Wrong DBTYPE: ${DBTYPE}. Fix it, or add support for that DBTYPE above"
