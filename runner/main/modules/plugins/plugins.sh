@@ -41,14 +41,20 @@ function plugins_check() {
     verify_modules docker git
 
     # These env variables must be set for the module to work.
-    verify_env WORKSPACE
+    verify_env WORKSPACE CODEDIR
 }
 
 # Plugins module config.
 function plugins_config() {
     # Apply some defaults.
     PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
-    PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+#    PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+
+    if [[ -d "${CODEDIR}/public" ]]; then
+        PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins/public}"
+    else
+        PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+    fi
 }
 
 # Plugins module setup, download all the requested plugins to workspace area.
