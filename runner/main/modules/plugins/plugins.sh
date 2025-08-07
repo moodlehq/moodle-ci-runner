@@ -41,7 +41,7 @@ function plugins_check() {
     verify_modules docker git
 
     # These env variables must be set for the module to work.
-    verify_env WORKSPACE
+    verify_env WORKSPACE PLUGINSDIR
 }
 
 # Plugins module config.
@@ -61,6 +61,9 @@ function plugins_setup() {
         local plugin=
         echo ">>> startsection Download external plugins <<<"
         echo "============================================================================"
+
+        PLUGINROOT="${PLUGINSDIR}/${PUBLICROOT}"
+
         # Download all the plugins in a temporary folder.
         IFS=';' read -ra plugins <<< "${PLUGINSTOINSTALL}"
         for plugin in "${plugins[@]}"; do
@@ -81,9 +84,11 @@ function plugins_setup() {
                     singlebranch="--single-branch"
                 fi
 
+                CHECKOUTDIR="${PLUGINROOT}/${directory}"
+
                 # Clone the plugin repository in the defined folder.
-                git clone --quiet "${branch}" "${singlebranch}" "${gitrepo}" "${PLUGINSDIR}/${directory}"
-                echo "Cloned. HEAD is @ $(cd "${PLUGINSDIR}/${directory}" && git rev-parse HEAD)"
+                git clone --quiet "${branch}" "${singlebranch}" "${gitrepo}" "${CHECKOUTDIR}"
+                echo "Cloned. HEAD is @ $(cd "${CHECKOUTDIR}" && git rev-parse HEAD)"
                 echo
             fi
         done
