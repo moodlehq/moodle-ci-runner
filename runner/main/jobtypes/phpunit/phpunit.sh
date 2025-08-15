@@ -63,6 +63,7 @@ function phpunit_to_summary() {
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
+    echo "== PHPUNIT_COVERAGE_CLOVER: ${PHPUNIT_COVERAGE_CLOVER}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
         echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
@@ -76,6 +77,7 @@ function phpunit_env() {
         RUNCOUNT
         PHPUNIT_FILTER
         PHPUNIT_TESTSUITE
+        PHPUNIT_COVERAGE_CLOVER
         EXITCODE
     )
     echo "${env[@]}"
@@ -122,6 +124,7 @@ function phpunit_config() {
     RUNCOUNT="${RUNCOUNT:-1}"
     PHPUNIT_FILTER="${PHPUNIT_FILTER:-}"
     PHPUNIT_TESTSUITE="${PHPUNIT_TESTSUITE:-}"
+    PHPUNIT_COVERAGE_CLOVER="${PHPUNIT_COVERAGE_CLOVER:-}"
     EXITCODE=0
 
     # If GOOD_COMMIT and BAD_COMMIT are set, it means that we are going to run a bisect
@@ -262,15 +265,28 @@ function phpunit_runcmd() {
     local -n cmd=$1
     cmd=(
         php
-        vendor/bin/phpunit
-        --disallow-test-output
-        --fail-on-risky
-        --log-junit /shared/log.junit
     )
+
+    if [[ -n "${PHPUNIT_COVERAGE_CLOVER}" ]]; then
+      cmd+=(-dpcov.enabled=1)
+      cmd+=(-dpcov.files=20000)
+      cmd+=(-dpcov.memory=4294967296)
+      cmd+=(-dpcov.enabled=1)
+    fi
+
+    cmd+=(vendor/bin/phpunit)
+    cmd+=(--disallow-test-output)
+    cmd+=(--fail-on-risky)
+    cmd+=(--log-junit /shared/log.junit)
+
     if [[ -n "${PHPUNIT_FILTER}" ]]; then
         cmd+=(--filter "${PHPUNIT_FILTER}")
     fi
     if [[ -n "${PHPUNIT_TESTSUITE}" ]]; then
         cmd+=(--testsuite "${PHPUNIT_TESTSUITE}")
+    fi
+
+    if [[ -n "${PHPUNIT_COVERAGE_CLOVER}" ]]; then
+      cmd+=(--coverage-clover "/shared/${PHPUNIT_COVERAGE_CLOVER}")
     fi
 }
