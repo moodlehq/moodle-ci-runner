@@ -100,6 +100,7 @@ function phpunit_modules() {
         docker-mlbackend
         docker-php
         moodle-config
+        moodle-test-skipper
         moodle-core-copy
         docker-healthy
         docker-summary
