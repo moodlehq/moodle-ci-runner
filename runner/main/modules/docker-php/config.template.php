@@ -49,7 +49,7 @@ if (getenv('DBTYPE') === 'sqlsrv') {
 }
 
 // Skip language upgrade during the on-sync period.
-$CFG->skiplangupgrade = true;
+$CFG->skiplangupgrade = false;
 
 $CFG->wwwroot   = 'http://host.name';
 $CFG->dataroot  = '/var/www/moodledata';
