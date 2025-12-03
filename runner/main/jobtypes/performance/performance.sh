@@ -96,6 +96,9 @@ function performance_config() {
     export MOODLE_WWWROOT="http://${WEBSERVER}"
     export SITESIZE="${SITESIZE:-S}"
     export COURSENAME="performance_course"
+
+    # Default target file (relative to WORKSPACE) where rundata.json will be stored.
+    export TARGET_FILE="${TARGET_FILE:-storage/performance/${MOODLE_BRANCH}/rundata.json}"
 }
 
 # Performance job type setup.
