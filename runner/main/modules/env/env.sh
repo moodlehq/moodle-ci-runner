@@ -54,11 +54,17 @@ function env_setup() {
     # Always add the job type.
     echo "JOBTYPE=${JOBTYPE}" >> "${ENVIROPATH}"
 
-    # Add all the variables that the job type requires.
     for var in $(get_job_to_env_file "${JOBTYPE}"); do
-        # Docker does not support multiline env variables via --env-file, so we need to
-        # remove the newlines from the value. See unresolved: https://github.com/moby/moby/issues/12997
-        value="${!var//$'\n'/}"
+        # detect if a variable named by $var exists without triggering 'set -u'
+        if ! declare -p "${var}" >/dev/null 2>&1; then
+            echo "DEBUG: variable ${var} is not set" >&2
+            value=""
+        else
+            # safe to perform indirect expansion now
+            value="${!var}"
+            # remove newlines for Docker --env-file compatibility
+            value="${value//$'\n'/}"
+        fi
         echo "${var}=${value}" >> "${ENVIROPATH}"
     done
 }
