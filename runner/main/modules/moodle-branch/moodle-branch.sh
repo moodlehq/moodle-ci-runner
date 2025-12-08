@@ -33,10 +33,12 @@ function moodle-branch_check() {
 
 # Moodle core copy module config.
 function moodle-branch_config() {
+  printf 'CODEDIR=%s\n' "${CODEDIR}"
     # Get the Moodle branch from code, so we can make decisions based on it.
     if [[ -d "${CODEDIR}/public" ]]; then
         MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/public/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
     else
         MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
     fi
+    printf 'MOODLE_BRANCH=%s\n' "${MOODLE_BRANCH}"
 }

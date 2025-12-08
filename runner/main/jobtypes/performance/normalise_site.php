@@ -6,7 +6,7 @@
 
 define('CLI_SCRIPT', true);
 require_once(__DIR__ . '/config.php');
-require_once(__DIR__ . '/lib/adminlib.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 $settings = array(
     'debugdisplay', 'enablenotes', 'enableblogs', 'enablebadges', 'enableoutcomes',

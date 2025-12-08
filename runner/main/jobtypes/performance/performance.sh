@@ -64,6 +64,7 @@ function performance_modules() {
     local modules=(
         env
         summary
+        moodle-branch
         docker
         docker-logs
         git
