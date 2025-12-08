@@ -253,10 +253,16 @@ function performance_teardown() {
 
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
-    # We use the storage directory to store data for long term comparison.
-    TARGETDIR=`dirname "${TARGET_FILE}"`
-    mkdir -p "${WORKSPACE}/${TARGETDIR}"
-    cp -rf "${DATADIR}/rundata.json" "${TARGET_FILE}"
+    # Resolve absolute target path (use WORKSPACE for relative TARGET_FILE)
+    if [[ "${TARGET_FILE}" = /* ]]; then
+        targetpath="${TARGET_FILE}"
+    else
+        targetpath="${WORKSPACE}/${TARGET_FILE}"
+    fi
+
+    targetdir="$(dirname "${targetpath}")"
+    mkdir -p "${targetdir}"
+    cp -f "${DATADIR}/rundata.json" "${targetpath}"
 }
 
 # Calculate the command to run for Performance main execution,
