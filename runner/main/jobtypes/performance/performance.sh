@@ -123,10 +123,46 @@ function performance_setup_normal() {
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
     # Copy the site normalisation script and execute it.
+#    echo "Copying and executing the site normalisation script"
+#    docker cp "${BASEDIR}/jobtypes/performance/normalise_site.php" "${WEBSERVER}:/var/www/html/normalise_site.php"
+#    docker exec -t -u www-data "${WEBSERVER}" php /var/www/html/normalise_site.php
+    # shellscript
     echo "Copying and executing the site normalisation script"
-    docker cp "${BASEDIR}/jobtypes/performance/normalise_site.php" "${WEBSERVER}:/var/www/html/normalise_site.php"
-    docker exec -t -u www-data "${WEBSERVER}" php /var/www/html/normalise_site.php
 
+    src="${BASEDIR}/jobtypes/performance/normalise_site.php"
+    dest="/var/www/html/normalise_site.php"
+
+    # Try docker cp
+    docker cp "${src}" "${WEBSERVER}:${dest}"
+    cp_status=$?
+
+    if [[ $cp_status -ne 0 ]]; then
+      echo "Warning: docker cp failed (exit ${cp_status}), will attempt fallback upload"
+    fi
+
+    # Verify file exists inside container
+    if ! docker exec -u www-data "${WEBSERVER}" test -f "${dest}"; then
+      echo "File not found inside container, uploading via stdin fallback"
+      # Upload via stdin into the container (preserves content even if docker cp failed)
+      docker exec -i "${WEBSERVER}" sh -c "cat > ${dest}"
+      upload_status=$?
+      if [[ $upload_status -ne 0 ]]; then
+        echo "Error: failed to upload ${dest} to container (exit ${upload_status})"
+        exit 1
+      fi
+      # Ensure permissions/ownership are correct
+      docker exec "${WEBSERVER}" chown www-data:www-data "${dest}" || true
+      docker exec "${WEBSERVER}" chmod 0644 "${dest}" || true
+    fi
+
+    # Execute the script inside the container as www-data
+    docker exec -t -u www-data "${WEBSERVER}" php "${dest}"
+    exec_status=$?
+
+    if [[ $exec_status -ne 0 ]]; then
+      echo "Error: php returned exit ${exec_status} when executing ${dest}"
+      exit $exec_status
+    fi
     echo "Creating test data"
     performance_generate_test_data
 
