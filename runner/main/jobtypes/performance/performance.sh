@@ -120,40 +120,21 @@ function performance_setup_normal() {
     local initcmd
     performance_initcmd initcmd # By nameref.
     echo "Running: ${initcmd[*]}"
+
+    plugin_repo="https://github.com/moodlehq/moodle-local_performancetool"
+    dest="/var/www/html/local/performancetool"
+
+    echo "Installing moodle-local_performancetool plugin into ${dest}"
+
+
+    # Clone the performance data generator plugin inside the container.
+    docker exec "${WEBSERVER}" sh -c "git clone --depth 1 ${plugin_repo} ${dest}"
+
+    # Debug / verification: show what is actually present
+    echo "Listing plugin directory inside container:"
+    docker exec "${WEBSERVER}" sh -c "ls -la /var/www/html/local || true"
+
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
-
-    # Copy the site normalisation script and execute it.
-#    echo "Copying and executing the site normalisation script"
-#    docker cp "${BASEDIR}/jobtypes/performance/normalise_site.php" "${WEBSERVER}:/var/www/html/normalise_site.php"
-#    docker exec -t -u www-data "${WEBSERVER}" php /var/www/html/normalise_site.php
-    # shellscript
-    echo "Copying and executing the site normalisation script"
-
-    src="${BASEDIR}/jobtypes/performance/normalise_site.php"
-    dest="/var/www/html/normalise_site.php"
-
-    # Try docker cp
-    docker cp "${src}" "${WEBSERVER}:${dest}"
-    cp_status=$?
-
-    if [[ $cp_status -ne 0 ]]; then
-      echo "Warning: docker cp failed (exit ${cp_status}), will attempt fallback upload"
-    fi
-
-    # Verify file exists inside container
-    if ! docker exec -u www-data "${WEBSERVER}" test -f "${dest}"; then
-      echo "File not found inside container, uploading via stdin fallback"
-      # Upload via stdin into the container (preserves content even if docker cp failed)
-      docker exec -i "${WEBSERVER}" sh -c "cat > ${dest}"
-      upload_status=$?
-      if [[ $upload_status -ne 0 ]]; then
-        echo "Error: failed to upload ${dest} to container (exit ${upload_status})"
-        exit 1
-      fi
-      # Ensure permissions/ownership are correct
-      docker exec "${WEBSERVER}" chown www-data:www-data "${dest}" || true
-      docker exec "${WEBSERVER}" chmod 0644 "${dest}" || true
-    fi
 
     # Execute the script inside the container as www-data
     docker exec -t -u www-data "${WEBSERVER}" php "${dest}"
@@ -163,8 +144,8 @@ function performance_setup_normal() {
       echo "Error: php returned exit ${exec_status} when executing ${dest}"
       exit $exec_status
     fi
-    echo "Creating test data"
-    performance_generate_test_data
+    performance_perftoolcmd perftoolcmd
+    docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
@@ -185,6 +166,19 @@ function performance_initcmd() {
             --shortname="moodle" \
             --adminuser=admin \
             --adminpass=adminpass
+    )
+}
+
+# Returns (by nameref) an array with the command needed to init the Performance site.
+function performance_perftoolcmd() {
+    local -n cmd=$1
+    # We need to determine the init suite to use.
+    local initsuite=""
+
+    # Build the complete init command.
+    cmd=(
+        php local/performancetool/generate_test_data.php \
+            --size="XS"
     )
 }
 
@@ -343,40 +337,5 @@ function perfomance_testsite_generator_command() {
             --fixeddataset \
             --bypasscheck \
             --filesizelimit="1000"
-    )
-}
-
-function performance_testplan_generator_command() {
-    local -n _cmd=$1 # Return by nameref.
-
-    case "${SITESIZE}" in
-    'XS')
-        targetcourse='testcourse_3'
-        ;;
-     'S')
-        targetcourse='testcourse_12'
-        ;;
-     'M')
-        targetcourse='testcourse_73'
-        ;;
-     'L')
-        targetcourse='testcourse_277'
-        ;;
-    'XL')
-        targetcourse='testcourse_1065'
-        ;;
-   'XXL')
-        targetcourse='testcourse_4177'
-        ;;
-       *)
-	;;
-    esac
-
-    # Build the complete perf command for the run.
-    _cmd=(
-        php admin/tool/generator/cli/maketestplan.php \
-            --size="${SITESIZE}" \
-            --shortname="${targetcourse}" \
-            --bypasscheck
     )
 }
