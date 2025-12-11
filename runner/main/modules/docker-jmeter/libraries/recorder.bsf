@@ -1,219 +1,84 @@
+import java.util.*;
 import java.io.*;
-import java.util.regex.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jmeter.util.JMeterUtils;      // http://jakarta.apache.org/jmeter/api/org/apache/jmeter/util/JMeterUtils.html
-import org.apache.jmeter.threads.JMeterContext; // http://jakarta.apache.org/jmeter/api/org/apache/jmeter/threads/JMeterContext.html
-import org.apache.jmeter.samplers.SampleResult; // http://jakarta.apache.org/jmeter/api/org/apache/jmeter/samplers/SampleResult.html
+import org.apache.jmeter.util.JMeterUtils;
 
-MoodleResult(JMeterContext ctx) {
-    Integer thread = ctx.getThreadNum();
-    SampleResult result = ctx.getPreviousResult();
+List header = new ArrayList();
+header.add("runId");
+header.add("timestamp");
+header.add("label");
+header.add("samples");
+header.add("errors");
+header.add("average");
+header.add("min");
+header.add("max");
+header.add("90th");
+header.add("dbread");
+header.add("dbwrite");
+header.add("dbtime");
+header.add("memory");
+header.add("files");
+header.add("load");
 
-    String html = result.getResponseDataAsString();
+// Files are relative to the execution directory
+String resultsFile = "results.csv";
+String runsFile = "runs.csv";
+String resultsHeader = "";
 
-    String dbreads = "0";
-    Pattern pdbreads = Pattern.compile(".*?DB reads/writes: (\\d+)/\\d+.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mdbreads = pdbreads.matcher(html);
-    if (mdbreads.matches()) {
-        dbreads = mdbreads.group(1);
-    }
-
-    String dbwritesstr = "0";
-    Pattern pdbwrites = Pattern.compile(".*?DB reads/writes: \\d+/(\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mdbwrites = pdbwrites.matcher(html);
-    if (mdbwrites.matches()) {
-        dbwritesstr = mdbwrites.group(1);
-    }
-    Integer dbwrites = Integer.parseInt(dbwritesstr);
-
-    // Adding logs if required.
-    if (props.get("includelogs") != null) {
-        Pattern plogwrites = Pattern.compile(".*?Log DB writes (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-        Matcher mlogwrites = plogwrites.matcher(html);
-        if (mlogwrites.matches()) {
-            dbwrites = dbwrites + Integer.parseInt(mlogwrites.group(1));
+// Check if header needs to be written
+if (!(new File(resultsFile).exists())) {
+    for (int i = 0; i < header.size(); i++) {
+        resultsHeader += header.get(i);
+        if (i < header.size() - 1) {
+            resultsHeader += ",";
         }
     }
-
-    String dbquerytime = "0";
-    Pattern pdbquerytime = Pattern.compile(".*?DB queries time: (\\d+(\\.\\d+)?) secs.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mdbquerytime = pdbquerytime.matcher(html);
-    if (mdbquerytime.matches()) {
-        dbquerytime = mdbquerytime.group(1);
-    }
-
-    String memoryused = "0";
-    Pattern pmemoryused = Pattern.compile(".*?RAM: (\\d+(\\.\\d+)?)[^M]*MB.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mmemoryused = pmemoryused.matcher(html);
-    if (mmemoryused.matches()) {
-        memoryused = mmemoryused.group(1);
-    }
-
-    String filesincluded = "0";
-    Pattern pfilesincluded = Pattern.compile(".*?Included (\\d+) files.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mfilesincluded = pfilesincluded.matcher(html);
-    if (mfilesincluded.matches()) {
-        filesincluded = mfilesincluded.group(1);
-    }
-
-    String serverload = "0";
-    Pattern pserverload = Pattern.compile(".*?Load average: (\\d+(\\.\\d+)?).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mserverload = pserverload.matcher(html);
-    if (mserverload.matches()) {
-        serverload = mserverload.group(1);
-    }
-
-    String sessionsize = "0";
-    Pattern psessionsize = Pattern.compile(".*?Session[^:]*: (\\d+(\\.\\d+)? ?[a-zA-Z]*).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher msessionsize = psessionsize.matcher(html);
-    if (msessionsize.matches()) {
-        sessionsize = msessionsize.group(1);
-    }
-
-    String timeused = "0";
-    Pattern ptimeused = Pattern.compile(".*?\"timeused[^\"]*\">(\\d+(\\.\\d+)?) secs.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mtimeused = ptimeused.matcher(html);
-    if (mtimeused.matches()) {
-        timeused = mtimeused.group(1);
-    }
-
-    // Actual information collected about the sample by jmeter
-    String username = vars.get("username");
-    String name = StringUtils.rightPad(result.getSampleLabel(), 30);
-    String url = result.getUrlAsString();
-    Integer bytes = result.getBytes();
-    Long time = result.getTime();
-    Long latency = result.getLatency();
-    Long starttime = result.getStartTime();
-    String status = result.getResponseCode();
-
-    headerToString() {
-        String str = "status | thread | ";
-        str += StringUtils.rightPad("user", 10) + " | ";
-        str += StringUtils.rightPad("name", 30) + " | db-r | db-w | ";
-        str += StringUtils.rightPad("dbquerytime", 8) + " | ";
-        str += StringUtils.rightPad("memory", 8) + " | ";
-        str += StringUtils.rightPad("files", 6) + " | ";
-        str += StringUtils.rightPad("load", 6) + " |";
-        return str;
-    }
-
-    toString() {
-        String str = StringUtils.rightPad(status, 6) + " | ";
-        str += StringUtils.rightPad(Integer.toString(thread), 6) + " | ";
-        str += StringUtils.rightPad(username, 10) + " | ";
-        str += StringUtils.rightPad(name, 30) + " | ";
-        str += StringUtils.rightPad(dbreads, 4) + " | ";
-        str += StringUtils.rightPad(Integer.toString(dbwrites), 4) + " | ";
-        str += StringUtils.rightPad(dbquerytime, 8) + " | ";
-        str += StringUtils.rightPad(memoryused, 8) + " | ";
-        str += StringUtils.rightPad(filesincluded, 6) + " | ";
-        str += StringUtils.rightPad(serverload, 6) + " | ";
-        str += url;
-        return str;
-    }
-
-    toPHP() {
-
-       int bytesPos = sessionsize.indexOf(" bytes");
-       int kbsPos = sessionsize.indexOf("KB");
-       // Convert the size to KB and strip out the measure.
-       if (bytesPos != -1) {
-           sessionsize = "0." + sessionsize.substring(0, bytesPos);
-       } else if (kbsPos != -1) {
-           sessionsize = sessionsize.substring(0, kbsPos);
-       }
-
-       String php = "$results["+thread+"][] = array(\n";
-       php += "    'thread'=>"+thread+",\n";        // Int
-       php += "    'starttime'=>"+starttime+",\n";      // Long
-       php += "    'dbreads'=>"+Integer.parseInt(dbreads)+",\n";    // String => Int
-       php += "    'dbwrites'=>"+dbwrites+",\n";
-       php += "    'dbquerytime'=>"+dbquerytime+",\n";
-       php += "    'memoryused'=>'"+memoryused+"',\n";
-       php += "    'filesincluded'=>'"+filesincluded+"',\n";
-       php += "    'serverload'=>'"+serverload+"',\n";
-       php += "    'sessionsize'=>'"+sessionsize+"',\n";
-       php += "    'timeused'=>'"+timeused+"',\n";
-       php += "    'name'=>'"+name+"',\n";
-       php += "    'url'=>'"+url+"',\n";
-       php += "    'bytes'=>'"+bytes+"',\n";
-       php += "    'time'=>'"+time+"',\n";
-       php += "    'latency'=>'"+latency+"',\n";
-       php += ");\n";
-       return php;
-    }
-
-    return this;
+    writeLineToCsv(resultsFile, resultsHeader);
 }
 
-EscapeQuotes(String text) {
-    return text.replace("'", "\\'");
+// Get the variables
+String runId = vars.get("runtimestamp");
+String timestamp = String.valueOf(System.currentTimeMillis());
+String label = sampleResult.getSampleLabel();
+String samples = String.valueOf(sampleResult.getSampleCount());
+String errors = String.valueOf(sampleResult.getErrorCount());
+String average = String.valueOf(sampleResult.getTime());
+// Assuming single sample results, min/max/90th are the same as time
+String min = String.valueOf(sampleResult.getTime());
+String max = String.valueOf(sampleResult.getTime());
+String ninetieth = String.valueOf(sampleResult.getTime());
+
+// Variables from Moodle response headers (if available)
+// You might need to adjust logic here if these headers aren't always present
+String dbread = "0";
+String dbwrite = "0";
+String dbtime = "0";
+String memory = "0";
+String files = "0";
+String load = "0";
+
+// Check response headers for performance info
+String responseHeaders = sampleResult.getResponseHeaders();
+if (responseHeaders != null) {
+    // Basic parsing logic - depends on actual header format
+    // This is a placeholder; you'd need regex or parsing if Moodle sends this data in headers
 }
 
-DebugValue(value) {
-    if (value == null) {
-        value = "[NULL]";
-    }
+// Build the CSV line
+StringBuilder line = new StringBuilder();
+line.append(runId).append(",");
+line.append(timestamp).append(",");
+line.append(label).append(",");
+line.append(samples).append(",");
+line.append(errors).append(",");
+line.append(average).append(",");
+line.append(min).append(",");
+line.append(max).append(",");
+line.append(ninetieth).append(",");
+line.append(dbread).append(",");
+line.append(dbwrite).append(",");
+line.append(dbtime).append(",");
+line.append(memory).append(",");
+line.append(files).append(",");
+line.append(load);
 
-    String logPath = "output/logs/debug.log";
-    FileWriter logStream = new FileWriter(logPath, true);
-    BufferedWriter debugWriter = new BufferedWriter(logStream);
-    debugWriter.write(value);
-    debugWriter.write("\n");
-    debugWriter.close();
-}
-
-WritePhpValue(String key, value) {
-    if (value == null) {
-        value = "";
-    }
-    WritePhpValue(key, value, false);
-}
-
-WritePhpValue(String key, value, boolean escape) {
-    if (value == null) {
-        value = "";
-    } else if (escape) {
-        value = EscapeQuotes(value);
-    }
-
-    WritePhpLine("$" + key + " = '" + value + "';");
-}
-
-WritePhpLine(String line) {
-    String filenamepath = "output/runs/rundata.php";
-    FileWriter fstream = new FileWriter(filenamepath, true);
-    BufferedWriter out = new BufferedWriter(fstream);
-    out.write(line);
-    out.write("\n");
-    out.close();
-}
-
-Runnable mr = MoodleResult(ctx);
-
-// We add the run info when starting the first thread
-if (JMeterUtils.getProperty("headerprinted") == null) {
-    // Output headers.
-    JMeterUtils.setProperty("headerprinted", "1");
-    print(mr.headerToString());
-
-    WritePhpValue("starttime", (System.currentTimeMillis() / 1000L).toString());
-    WritePhpValue("host", vars.get("host"));
-    WritePhpValue("sitepath", vars.get("sitepath"));
-    WritePhpValue("group", props.get("group"));
-    WritePhpValue("rundesc", props.get("desc"));
-    WritePhpValue("users", vars.get("users"));
-    WritePhpValue("loopcount", vars.get("loops"));
-    WritePhpValue("rampup", vars.get("rampup"));
-    WritePhpValue("throughput", vars.get("throughput"));
-    WritePhpValue("size", vars.get("size"));
-    WritePhpValue("baseversion", vars.get("moodleversion"));
-    WritePhpValue("siteversion", props.get("siteversion"), true);
-    WritePhpValue("sitebranch", props.get("sitebranch"), true);
-    WritePhpValue("sitecommit", props.get("sitecommit"));
-}
-
-WritePhpLine(mr.toPHP());
-
-print(mr.toString());
+writeLineToCsv(resultsFile, line.toString());

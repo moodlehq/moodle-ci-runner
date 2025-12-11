@@ -130,10 +130,6 @@ function performance_setup_normal() {
     # Clone the performance data generator plugin inside the container.
     docker exec "${WEBSERVER}" sh -c "git clone --depth 1 ${plugin_repo} ${dest}"
 
-    # Debug / verification: show what is actually present
-    echo "Listing plugin directory inside container:"
-    docker exec "${WEBSERVER}" sh -c "ls -la /var/www/html/local || true"
-
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
     # Execute the script inside the container as www-data
@@ -146,6 +142,26 @@ function performance_setup_normal() {
     fi
     performance_perftoolcmd perftoolcmd
     docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
+
+## --- New: copy generated plan files (jmx, csv) to the host shared folder ---
+#    echo "Copying generated plan files from container to ${SHAREDDIR}/planfiles"
+#
+#    # Ensure host side directory exists
+##    mkdir -p "${SHAREDDIR}/planfiles"
+#
+#    # Inside the container the plugin saves to /var/www/html/local/performancetool/planfiles.
+#    # Use the container's /shared mount to move the files into the host-shared dir.
+#    # Run as root to avoid permission issues, then set ownership to www-data.
+#    docker exec -u root "${WEBSERVER}" bash -lc "\
+#      mkdir -p /shared/planfiles && \
+#      cp -a /var/www/html/local/performancetool/planfiles/. /shared/planfiles/ || true && \
+#      chown -R www-data:www-data /shared/planfiles || true"
+#
+#    # Ensure host permissions allow later steps to read/write the files.
+#    chmod -R 2777 "${SHAREDDIR}/planfiles" || true
+#    echo "Files in ${SHAREDDIR}/planfiles:"
+#    ls -la "${SHAREDDIR}/planfiles" || true
+#    # ---------------------------------------------------------------------------
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
@@ -179,6 +195,7 @@ function performance_perftoolcmd() {
     cmd=(
         php local/performancetool/generate_test_data.php \
             --size="XS"
+            --planfilespath="/shared"
     )
 }
 
@@ -186,39 +203,39 @@ function performance_generate_test_data() {
     local phpcmd="php"
 
     # Generate Test Site.
-    local testsitecmd
-    perfomance_testsite_generator_command testsitecmd # By nameref.
-    echo "Running: ${testsitecmd[*]}"
-    docker exec -t -u www-data "${WEBSERVER}" "${testsitecmd[@]}"
-
-    # Generate the test plan files and capture the output
-    local testplancmd
-    performance_testplan_generator_command testplancmd # By nameref.
-    echo "Running: docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
-    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
-
-    # Display the captured output
-    echo "Captured Output:"
-    echo "${testplanfiles}"
-    echo "${SHAREDDIR}"
-
-    # Ensure the directory exists and is writable
-    mkdir -p "${SHAREDDIR}/planfiles"
-    mkdir -p "${SHAREDDIR}/output/logs"
-    mkdir -p "${SHAREDDIR}/output/runs"
-
-    chmod -R 2777 "${SHAREDDIR}"
-
-    # Extract URLs and download files to ${SHAREDDIR}
-    urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
-    for url in ${urls}; do
-        # Trim any whitespace or newline characters from the URL
-        url=$(echo "${url}" | tr -d '\r\n')
-        # Extract the filename from the URL
-        filename=$(basename "${url}")
-        echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
-        docker exec -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
-    done
+#    local testsitecmd
+#    perfomance_testsite_generator_command testsitecmd # By nameref.
+#    echo "Running: ${testsitecmd[*]}"
+#    docker exec -t -u www-data "${WEBSERVER}" "${testsitecmd[@]}"
+#
+#    # Generate the test plan files and capture the output
+#    local testplancmd
+#    performance_testplan_generator_command testplancmd # By nameref.
+#    echo "Running: docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
+#    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
+#
+#    # Display the captured output
+#    echo "Captured Output:"
+#    echo "${testplanfiles}"
+#    echo "${SHAREDDIR}"
+#
+#    # Ensure the directory exists and is writable
+#    mkdir -p "${SHAREDDIR}/planfiles"
+#    mkdir -p "${SHAREDDIR}/output/logs"
+#    mkdir -p "${SHAREDDIR}/output/runs"
+#
+#    chmod -R 2777 "${SHAREDDIR}"
+#
+#    # Extract URLs and download files to ${SHAREDDIR}
+#    urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
+#    for url in ${urls}; do
+#        # Trim any whitespace or newline characters from the URL
+#        url=$(echo "${url}" | tr -d '\r\n')
+#        # Extract the filename from the URL
+#        filename=$(basename "${url}")
+#        echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
+#        docker exec -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
+#    done
 }
 
 # Performance job type run.
@@ -233,8 +250,8 @@ function performance_run() {
 
     datestring=`date '+%Y%m%d%H%M'`
     # Get the plan file name.
-    testplanfile=`ls "${SHAREDDIR}"/planfiles/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
-    testusersfile=`ls "${SHAREDDIR}"/planfiles/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    testplanfile=`ls "${SHAREDDIR}"/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    testusersfile=`ls "${SHAREDDIR}"/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     group="${MOODLE_BRANCH}"
     description="${GIT_COMMIT}"
     siteversion=""

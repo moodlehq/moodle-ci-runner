@@ -1,12 +1,16 @@
 import java.io.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jmeter.util.JMeterUtils;      // http://jakarta.apache.org/jmeter/api/org/apache/jmeter/util/JMeterUtils.html
+import java.util.*;
 
-
-testStarted(){
-    String filenamepath = "output/runs/rundata.php";
-    FileWriter fstream = new FileWriter(filenamepath, true);
-    BufferedWriter out = new BufferedWriter(fstream);
-    out.write("<?php\n");
-    out.close();
+// Function to write a line to a CSV file
+void writeLineToCsv(String filename, String line) {
+    try {
+        File f = new File(filename);
+        FileOutputStream fos = new FileOutputStream(f, true);
+        PrintWriter pw = new PrintWriter(fos);
+        pw.println(line);
+        pw.close();
+        fos.close();
+    } catch (IOException e) {
+        System.err.println("Error writing to CSV: " + e.getMessage());
+    }
 }
