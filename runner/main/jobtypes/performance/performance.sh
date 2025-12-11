@@ -95,7 +95,7 @@ function performance_config() {
     EXITCODE=0
 
     export MOODLE_WWWROOT="http://${WEBSERVER}"
-    export SITESIZE="${SITESIZE:-S}"
+    export SITESIZE="${SITESIZE:-XS}"
     export COURSENAME="performance_course"
 
     # Default target file (relative to WORKSPACE) where rundata.json will be stored.
@@ -126,13 +126,12 @@ function performance_setup_normal() {
 
     echo "Installing moodle-local_performancetool plugin into ${dest}"
 
+    # Ensure host shared directories exist and are writable so plugin can save files.
+    mkdir -p "${SHAREDDIR}/planfiles" "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
+    chmod -R 2777 "${SHAREDDIR}" || true
 
     # Clone the performance data generator plugin inside the container.
     docker exec "${WEBSERVER}" sh -c "git clone --depth 1 ${plugin_repo} ${dest}"
-
-    # Debug / verification: show what is actually present
-    echo "Listing plugin directory inside container:"
-    docker exec "${WEBSERVER}" sh -c "ls -la /var/www/html/local || true"
 
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
@@ -146,6 +145,18 @@ function performance_setup_normal() {
     fi
     performance_perftoolcmd perftoolcmd
     docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
+
+    # Copy generated plan files (jmx, csv) from container to host-shared dir.
+    echo "Copying generated plan files from container to ${SHAREDDIR}/planfiles"
+
+    docker exec -u root "${WEBSERVER}" bash -lc "\
+      mkdir -p /shared/planfiles && \
+      cp -a /var/www/html/local/performancetool/planfiles/. /shared/planfiles/ || true && \
+      chown -R www-data:www-data /shared/planfiles || true"
+
+    chmod -R 2777 "${SHAREDDIR}/planfiles" || true
+    echo "Files in ${SHAREDDIR}/planfiles:"
+    ls -la "${SHAREDDIR}/planfiles" || true
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
@@ -178,63 +189,24 @@ function performance_perftoolcmd() {
     # Build the complete init command.
     cmd=(
         php local/performancetool/generate_test_data.php \
-            --size="XS"
+            --size="${SITESIZE}" \
+            --planfilespath="/shared" \
+            --quiet="false"
     )
-}
-
-function performance_generate_test_data() {
-    local phpcmd="php"
-
-    # Generate Test Site.
-    local testsitecmd
-    perfomance_testsite_generator_command testsitecmd # By nameref.
-    echo "Running: ${testsitecmd[*]}"
-    docker exec -t -u www-data "${WEBSERVER}" "${testsitecmd[@]}"
-
-    # Generate the test plan files and capture the output
-    local testplancmd
-    performance_testplan_generator_command testplancmd # By nameref.
-    echo "Running: docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}""
-    testplanfiles=$(docker exec -t -u www-data "${WEBSERVER}" "${testplancmd[@]}")
-
-    # Display the captured output
-    echo "Captured Output:"
-    echo "${testplanfiles}"
-    echo "${SHAREDDIR}"
-
-    # Ensure the directory exists and is writable
-    mkdir -p "${SHAREDDIR}/planfiles"
-    mkdir -p "${SHAREDDIR}/output/logs"
-    mkdir -p "${SHAREDDIR}/output/runs"
-
-    chmod -R 2777 "${SHAREDDIR}"
-
-    # Extract URLs and download files to ${SHAREDDIR}
-    urls=$(echo "${testplanfiles}" | grep -oP 'http://[^ ]+')
-    for url in ${urls}; do
-        # Trim any whitespace or newline characters from the URL
-        url=$(echo "${url}" | tr -d '\r\n')
-        # Extract the filename from the URL
-        filename=$(basename "${url}")
-        echo "Downloading: ${url} to ${SHAREDDIR}/${filename}"
-        docker exec -t -u www-data "${WEBSERVER}" curl -o "/shared/planfiles/${filename}" "${url}"
-    done
 }
 
 # Performance job type run.
 function performance_run() {
-    echo
-    if [[ RUNCOUNT -gt 1 ]]; then
-        echo ">>> startsection Starting ${RUNCOUNT} Performance main runs at $(date) <<<"
-    else
-        echo ">>> startsection Starting Performance main run at $(date) <<<"
-    fi
+
+    echo ">>> startsection Starting Performance main run at $(date) <<<"
     echo "============================================================================"
 
     datestring=`date '+%Y%m%d%H%M'`
     # Get the plan file name.
-    testplanfile=`ls "${SHAREDDIR}"/planfiles/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
-    testusersfile=`ls "${SHAREDDIR}"/planfiles/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    testplanfile=`ls "${SHAREDDIR}"/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    echo "Using test plan file: ${testplanfile}"
+    testusersfile=`ls "${SHAREDDIR}"/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
+    echo "Using test users file: ${testusersfile}"
     group="${MOODLE_BRANCH}"
     description="${GIT_COMMIT}"
     siteversion=""
@@ -242,11 +214,15 @@ function performance_run() {
     sitecommit="${GIT_COMMIT}"
     runoutput="${SHAREDDIR}/output/logs/run.log"
 
+    # Ensure run log directory exists and is writable so 'tee' can create the file.
+    mkdir -p "$(dirname "${runoutput}")"
+    chmod -R 2777 "${SHAREDDIR}/output/logs" || true
+
     # Calculate the command to run. The function will return the command in the passed array.
     local jmeterruncmd=
     performance_main_command jmeterruncmd # By nameref.
 
-    echo "Running: ${jmeterruncmd[*]}"
+    echo "Running performance command: ${jmeterruncmd[*]}"
     echo ">>> Performance run at $(date) <<<"
     local dockerrunargs=
     docker-jmeter_run_args dockerrunargs # By nameref
@@ -275,12 +251,23 @@ function performance_run() {
 # Performance job type teardown.
 function performance_teardown() {
     DATADIR="${SHAREDDIR}/output/runs"
+
+    # Ensure DATADIR exists before copying format_rundata.php.
+    mkdir -p "${DATADIR}"
+
     cp "${BASEDIR}/jobtypes/performance/format_rundata.php" "${DATADIR}/format_rundata.php"
+
+    # Check if rundata.php exists (generated by JMeter run).
+    if [[ ! -f "${DATADIR}/rundata.php" ]]; then
+        echo "Error: rundata.php not found in ${DATADIR}"
+        return 1
+    fi
+
     docker run \
         -v "${DATADIR}:/shared" \
         -w /shared \
         php:8.3-cli \
-        php /shared/format_rundata.php rundata.php
+        php "/shared/format_rundata.php" "rundata.php"
 
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
@@ -295,6 +282,7 @@ function performance_teardown() {
     mkdir -p "${targetdir}"
     cp -f "${DATADIR}/rundata.json" "${targetpath}"
 }
+
 
 # Calculate the command to run for Performance main execution,
 # returning it in the passed array parameter.
