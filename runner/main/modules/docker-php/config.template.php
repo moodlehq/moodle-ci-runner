@@ -56,6 +56,9 @@ $CFG->dataroot  = '/var/www/moodledata';
 $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
 
+// The CI infrastructure should have the router configured.
+$CFG->routerconfigured = true;
+
 // Debug options - possible to be controlled by flag in future..
 $CFG->debug = E_ALL; // DEBUG_DEVELOPER
 $CFG->debugdisplay = 1;
