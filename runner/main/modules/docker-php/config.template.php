@@ -57,7 +57,9 @@ $CFG->admin     = 'admin';
 $CFG->directorypermissions = 0777;
 
 // The CI infrastructure should have the router configured.
-$CFG->routerconfigured = true;
+// Note: This is not currently the case for Parallel Behat runs.
+// Commenting this out until such a time as it is supported properly.
+// $CFG->routerconfigured = true;
 
 // Debug options - possible to be controlled by flag in future..
 $CFG->debug = E_ALL; // DEBUG_DEVELOPER
