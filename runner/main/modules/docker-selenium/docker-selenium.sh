@@ -32,7 +32,6 @@ function docker-selenium_env() {
         SELENIUMURL_9
         SELENIUMURL_10
 
-        TRY_SELENIARM # Only for testing purposes, decide if we want to try arm64/aarch64 images.
         USE_SELVERSION
     )
     echo "${env[@]}"
@@ -106,16 +105,13 @@ function docker-selenium_setup() {
     fi
 
     # Only for testing purposes, we are going to introduce basic support for arm64 architecture.
-    # Many of the docker images already are multi-arch, but not the selenium ones, that are using
-    # a different repository for arm64. Let's use them here.
     # Important note: While we are still running Selenium 3, the arm64 images are using Selenium 4,
     # so they could come with new problems or incompatibilities.
-    # As said, this is only for testing purposes, we are not going to support arm64 officially yet.
-    # TODO: After testing, consider if we can make this the default for arm64, deleting this conf.
-    # and using the seleniarm images when `uname -m` is arm64 or aarch64.
-    if [[ -n ${TRY_SELENIARM} ]]; then
-        chromeimage="seleniarm/standalone-chromium:latest"
-        firefoximage="sseleniarm/standalone-firefox:latest"
+    local architecture=
+    architecture=$(uname -m)
+    if [[ $architecture == "arm64" ]] || [[ $architecture == "aarch64" ]]; then
+        chromeimage="selenium/standalone-chromium:latest"
+        firefoximage="selenium/standalone-firefox:latest"
     fi
 
     # And these are the final images and options we will use.
