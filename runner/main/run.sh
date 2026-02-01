@@ -46,13 +46,37 @@ if [[ -z ${WORKSPACE:-} ]]; then
     WORKSPACE="${MKTEMP}/workspace"
 fi
 
+# Composer install (1 to enable, 0 to disable).
+COMPOSERINSTALL="${COMPOSERINSTALL:-}"
+
+# Normalise the COMPOSERINSTALL to 0, or 1.
+if [[ -n ${COMPOSERINSTALL} ]] && {
+    [[ ${COMPOSERINSTALL,,} == "true" ]] || {
+        [[ ${COMPOSERINSTALL} =~ ^[0-9]+$ ]] && [[ ${COMPOSERINSTALL} -gt 0 ]]; }; }; then
+    COMPOSERINSTALL=1
+else
+    COMPOSERINSTALL=0
+fi
+
 # Base directory where the code is located.
 CODEDIR="${CODEDIR:-${WORKSPACE}/moodle}"
 APACHE_DOCUMENT_ROOT="${APACHE_DOCUMENT_ROOT:-/var/www/html}"
 PUBLICROOT="${PUBLICROOT:-}"
-if [[ -d "${CODEDIR}/public" ]]; then
-    PUBLICROOT="public/"
-    APACHE_DOCUMENT_ROOT="/var/www/html/public"
+
+# PHP working directory within the container.
+# This is used when creating the container, and when running most commands.
+PHPWORKINGDIR="${PHPWORKINGDIR:-}"
+
+if [[ "${COMPOSERINSTALL}" -eq 0 ]]; then
+    PHPWORKINGDIR="${PHPWORKINGDIR:-/var/www/html}"
+    if [[ -d "${CODEDIR}/public" ]]; then
+        PUBLICROOT="public/"
+        APACHE_DOCUMENT_ROOT="/var/www/html/public"
+    fi
+else
+    PHPWORKINGDIR="${PHPWORKINGDIR:-/var/www/composed}"
+    PUBLICROOT="moodle/public/"
+    APACHE_DOCUMENT_ROOT="${PHPWORKINGDIR}/moodle/public"
 fi
 
 # Fail if CODEDIR does not exist.

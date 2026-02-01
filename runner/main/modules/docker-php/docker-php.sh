@@ -54,6 +54,7 @@ function docker-php_setup() {
       --name "${WEBSERVER}" \
       --detach \
       --env-file "${ENVIROPATH}" \
+      --workdir="${PHPWORKINGDIR}" \
       -e "APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT}" \
       -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
       -v "${SHAREDDIR}":/shared \

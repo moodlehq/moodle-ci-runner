@@ -95,3 +95,54 @@ teardown() {
     assert_output --partial "Running: php public/admin/tool/behat/cli/run.php"
     assert_output --partial "== Exit code: 0"
 }
+
+
+@test "Behat tests: run parallel job using Composer" {
+    # Set all the required variables.
+    JOBTYPE="behat"
+    PHP_VERSION="8.4"
+    DBTYPE="pgsql"
+    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
+    BEHAT_TAGS="@mod_label&&@core,~@mod_assign"
+    BEHAT_PARALLEL="2"
+    COMPOSERINSTALL="1"
+
+    # Checkout main
+    run git_moodle_checkout MDL-87716-main-alt https://github.com/andrewnicols/moodle.git
+    assert_success
+
+    # Run the job
+    run launch_runner
+    assert_success
+    assert_output --partial "== JOBTYPE: behat"
+    assert_output --partial "== PHP version: 8.4"
+    assert_output --partial "== DBTYPE: pgsql"
+    assert_output --partial "== BEHAT_TAGS: @mod_label&&@core,~@mod_assign"
+    assert_output --partial "== DBREPLICAS: 0"
+    assert_output --partial "== Exit code: 0"
+}
+
+@test "Behat tests: run single job using Composer" {
+    # Set all the required variables.
+    JOBTYPE="behat"
+    PHP_VERSION="8.4"
+    DBTYPE="pgsql"
+    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
+    BEHAT_TAGS="@mod_label&&@core,~@mod_assign"
+    BEHAT_PARALLEL="1"
+    COMPOSERINSTALL="1"
+
+    # Checkout main
+    run git_moodle_checkout MDL-87716-main-alt https://github.com/andrewnicols/moodle.git
+    assert_success
+
+    # Run the job
+    run launch_runner
+    assert_success
+    assert_output --partial "== JOBTYPE: behat"
+    assert_output --partial "== PHP version: 8.4"
+    assert_output --partial "== DBTYPE: pgsql"
+    assert_output --partial "== BEHAT_TAGS: @mod_label&&@core,~@mod_assign"
+    assert_output --partial "== DBREPLICAS: 0"
+    assert_output --partial "== Exit code: 0"
+}
