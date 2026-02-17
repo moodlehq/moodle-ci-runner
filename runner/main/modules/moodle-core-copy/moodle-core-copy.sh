@@ -53,6 +53,7 @@ function moodle-core-copy_setup() {
     echo "== Copying code in place."
     docker cp "${CODEDIR}"/. "${WEBSERVER}":/var/www/html
     docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html
+    docker exec "${WEBSERVER}" chown -R www-data:www-data "${PHPWORKINGDIR}"
 
     # TODO: Maybe make this a separate module, so it can be reused in other places.
     # Once copied, if we are going to need access to the full history, we'll need to
@@ -82,8 +83,8 @@ function moodle-core-copy_setup() {
 
     # Copy the config.php in place
     echo "== Copying configuration in place."
-    docker cp "${BASEDIR}/modules/docker-php/config.template.php" "${WEBSERVER}":/var/www/html/config.php
-    docker exec "${WEBSERVER}" chown -R www-data:www-data /var/www/html/config.php
+    docker cp "${BASEDIR}/modules/docker-php/config.template.php" "${WEBSERVER}":"${PHPWORKINGDIR}/config.php"
+    docker exec "${WEBSERVER}" chown -R www-data:www-data "${PHPWORKINGDIR}/config.php"
 
     # Copy the plugins in place.
     if [[ -n "$PLUGINSTOINSTALL" ]]; then

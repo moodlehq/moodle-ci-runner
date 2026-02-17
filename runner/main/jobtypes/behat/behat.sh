@@ -20,6 +20,10 @@
 # Behat needed variables to go to the env file.
 function behat_to_env_file() {
     local env=(
+        COMPOSERINSTALL
+        PHPWORKINGDIR
+        PUBLICROOT
+
         DBTYPE
         DBTAG
         DBHOST
@@ -91,6 +95,8 @@ function behat_to_summary() {
     echo "== BEHAT_INCREASE_TIMEOUT: ${BEHAT_INCREASE_TIMEOUT}"
     echo "== BEHAT_INIT_ARGS: ${BEHAT_INIT_ARGS}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
+    echo "== PHPWORKINGDIR: ${PHPWORKINGDIR}"
+    echo "== COMPOSERINSTALL: ${COMPOSERINSTALL}"
     if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
         echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
         echo "== BAD_COMMIT: ${BAD_COMMIT}"
@@ -139,6 +145,7 @@ function behat_modules() {
         moodle-core-copy
         docker-healthy
         docker-summary
+        moodle-composer
     )
     echo "${modules[@]}"
 }

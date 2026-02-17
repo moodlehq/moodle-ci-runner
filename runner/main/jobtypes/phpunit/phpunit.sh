@@ -20,6 +20,8 @@
 # PHPUnit needed variables to go to the env file.
 function phpunit_to_env_file() {
     local env=(
+        COMPOSERINSTALL
+        PHPWORKINGDIR
         PUBLICROOT
 
         DBTYPE
@@ -64,6 +66,8 @@ function phpunit_to_summary() {
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
+    echo "== PHPWORKINGDIR: ${PHPWORKINGDIR}"
+    echo "== COMPOSERINSTALL: ${COMPOSERINSTALL}"
     if [[ -n "${GOOD_COMMIT}" ]] || [[ -n "${BAD_COMMIT}" ]]; then
         echo "== GOOD_COMMIT: ${GOOD_COMMIT}"
         echo "== BAD_COMMIT: ${BAD_COMMIT}"
@@ -103,6 +107,7 @@ function phpunit_modules() {
         moodle-core-copy
         docker-healthy
         docker-summary
+        moodle-composer
     )
     echo "${modules[@]}"
 }
