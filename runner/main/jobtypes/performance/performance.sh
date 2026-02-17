@@ -104,11 +104,7 @@ function performance_config() {
 
 # Performance job type setup.
 function performance_setup() {
-    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
-    # (for bisect sessions we don't have to setup the environment).
-    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
-        performance_setup_normal
-    fi
+    performance_setup_normal
 }
 
 # Performance job type setup for normal mode.
@@ -117,59 +113,27 @@ function performance_setup_normal() {
     echo
     echo ">>> startsection Initialising Performance environment at $(date)<<<"
     echo "============================================================================"
+
+    # Run the moodle install_database.php.
     local initcmd
     performance_initcmd initcmd # By nameref.
     echo "Running: ${initcmd[*]}"
-
-    plugin_repo="https://github.com/moodlehq/moodle-local_performancetool"
-    dest="/var/www/html/local/performancetool"
-
-    echo "Installing moodle-local_performancetool plugin into ${dest}"
-
-    # Ensure host shared directories exist and are writable so plugin can save files.
-    mkdir -p "${SHAREDDIR}/planfiles" "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
-    chmod -R 2777 "${SHAREDDIR}" || true
-
-    # Clone the performance data generator plugin inside the container.
-    docker exec "${WEBSERVER}" sh -c "git clone --depth 1 ${plugin_repo} ${dest}"
-
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
-    # Execute the script inside the container as www-data
-    docker exec -t -u www-data "${WEBSERVER}" php "${dest}"
-    exec_status=$?
-
-    if [[ $exec_status -ne 0 ]]; then
-      echo "Error: php returned exit ${exec_status} when executing ${dest}"
-      exit $exec_status
-    fi
+    # Generate the test data and plan files using the local_performancetool.
+    local perftoolcmd
     performance_perftoolcmd perftoolcmd
     docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
-
-    # Copy generated plan files (jmx, csv) from container to host-shared dir.
-    echo "Copying generated plan files from container to ${SHAREDDIR}/planfiles"
-
-    docker exec -u root "${WEBSERVER}" bash -lc "\
-      mkdir -p /shared/planfiles && \
-      cp -a /var/www/html/local/performancetool/planfiles/. /shared/planfiles/ || true && \
-      chown -R www-data:www-data /shared/planfiles || true"
-
-    chmod -R 2777 "${SHAREDDIR}/planfiles" || true
-    echo "Files in ${SHAREDDIR}/planfiles:"
-    ls -la "${SHAREDDIR}/planfiles" || true
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
 
-# Returns (by nameref) an array with the command needed to init the Performance site.
+# Returns the command needed to install the performance site.
 function performance_initcmd() {
     local -n cmd=$1
-    # We need to determine the init suite to use.
-    local initsuite=""
 
-
-    # Build the complete init command.
+    # Build the complete install command.
     cmd=(
         php admin/cli/install_database.php \
             --agree-license \
@@ -180,15 +144,13 @@ function performance_initcmd() {
     )
 }
 
-# Returns (by nameref) an array with the command needed to init the Performance site.
+# Returns the command needed to generate the test data in the performance site.
 function performance_perftoolcmd() {
     local -n cmd=$1
-    # We need to determine the init suite to use.
-    local initsuite=""
 
-    # Build the complete init command.
+    # Build the complete command to generate the test data.
     cmd=(
-        php local/performancetool/generate_test_data.php \
+        php public/local/performancetool/generate_test_data.php \
             --size="${SITESIZE}" \
             --planfilespath="/shared" \
             --quiet="false"
@@ -202,11 +164,15 @@ function performance_run() {
     echo "============================================================================"
 
     datestring=`date '+%Y%m%d%H%M'`
+
     # Get the plan file name.
     testplanfile=`ls "${SHAREDDIR}"/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     echo "Using test plan file: ${testplanfile}"
+
+    # Get the users file name.
     testusersfile=`ls "${SHAREDDIR}"/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     echo "Using test users file: ${testusersfile}"
+
     group="${MOODLE_BRANCH}"
     description="${GIT_COMMIT}"
     siteversion=""
@@ -220,12 +186,12 @@ function performance_run() {
 
     # Calculate the command to run. The function will return the command in the passed array.
     local jmeterruncmd=
-    performance_main_command jmeterruncmd # By nameref.
+    performance_main_command jmeterruncmd
 
     echo "Running performance command: ${jmeterruncmd[*]}"
     echo ">>> Performance run at $(date) <<<"
     local dockerrunargs=
-    docker-jmeter_run_args dockerrunargs # By nameref
+    docker-jmeter_run_args dockerrunargs
 
     echo "${dockerrunargs[@]}"
     echo docker run ${dockerrunargs[@]} ${jmeterruncmd[@]}
@@ -257,17 +223,33 @@ function performance_teardown() {
 
     cp "${BASEDIR}/jobtypes/performance/format_rundata.php" "${DATADIR}/format_rundata.php"
 
-    # Check if rundata.php exists (generated by JMeter run).
-    if [[ ! -f "${DATADIR}/rundata.php" ]]; then
-        echo "Error: rundata.php not found in ${DATADIR}"
-        return 1
-    fi
+    # Debug: confirm rundata.php was copied and show details
+#    if [[ -f "${DATADIR}/format_rundata.php" ]]; then
+#      echo "Debug: format_rundata.php exists in ${DATADIR}"
+#      ls -l "${DATADIR}" || true
+#    else
+#      echo "Debug: format_rundata.php NOT found in ${DATADIR}"
+#      echo "Debug: listing ${DATADIR}:"
+#      ls -la "${DATADIR}" || true
+#    fi
 
-    docker run \
-        -v "${DATADIR}:/shared" \
-        -w /shared \
-        php:8.3-cli \
-        php "/shared/format_rundata.php" "rundata.php"
+    # Check if rundata.php exists (generated by JMeter run).
+#    if [[ ! -f "${DATADIR}/format_rundata.php" ]]; then
+#        echo "Error: rundata.php not found in ${DATADIR}"
+#        return 1
+#    fi
+
+#    docker run \
+#        -v "${DATADIR}:/shared" \
+#        -w /shared \
+#        php:8.3-cli \
+#        php /shared/format_rundata.php format_rundata.php
+#!/usr/bin/env bash
+docker run \
+  -v "${DATADIR}:/shared" \
+  -w /shared \
+  php:8.3-cli \
+  php /shared/format_rundata.php /shared/rundata.php
 
     echo "Storing data with a git commit of '${GIT_COMMIT}'"
 
@@ -313,17 +295,4 @@ function performance_main_command() {
             -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
             $samplerinitstr $includelogsstr
         )
-}
-
-function perfomance_testsite_generator_command() {
-    local -n _cmd=$1 # Return by nameref.
-
-    # Build the complete perf command for the run.
-    _cmd=(
-        php admin/tool/generator/cli/maketestsite.php \
-            --size="${SITESIZE}" \
-            --fixeddataset \
-            --bypasscheck \
-            --filesizelimit="1000"
-    )
 }
