@@ -121,28 +121,12 @@ function performance_setup_normal() {
     performance_initcmd initcmd # By nameref.
     echo "Running: ${initcmd[*]}"
 
-    plugin_repo="https://github.com/moodlehq/moodle-local_performancetool"
-    dest="/var/www/html/local/performancetool"
-
-    echo "Installing moodle-local_performancetool plugin into ${dest}"
-
     # Ensure host shared directories exist and are writable so plugin can save files.
     mkdir -p "${SHAREDDIR}/planfiles" "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
     chmod -R 2777 "${SHAREDDIR}" || true
 
-    # Clone the performance data generator plugin inside the container.
-    docker exec "${WEBSERVER}" sh -c "git clone --depth 1 ${plugin_repo} ${dest}"
-
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
-    # Execute the script inside the container as www-data
-    docker exec -t -u www-data "${WEBSERVER}" php "${dest}"
-    exec_status=$?
-
-    if [[ $exec_status -ne 0 ]]; then
-      echo "Error: php returned exit ${exec_status} when executing ${dest}"
-      exit $exec_status
-    fi
     performance_perftoolcmd perftoolcmd
     docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
 
@@ -188,7 +172,7 @@ function performance_perftoolcmd() {
 
     # Build the complete init command.
     cmd=(
-        php local/performancetool/generate_test_data.php \
+        php public/local/performancetool/generate_test_data.php \
             --size="${SITESIZE}" \
             --planfilespath="/shared" \
             --quiet="false"
