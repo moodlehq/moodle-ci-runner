@@ -53,7 +53,6 @@ function performance_to_summary() {
 # This job type defines the following env variables
 function performance_env() {
     env=(
-        RUNCOUNT
         EXITCODE
     )
     echo "${env[@]}"
@@ -87,7 +86,7 @@ function performance_check() {
     verify_modules $(performance_modules)
 
     # These env variables must be set for the job to work.
-    verify_env UUID WORKSPACE SHAREDDIR ENVIROPATH WEBSERVER GOOD_COMMIT BAD_COMMIT
+    verify_env UUID WORKSPACE SHAREDDIR ENVIROPATH WEBSERVER
 }
 
 # Performance job type init.
@@ -102,81 +101,30 @@ function performance_config() {
     export TARGET_FILE="${TARGET_FILE:-storage/performance/${MOODLE_BRANCH}/rundata.json}"
 }
 
-# Performance job type setup.
-function performance_setup() {
-    # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
-    # (for bisect sessions we don't have to setup the environment).
-    if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
-        performance_setup_normal
-    fi
-}
-
 # Performance job type setup for normal mode.
-function performance_setup_normal() {
+function performance_setup() {
     # Init the Performance site.
     echo
     echo ">>> startsection Initialising Performance environment at $(date)<<<"
     echo "============================================================================"
+
+    # Ensure host shared directories exist and are writable so plugin can save files.
+    mkdir -p "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
+    chmod -R 2777 "${SHAREDDIR}"
+
+    # Run the moodle install_database.php.
     local initcmd
     performance_initcmd initcmd # By nameref.
     echo "Running: ${initcmd[*]}"
-
-    # Ensure host shared directories exist and are writable so plugin can save files.
-    mkdir -p "${SHAREDDIR}/planfiles" "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
-    chmod -R 2777 "${SHAREDDIR}" || true
-
     docker exec -t -u www-data "${WEBSERVER}" "${initcmd[@]}"
 
+    # Generate the test data and plan files using the local_performancetool.
+    local perftoolcmd
     performance_perftoolcmd perftoolcmd
     docker exec -t -u www-data "${WEBSERVER}" "${perftoolcmd[@]}"
 
-    # Copy generated plan files (jmx, csv) from container to host-shared dir.
-    echo "Copying generated plan files from container to ${SHAREDDIR}/planfiles"
-
-    docker exec -u root "${WEBSERVER}" bash -lc "\
-      mkdir -p /shared/planfiles && \
-      cp -a /var/www/html/local/performancetool/planfiles/. /shared/planfiles/ || true && \
-      chown -R www-data:www-data /shared/planfiles || true"
-
-    chmod -R 2777 "${SHAREDDIR}/planfiles" || true
-    echo "Files in ${SHAREDDIR}/planfiles:"
-    ls -la "${SHAREDDIR}/planfiles" || true
-
     echo "============================================================================"
     echo ">>> stopsection <<<"
-}
-
-# Returns (by nameref) an array with the command needed to init the Performance site.
-function performance_initcmd() {
-    local -n cmd=$1
-    # We need to determine the init suite to use.
-    local initsuite=""
-
-
-    # Build the complete init command.
-    cmd=(
-        php admin/cli/install_database.php \
-            --agree-license \
-            --fullname="Moodle Performance Test"\
-            --shortname="moodle" \
-            --adminuser=admin \
-            --adminpass=adminpass
-    )
-}
-
-# Returns (by nameref) an array with the command needed to init the Performance site.
-function performance_perftoolcmd() {
-    local -n cmd=$1
-    # We need to determine the init suite to use.
-    local initsuite=""
-
-    # Build the complete init command.
-    cmd=(
-        php public/local/performancetool/generate_test_data.php \
-            --size="${SITESIZE}" \
-            --planfilespath="/shared" \
-            --quiet="false"
-    )
 }
 
 # Performance job type run.
@@ -186,11 +134,15 @@ function performance_run() {
     echo "============================================================================"
 
     datestring=`date '+%Y%m%d%H%M'`
+
     # Get the plan file name.
     testplanfile=`ls "${SHAREDDIR}"/*.jmx | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     echo "Using test plan file: ${testplanfile}"
+
+    # Get the users file name.
     testusersfile=`ls "${SHAREDDIR}"/*.csv | head -1 | sed "s@${SHAREDDIR}@/shared@"`
     echo "Using test users file: ${testusersfile}"
+
     group="${MOODLE_BRANCH}"
     description="${GIT_COMMIT}"
     siteversion=""
@@ -198,21 +150,15 @@ function performance_run() {
     sitecommit="${GIT_COMMIT}"
     runoutput="${SHAREDDIR}/output/logs/run.log"
 
-    # Ensure run log directory exists and is writable so 'tee' can create the file.
-    mkdir -p "$(dirname "${runoutput}")"
-    chmod -R 2777 "${SHAREDDIR}/output/logs" || true
-
-    # Calculate the command to run. The function will return the command in the passed array.
+    # Calculate the command to run for Performance, returning it in the passed array parameter.
     local jmeterruncmd=
-    performance_main_command jmeterruncmd # By nameref.
+    performance_main_command jmeterruncmd
 
-    echo "Running performance command: ${jmeterruncmd[*]}"
-    echo ">>> Performance run at $(date) <<<"
+    # Get the docker run args for the jmeter container.
     local dockerrunargs=
-    docker-jmeter_run_args dockerrunargs # By nameref
+    docker-jmeter_run_args dockerrunargs
 
-    echo "${dockerrunargs[@]}"
-    echo docker run ${dockerrunargs[@]} ${jmeterruncmd[@]}
+    echo ">>> Performance run at $(date) <<<"
     docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
     EXITCODE=$?
 
@@ -221,7 +167,6 @@ function performance_run() {
       # Also checking that the errorkey is the log entry type.
       if grep $errorkey "${SHAREDDIR}/output/logs/jmeter.log" | awk '{print $3}' | grep -q $errorkey ; then
         echo "Error: \"$errorkey\" found in jmeter logs, read log file to see the full trace."
-        # EXITCODE=1
       fi
     done
 
@@ -247,6 +192,7 @@ function performance_teardown() {
         return 1
     fi
 
+    # Format the rundata.php into a more usable JSON format, using the provided PHP script.
     docker run \
         -v "${DATADIR}:/shared" \
         -w /shared \
@@ -262,18 +208,48 @@ function performance_teardown() {
         targetpath="${WORKSPACE}/${TARGET_FILE}"
     fi
 
+    # Ensure the target directory exists.
     targetdir="$(dirname "${targetpath}")"
     mkdir -p "${targetdir}"
+
+    # Copy the formatted rundata.json to the target path.
+    echo "Copying formatted rundata.json to ${targetpath}"
     cp -f "${DATADIR}/rundata.json" "${targetpath}"
 }
 
+# Returns the command to install the performance site.
+function performance_initcmd() {
+    local -n cmd=$1
 
-# Calculate the command to run for Performance main execution,
-# returning it in the passed array parameter.
+    # Build the complete init command.
+    cmd=(
+        php admin/cli/install_database.php \
+            --agree-license \
+            --fullname="Moodle Performance Test"\
+            --shortname="moodle" \
+            --adminuser=admin \
+            --adminpass=adminpass
+    )
+}
+
+# Returns the command to generate the required test data in the performance site.
+function performance_perftoolcmd() {
+    local -n cmd=$1
+
+    # Build the complete init command.
+    cmd=(
+        php public/local/performancetool/generate_test_data.php \
+            --size="${SITESIZE}" \
+            --planfilespath="/shared" \
+            --quiet="false"
+    )
+}
+
+# Calculate the command to run for Performance main execution, returning it in the passed array parameter.
 # Parameters:
 #   $1: The array to store the command.
 function performance_main_command() {
-    local -n _cmd=$1 # Return by nameref.
+    local -n _cmd=$1
 
     # Include logs string.
     includelogs=1
@@ -284,30 +260,17 @@ function performance_main_command() {
     # TODO: Get all of these values from somewhere?
     # In particular where to get users, loops, rampup, and throughput from?
     # Build the complete perf command for the run.
-        _cmd=(
-            -n \
-            -j "/shared/output/logs/jmeter.log" \
-            -t "$testplanfile" \
-            -Jusersfile="$testusersfile" \
-            -Jgroup="$group" \
-            -Jdesc="$description" \
-            -Jsiteversion="$siteversion" \
-            -Jsitebranch="$sitebranch" \
-            -Jsitecommit="$sitecommit" \
-            -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
-            $samplerinitstr $includelogsstr
-        )
-}
-
-function perfomance_testsite_generator_command() {
-    local -n _cmd=$1 # Return by nameref.
-
-    # Build the complete perf command for the run.
     _cmd=(
-        php admin/tool/generator/cli/maketestsite.php \
-            --size="${SITESIZE}" \
-            --fixeddataset \
-            --bypasscheck \
-            --filesizelimit="1000"
+        -n \
+        -j "/shared/output/logs/jmeter.log" \
+        -t "$testplanfile" \
+        -Jusersfile="$testusersfile" \
+        -Jgroup="$group" \
+        -Jdesc="$description" \
+        -Jsiteversion="$siteversion" \
+        -Jsitebranch="$sitebranch" \
+        -Jsitecommit="$sitecommit" \
+        -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
+        $samplerinitstr $includelogsstr
     )
 }
