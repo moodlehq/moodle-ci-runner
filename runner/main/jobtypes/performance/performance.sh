@@ -20,6 +20,7 @@
 # Performance needed variables to go to the env file.
 function performance_to_env_file() {
     local env=(
+        JOBTYPE
         DBTYPE
         DBTAG
         DBHOST
@@ -47,6 +48,12 @@ function performance_to_summary() {
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
     echo "== SITESIZE: ${SITESIZE}"
+    echo "== PERF_USERS: ${PERF_USERS}"
+    echo "== PERF_LOOPS: ${PERF_LOOPS}"
+    echo "== PERF_RAMPUP: ${PERF_RAMPUP}"
+    echo "== PERF_THROUGHPUT: ${PERF_THROUGHPUT}"
+    echo "== PERF_BASELINE_FILE: ${PERF_BASELINE_FILE:-<none>}"
+    echo "== PERF_THRESHOLD_PCT: ${PERF_THRESHOLD_PCT}%"
     echo "== TARGET_FILE: ${TARGET_FILE}"
 }
 
@@ -99,6 +106,43 @@ function performance_config() {
 
     # Default target file (relative to WORKSPACE) where rundata.json will be stored.
     export TARGET_FILE="${TARGET_FILE:-storage/performance/${MOODLE_BRANCH}/rundata.json}"
+
+    # Optional baseline file for regression comparison.
+    # If set, the teardown will compare current results against this baseline.
+    export PERF_BASELINE_FILE="${PERF_BASELINE_FILE:-}"
+
+    # Percentage threshold for flagging a regression (default 20%).
+    export PERF_THRESHOLD_PCT="${PERF_THRESHOLD_PCT:-20}"
+
+    # Derive JMeter run parameters from SITESIZE.
+    # These arrays match the ones in the generator.php plugin and Moodle core.
+    #                    XS  S    M     L      XL      XXL
+    local -a _users=(    1   30   100   1000   5000    10000 )
+    local -a _loops=(    5   5    5     6      6       7     )
+    local -a _rampups=(  1   6    40    100    500     800   )
+    local -a _throughput=(120 120  120   120    120     120   )
+
+    local sizeindex
+    sizeindex=$(performance_size_to_index "${SITESIZE}")
+
+    export PERF_USERS="${_users[$sizeindex]}"
+    export PERF_LOOPS="${_loops[$sizeindex]}"
+    export PERF_RAMPUP="${_rampups[$sizeindex]}"
+    export PERF_THROUGHPUT="${_throughput[$sizeindex]}"
+}
+
+# Convert a SITESIZE name (XS, S, M, L, XL, XXL) to a numeric index (0-5).
+function performance_size_to_index() {
+    local size="${1:-XS}"
+    case "${size}" in
+        XS)  echo 0 ;;
+        S)   echo 1 ;;
+        M)   echo 2 ;;
+        L)   echo 3 ;;
+        XL)  echo 4 ;;
+        XXL) echo 5 ;;
+        *)   echo 0 ;; # Default to XS.
+    esac
 }
 
 # Performance job type setup for normal mode.
@@ -109,7 +153,8 @@ function performance_setup() {
     echo "============================================================================"
 
     # Ensure host shared directories exist and are writable so plugin can save files.
-    mkdir -p "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs"
+    # Note: runs_samples is needed by the JMeter SimpleDataWriter in the test plan.
+    mkdir -p "${SHAREDDIR}/output/logs" "${SHAREDDIR}/output/runs" "${SHAREDDIR}/runs_samples"
     chmod -R 2777 "${SHAREDDIR}"
 
     # Run the moodle install_database.php.
@@ -145,7 +190,7 @@ function performance_run() {
 
     group="${MOODLE_BRANCH}"
     description="${GIT_COMMIT}"
-    siteversion=""
+    siteversion="${MOODLE_BRANCH}"
     sitebranch="${MOODLE_BRANCH}"
     sitecommit="${GIT_COMMIT}"
     runoutput="${SHAREDDIR}/output/logs/run.log"
@@ -215,6 +260,112 @@ function performance_teardown() {
     # Copy the formatted rundata.json to the target path.
     echo "Copying formatted rundata.json to ${targetpath}"
     cp -f "${DATADIR}/rundata.json" "${targetpath}"
+
+    # --- Regression detection ---
+    # If a baseline file is provided, compare the current results against it.
+    if [[ -n "${PERF_BASELINE_FILE}" ]]; then
+        local baselinepath
+        if [[ "${PERF_BASELINE_FILE}" = /* ]]; then
+            baselinepath="${PERF_BASELINE_FILE}"
+        else
+            baselinepath="${WORKSPACE}/${PERF_BASELINE_FILE}"
+        fi
+
+        if [[ -f "${baselinepath}" ]]; then
+            echo
+            echo ">>> startsection Regression comparison <<<"
+            echo "============================================================================"
+            echo "Comparing current results against baseline: ${baselinepath}"
+            echo "Threshold: ${PERF_THRESHOLD_PCT}%"
+
+            # Use a PHP one-liner to compute median response times per sampler and compare.
+            local comparison_result
+            comparison_result=$(docker run --rm \
+                -v "${DATADIR}:/current" \
+                -v "$(dirname "${baselinepath}"):/baseline" \
+                php:8.3-cli \
+                php -r '
+$baseline = json_decode(file_get_contents("/baseline/" . basename($argv[1])), true);
+$current  = json_decode(file_get_contents("/current/rundata.json"), true);
+$threshold = (float)$argv[2];
+
+if (!$baseline || !$current) {
+    echo "ERROR: Could not parse JSON files.\n";
+    exit(2);
+}
+
+// Flatten results: group response times by sampler name.
+function collect_times($results) {
+    $times = [];
+    foreach ($results as $thread) {
+        if (!is_array($thread)) continue;
+        foreach ($thread as $sample) {
+            $name = trim($sample["name"] ?? "");
+            if ($name === "") continue;
+            $times[$name][] = (float)($sample["time"] ?? 0);
+        }
+    }
+    return $times;
+}
+
+function median($arr) {
+    sort($arr);
+    $n = count($arr);
+    if ($n === 0) return 0;
+    $mid = (int)($n / 2);
+    return ($n % 2 === 0) ? ($arr[$mid - 1] + $arr[$mid]) / 2 : $arr[$mid];
+}
+
+$base_times = collect_times($baseline["results"] ?? []);
+$curr_times = collect_times($current["results"] ?? []);
+
+$regressions = [];
+$all_ok = true;
+
+// Only compare samplers from the main "Moodle Test" thread group (skip warm-up).
+// The warm-up results are in lower-numbered indices; main test results follow.
+// We compare all samplers present in both runs.
+foreach ($curr_times as $name => $ctimes) {
+    if (!isset($base_times[$name])) continue;
+    $base_median = median($base_times[$name]);
+    $curr_median = median($ctimes);
+    if ($base_median <= 0) continue;
+
+    $pct_change = (($curr_median - $base_median) / $base_median) * 100;
+    $status = ($pct_change > $threshold) ? "REGRESSION" : "OK";
+    if ($status === "REGRESSION") {
+        $all_ok = false;
+        $regressions[] = $name;
+    }
+
+    printf("  %-35s base=%6.1fms  curr=%6.1fms  change=%+.1f%%  [%s]\n",
+        $name, $base_median, $curr_median, $pct_change, $status);
+}
+
+if ($all_ok) {
+    echo "\nResult: PASS — No performance regressions detected.\n";
+    exit(0);
+} else {
+    echo "\nResult: FAIL — Performance regressions detected in: " . implode(", ", $regressions) . "\n";
+    exit(1);
+}
+' "$(basename "${baselinepath}")" "${PERF_THRESHOLD_PCT}")
+            local comparison_exit=$?
+
+            echo "${comparison_result}"
+            echo "============================================================================"
+            echo ">>> stopsection <<<"
+
+            if [[ ${comparison_exit} -eq 1 ]]; then
+                echo "Performance regression detected — marking build as FAILED."
+                EXITCODE=1
+            elif [[ ${comparison_exit} -ge 2 ]]; then
+                echo "WARNING: Regression comparison encountered an error (exit code ${comparison_exit})."
+            fi
+        else
+            echo "Baseline file not found: ${baselinepath} — skipping regression comparison."
+        fi
+    fi
 }
 
 # Returns the command to install the performance site.
@@ -236,12 +387,18 @@ function performance_initcmd() {
 function performance_perftoolcmd() {
     local -n cmd=$1
 
-    # Build the complete init command.
+    # Build the complete command to generate test data and plan files.
+    # Note: --bypasscheck is needed because CI may not have debugdeveloper set at the point
+    #       where the generator checks it. --quiet is intentionally omitted to see progress output.
+    # Note: --updateuserspassword ensures the users' passwords in the database match the
+    #       password written to the CSV ($CFG->tool_generator_users_password), which is
+    #       critical for JMeter to be able to login as those users.
     cmd=(
         php public/local/performancetool/generate_test_data.php \
             --size="${SITESIZE}" \
             --planfilespath="/shared" \
-            --quiet="false"
+            --bypasscheck \
+            --updateuserspassword
     )
 }
 
@@ -256,10 +413,8 @@ function performance_main_command() {
     includelogsstr="-Jincludelogs=$includelogs"
     samplerinitstr="-Jbeanshell.listener.init=recorderfunctions.bsf"
 
-
-    # TODO: Get all of these values from somewhere?
-    # In particular where to get users, loops, rampup, and throughput from?
-    # Build the complete perf command for the run.
+    # Users, loops, rampup, and throughput are derived from SITESIZE in performance_config().
+    # They match the arrays baked into generator.php and the JMX template defaults.
     _cmd=(
         -n \
         -j "/shared/output/logs/jmeter.log" \
@@ -270,7 +425,10 @@ function performance_main_command() {
         -Jsiteversion="$siteversion" \
         -Jsitebranch="$sitebranch" \
         -Jsitecommit="$sitecommit" \
-        -Jusers=5 -Jloops=1 -Jrampup=1 -Jthroughput=120 \
+        -Jusers="${PERF_USERS}" \
+        -Jloops="${PERF_LOOPS}" \
+        -Jrampup="${PERF_RAMPUP}" \
+        -Jthroughput="${PERF_THROUGHPUT}" \
         $samplerinitstr $includelogsstr
     )
 }

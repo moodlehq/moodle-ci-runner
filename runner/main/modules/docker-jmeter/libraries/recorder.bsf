@@ -11,69 +11,95 @@ MoodleResult(JMeterContext ctx) {
 
     String html = result.getResponseDataAsString();
 
-    String dbreads = "0";
-    Pattern pdbreads = Pattern.compile(".*?DB reads/writes: (\\d+)/\\d+.*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mdbreads = pdbreads.matcher(html);
-    if (mdbreads.matches()) {
-        dbreads = mdbreads.group(1);
-    }
+    // Extract Moodle server-side performance metrics from the HTML response body.
+    // Modern Moodle (4.x+/Boost) renders these inside <div id="performanceinfo"><ul>
+    // as <li class="...">LABEL: VALUE</li>. Older themes output plain text.
+    // Using find() instead of matches() so the pattern doesn't need to match the entire string.
 
+    String dbreads = "0";
     String dbwritesstr = "0";
-    Pattern pdbwrites = Pattern.compile(".*?DB reads/writes: \\d+/(\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
-    Matcher mdbwrites = pdbwrites.matcher(html);
-    if (mdbwrites.matches()) {
-        dbwritesstr = mdbwrites.group(1);
+    // Match "DB reads/writes: X/Y" (works for both old plain-text and modern HTML).
+    Pattern pdbrw = Pattern.compile("DB reads/writes:\\s*(\\d+)/(\\d+)");
+    Matcher mdbrw = pdbrw.matcher(html);
+    if (mdbrw.find()) {
+        dbreads = mdbrw.group(1);
+        dbwritesstr = mdbrw.group(2);
     }
     Integer dbwrites = Integer.parseInt(dbwritesstr);
 
     // Adding logs if required.
     if (props.get("includelogs") != null) {
-        Pattern plogwrites = Pattern.compile(".*?Log DB writes (\\d+).*", Pattern.UNIX_LINES | Pattern.DOTALL);
+        Pattern plogwrites = Pattern.compile("Log DB writes\\s*(\\d+)");
         Matcher mlogwrites = plogwrites.matcher(html);
-        if (mlogwrites.matches()) {
+        if (mlogwrites.find()) {
             dbwrites = dbwrites + Integer.parseInt(mlogwrites.group(1));
         }
     }
 
     String dbquerytime = "0";
-    Pattern pdbquerytime = Pattern.compile(".*?DB queries time: (\\d+(\\.\\d+)?) secs.*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    Pattern pdbquerytime = Pattern.compile("DB queries time:\\s*(\\d+(?:\\.\\d+)?)\\s*secs");
     Matcher mdbquerytime = pdbquerytime.matcher(html);
-    if (mdbquerytime.matches()) {
+    if (mdbquerytime.find()) {
         dbquerytime = mdbquerytime.group(1);
     }
 
     String memoryused = "0";
-    Pattern pmemoryused = Pattern.compile(".*?RAM: (\\d+(\\.\\d+)?)[^M]*MB.*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    // Note: Moodle uses a non-breaking space (\u00A0) between the number and MB.
+    Pattern pmemoryused = Pattern.compile("RAM:[\\s\\u00A0]*(\\d+(?:\\.\\d+)?)[\\s\\u00A0]*MB");
     Matcher mmemoryused = pmemoryused.matcher(html);
-    if (mmemoryused.matches()) {
+    if (mmemoryused.find()) {
         memoryused = mmemoryused.group(1);
     }
 
     String filesincluded = "0";
-    Pattern pfilesincluded = Pattern.compile(".*?Included (\\d+) files.*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    Pattern pfilesincluded = Pattern.compile("Included\\s*(\\d+)\\s*files");
     Matcher mfilesincluded = pfilesincluded.matcher(html);
-    if (mfilesincluded.matches()) {
+    if (mfilesincluded.find()) {
         filesincluded = mfilesincluded.group(1);
     }
 
     String serverload = "0";
-    Pattern pserverload = Pattern.compile(".*?Load average: (\\d+(\\.\\d+)?).*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    Pattern pserverload = Pattern.compile("Load average:\\s*(\\d+(?:\\.\\d+)?)");
     Matcher mserverload = pserverload.matcher(html);
-    if (mserverload.matches()) {
+    if (mserverload.find()) {
         serverload = mserverload.group(1);
     }
 
     String sessionsize = "0";
-    Pattern psessionsize = Pattern.compile(".*?Session[^:]*: (\\d+(\\.\\d+)? ?[a-zA-Z]*).*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    // Match "Session (read): X KB" or "Session (core\session\file): 569 bytes" etc.
+    // Moodle uses &nbsp; (\u00A0) between number and unit in its performance info output.
+    // We capture the numeric part and the unit separately so we can convert to KB cleanly.
+    Pattern psessionsize = Pattern.compile("Session[^:]*:[\\s\\u00A0]*(\\d+(?:\\.\\d+)?)[\\s\\u00A0]*(bytes|KB|MB|GB|)?");
     Matcher msessionsize = psessionsize.matcher(html);
-    if (msessionsize.matches()) {
-        sessionsize = msessionsize.group(1);
+    if (msessionsize.find()) {
+        String sessValue = msessionsize.group(1);
+        String sessUnit  = msessionsize.group(2);
+        if (sessUnit == null) { sessUnit = ""; }
+        sessUnit = sessUnit.trim();
+
+        // Normalise to KB for consistent comparison.
+        if (sessUnit.equalsIgnoreCase("bytes")) {
+            // Convert bytes to KB (e.g. 569 bytes → 0.569 KB stored as "0.569").
+            double bytesVal = Double.parseDouble(sessValue);
+            sessionsize = String.format("%.3f", bytesVal / 1024.0);
+        } else if (sessUnit.equalsIgnoreCase("MB")) {
+            double mbVal = Double.parseDouble(sessValue);
+            sessionsize = String.format("%.3f", mbVal * 1024.0);
+        } else if (sessUnit.equalsIgnoreCase("GB")) {
+            double gbVal = Double.parseDouble(sessValue);
+            sessionsize = String.format("%.3f", gbVal * 1024.0 * 1024.0);
+        } else {
+            // Already KB or no unit — just the numeric value.
+            sessionsize = sessValue.trim();
+        }
     }
 
     String timeused = "0";
-    Pattern ptimeused = Pattern.compile(".*?\"timeused[^\"]*\">(\\d+(\\.\\d+)?) secs.*", Pattern.UNIX_LINES | Pattern.DOTALL);
+    // Match both HTML-wrapped: <span class="timeused">X.XX secs</span>
+    // and the older: class="timeused...">X.XX secs
+    Pattern ptimeused = Pattern.compile("timeused[^>]*>\\s*(\\d+(?:\\.\\d+)?)\\s*secs");
     Matcher mtimeused = ptimeused.matcher(html);
-    if (mtimeused.matches()) {
+    if (mtimeused.find()) {
         timeused = mtimeused.group(1);
     }
 
@@ -114,15 +140,7 @@ MoodleResult(JMeterContext ctx) {
     }
 
     toPHP() {
-
-       int bytesPos = sessionsize.indexOf(" bytes");
-       int kbsPos = sessionsize.indexOf("KB");
-       // Convert the size to KB and strip out the measure.
-       if (bytesPos != -1) {
-           sessionsize = "0." + sessionsize.substring(0, bytesPos);
-       } else if (kbsPos != -1) {
-           sessionsize = sessionsize.substring(0, kbsPos);
-       }
+       // sessionsize is already normalised to a numeric KB value during extraction above.
 
        String php = "$results["+thread+"][] = array(\n";
        php += "    'thread'=>"+thread+",\n";        // Int
@@ -197,6 +215,7 @@ if (JMeterUtils.getProperty("headerprinted") == null) {
     // Output headers.
     JMeterUtils.setProperty("headerprinted", "1");
     print(mr.headerToString());
+
 
     WritePhpValue("starttime", (System.currentTimeMillis() / 1000L).toString());
     WritePhpValue("host", vars.get("host"));
