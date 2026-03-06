@@ -17,6 +17,9 @@
         "allow-plugins": {
             "moodle/composer-installer": true,
             "moodle/moodle-composer-scaffold": true
+        },
+        "audit": {
+            "block-insecure": false
         }
     }
 }
