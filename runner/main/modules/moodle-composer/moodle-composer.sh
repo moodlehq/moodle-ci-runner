@@ -60,4 +60,15 @@ function moodle-composer_setup() {
         "${WEBSERVER}" \
         bash -c "composer install --no-interaction --prefer-dist --optimize-autoloader"
     echo "Composer install finished"
+
+    # Check if we should also install otel.
+    if [[ "${USE_OTEL}" == "1" ]]; then
+        echo "Installing OpenTelemetry packages via composer."
+
+        docker exec \
+            -u www-data \
+            "${WEBSERVER}" \
+            bash -c "composer require --no-interaction --prefer-dist moodlehq/moodle-package-otel open-telemetry/exporter-otlp"
+        echo "OpenTelemetry packages installation finished"
+    fi
 }

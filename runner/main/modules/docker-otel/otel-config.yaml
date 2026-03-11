@@ -1,0 +1,40 @@
+# To limit exposure to denial of service attacks, change the host in endpoints below from 0.0.0.0 to a specific network interface.
+# See https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/security-best-practices.md#safeguards-against-denial-of-service-attacks
+
+extensions:
+  health_check:
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  nop:
+
+service:
+
+  pipelines:
+
+    traces:
+      receivers: [otlp]
+      processors: []
+      exporters: [nop]
+
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [nop]
+
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [nop]
+
+  extensions: [health_check]
