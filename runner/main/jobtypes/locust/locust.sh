@@ -38,15 +38,6 @@ function locust_to_env_file() {
         MATRIXMOCKURL
 
         SELENIUMURL_1
-        SELENIUMURL_2
-        SELENIUMURL_3
-        SELENIUMURL_4
-        SELENIUMURL_5
-        SELENIUMURL_6
-        SELENIUMURL_7
-        SELENIUMURL_8
-        SELENIUMURL_9
-        SELENIUMURL_10
 
         WEBSERVER
         APACHE_DOCUMENT_ROOT
@@ -131,6 +122,7 @@ function locust_modules() {
         docker-healthy
         docker-summary
         moodle-composer
+        locust
     )
     echo "${modules[@]}"
 }
