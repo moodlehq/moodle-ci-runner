@@ -180,7 +180,7 @@ function locust_initcmd() {
     FEATUREPATH="${PUBLICROOT}/public/lib/tests/behat/locust.feature"
 
     docker cp \
-      "${WORKSPACE}/moodle-locust-runner/feature/locust.feature" \
+      "${WORKSPACE}/moodle-locust-runner/locust/feature/locust.feature" \
       "${WEBSERVER}":"${FEATUREPATH}"
 
     # Calculate the command to run. The function will return the command in the passed array.
@@ -201,7 +201,7 @@ function locust_run() {
 
     echo "Running: ${cmd[*]}"
 
-    cd "${WORKSPACE}/moodle-locust-runner/"
+    cd "${WORKSPACE}/moodle-locust-runner/locust"
 
     $cmd[@]
     EXITCODE=$?
