@@ -179,6 +179,9 @@ function locust_initcmd() {
     echo "Copy feature"
     FEATUREPATH="${PUBLICROOT}/lib/tests/behat/locust.feature"
 
+    echo Go check "${WEBSERVER}":"${FEATUREPATH}"
+    read foo
+
     docker cp \
       "${WORKSPACE}/moodle-locust-runner/locust/feature/locust.feature" \
       "${WEBSERVER}":"${FEATUREPATH}"
