@@ -39,5 +39,5 @@ function locust_setup() {
         return
     fi
 
-    git clone https://github.com/andrewnicols/moodle-locust-runner ./
+    git clone https://github.com/andrewnicols/moodle-locust-runner "${WORKSPACE}/moodle-locust-runner"
 }
