@@ -18,14 +18,14 @@
 # Moodle module functions for Composer-based Moodle installations.
 
 # This module defines the following env variables.
-function locust_env() {
+function moodle-locus_env() {
     env=(
     )
     echo "${env[@]}"
 }
 
 # Moodle composer module checks.
-function locust_check() {
+function moodle-locus_check() {
     # These env variables must be set for the module to work.
     verify_env CODEDIR
 
@@ -34,7 +34,7 @@ function locust_check() {
 }
 
 # Moodle composer module config.
-function locust_setup() {
+function moodle-locus_setup() {
     if [[ "${COMPOSERINSTALL}" != "1" ]]; then
         return
     fi

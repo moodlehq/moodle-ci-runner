@@ -43,17 +43,9 @@ function locust_to_env_file() {
         APACHE_DOCUMENT_ROOT
         PUBLICROOT
 
-        IONICURL
-
         BROWSER
-        BROWSER_DEBUG
-        BROWSER_HEADLESS
-        BROWSER_CHROME_ARGS
-        BROWSER_FIREFOX_ARGS
 
         BEHAT_INIT_ARGS
-
-        MLBACKENDTESTNAME
 
         MOODLE_CONFIG
     )
@@ -67,13 +59,8 @@ function locust_to_summary() {
     echo "== DBTYPE: ${DBTYPE}"
     echo "== DBTAG: ${DBTAG}"
     echo "== DBREPLICAS: ${DBREPLICAS}"
-    echo "== MLBACKEND_PYTHON_VERSION: ${MLBACKEND_PYTHON_VERSION}"
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== BROWSER: ${BROWSER}"
-    echo "== BROWSER_DEBUG: ${BROWSER_DEBUG}"
-    echo "== BROWSER_HEADLESS: ${BROWSER_HEADLESS}"
-    echo "== BROWSER_CHROME_ARGS: ${BROWSER_CHROME_ARGS}"
-    echo "== BROWSER_FIREFOX_ARGS: ${BROWSER_FIREFOX_ARGS}"
     echo "== BEHAT_SUITE: ${BEHAT_SUITE}"
     echo "== BEHAT_NAME: ${BEHAT_NAME}"
     echo "== BEHAT_PATH: ${BEHAT_PATH}"
@@ -81,8 +68,6 @@ function locust_to_summary() {
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== PHPWORKINGDIR: ${PHPWORKINGDIR}"
     echo "== COMPOSERINSTALL: ${COMPOSERINSTALL}"
-    echo "== MOBILE_VERSION: ${MOBILE_VERSION}"
-    echo "== MOBILE_APP_PORT: ${MOBILE_APP_PORT}"
     echo "== PLUGINSTOINSTALL: ${PLUGINSTOINSTALL}"
 }
 
@@ -122,7 +107,7 @@ function locust_modules() {
         docker-healthy
         docker-summary
         moodle-composer
-        locust
+        moodle-locust
     )
     echo "${modules[@]}"
 }
