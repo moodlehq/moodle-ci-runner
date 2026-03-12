@@ -186,6 +186,9 @@ function locust_initcmd() {
       "${WORKSPACE}/moodle-locust-runner/locust/feature/locust.feature" \
       "${WEBSERVER}":"${FEATUREPATH}"
 
+    echo Go check "${WEBSERVER}":"${FEATUREPATH}"
+    read foo
+
     # Calculate the command to run. The function will return the command in the passed array.
     local cmd= locust_behat_run cmd
     echo "Running: ${cmd[*]}"
