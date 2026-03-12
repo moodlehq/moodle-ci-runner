@@ -177,7 +177,7 @@ function locust_initcmd() {
     echo "============================================================================"
 
     echo "Copy feature"
-    FEATUREPATH="${PUBLICROOT}/lib/tests/behat/locust.feature"
+    FEATUREPATH="${PHPWORKINGDIR}/${PUBLICROOT}/lib/tests/behat/locust.feature"
 
     echo Go check "${WEBSERVER}":"${FEATUREPATH}"
     read foo
