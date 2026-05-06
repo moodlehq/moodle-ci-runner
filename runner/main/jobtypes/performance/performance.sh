@@ -190,12 +190,15 @@ function performance_run() {
     local jmeterruncmd=
     performance_main_command jmeterruncmd
 
-    # Get the docker run args for the jmeter container.
-    local dockerrunargs=
-    docker-jmeter_run_args dockerrunargs
+    # Get the Jmeter run args for the jmeter container.
+    local jmeterrunargs=
+    performance_jmeter_run_args jmeterrunargs
 
     echo ">>> Performance run at $(date) <<<"
-    docker run "${dockerrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
+
+    # Run the JMeter test plan in the container, teeing output to a file.
+    # The JMeter logs will be written to ${SHAREDDIR}/output/logs/jmeter.log as specified in the command arguments.
+    docker run "${jmeterrunargs[@]}" ${jmeterruncmd[@]} | tee "${runoutput}"
     EXITCODE=$?
 
     # Grep the JMeter logs for genuine errors.
@@ -319,5 +322,18 @@ function performance_main_command() {
         -Jrampup="${PERF_RAMPUP}" \
         -Jthroughput="${PERF_THROUGHPUT}" \
         $samplerinitstr $includelogsstr
+    )
+}
+
+function performance_jmeter_run_args() {
+    local -n _cmd=$1 # Return by nameref.
+
+    _cmd=(
+        --name "${JMETER}" \
+        --network "${NETWORK}" \
+        -u `id -u` \
+        -v "${SHAREDDIR}:/shared" \
+	      -w /shared \
+        alpine/jmeter:latest
     )
 }

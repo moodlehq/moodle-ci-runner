@@ -54,16 +54,3 @@ function docker-jmeter_setup() {
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
-
-function docker-jmeter_run_args() {
-    local -n _cmd=$1 # Return by nameref.
-    # Start the jmeter server
-    _cmd=(
-            --name "${JMETER}" \
-            --network "${NETWORK}" \
-            -u `id -u` \
-    	    -v "${SHAREDDIR}:/shared" \
-	        -w /shared \
-            alpine/jmeter:latest
-    )
-}
