@@ -1,0 +1,7 @@
+Setup check: file created successfully.
+Date: 2026-05-22
+Workspace: /home/simey/moodlehq/moodle-ci-runner
+
+If you can see this file, basic file creation is working.
+
+
