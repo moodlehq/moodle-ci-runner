@@ -48,7 +48,7 @@ function docker-logs_teardown() {
 
 # TODO: Why do we need this?
 # Only if the container exists and is running (WEBSERVER may not be set for all job types).
-if [[ -n "${WEBSERVER:-}" ]] && [[ -n $(docker ps --filter name="${WEBSERVER:-}" --filter status=running --quiet) ]]; then
+if [[ -n "${WEBSERVER:-}" ]] && [[ -n $(docker ps --filter name="${WEBSERVER}" --filter status=running --quiet) ]]; then
     docker exec -t "${WEBSERVER}" \
         chown -R "${UID}:${GROUPS[0]}" /shared
 fi
