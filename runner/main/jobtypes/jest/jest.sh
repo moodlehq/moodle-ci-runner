@@ -96,6 +96,9 @@ function jest_setup() {
     echo ">>> startsection Initialising Jest environment at $(date) <<<"
     echo "============================================================================"
     docker exec -t "${NODESERVER}" npm install
+    # Install jest-junit reporter so that Jest can produce JUnit XML output that
+    # Jenkins (and other CI systems) can consume via their junit step/plugin.
+    docker exec -t "${NODESERVER}" npm install --no-save jest-junit
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
@@ -113,7 +116,9 @@ function jest_run() {
     echo "Running: ${runcmd[*]}"
     echo
 
-    docker exec -t "${NODESERVER}" "${runcmd[@]}"
+    docker exec -t \
+        -e JEST_JUNIT_OUTPUT_FILE=/shared/jest.junit \
+        "${NODESERVER}" "${runcmd[@]}"
     EXITCODE=$?
 
     echo "============================================================================"
@@ -123,8 +128,9 @@ function jest_run() {
 # Returns (by nameref) an array with the command needed to run the Jest tests.
 function jest_runcmd() {
     local -n cmd=$1
-    cmd=(npm test)
+    # Always pass the reporters flag so jest-junit XML is generated.
+    cmd=(npm test -- --reporters=default --reporters=jest-junit)
     if [[ -n "${JEST_FILTER}" ]]; then
-        cmd+=(-- --passWithNoTests "${JEST_FILTER}")
+        cmd+=(--passWithNoTests "${JEST_FILTER}")
     fi
 }
