@@ -111,6 +111,9 @@ function zeroheight_run() {
     echo ">>> startsection Starting ZeroHeight run at $(date) <<<"
     echo "============================================================================"
 
+    echo "Pausing for checks"
+    sleep 300
+
     docker exec -t \
         "${NODESERVER}" /tmp/run.sh
     EXITCODE=$?
