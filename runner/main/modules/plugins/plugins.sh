@@ -41,14 +41,23 @@ function plugins_check() {
     verify_modules docker git
 
     # These env variables must be set for the module to work.
-    verify_env WORKSPACE PLUGINSDIR
+    verify_env WORKSPACE SHAREDDIR PLUGINSDIR
 }
 
 # Plugins module config.
 function plugins_config() {
     # Apply some defaults.
     PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
-    PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+
+    # Default PLUGINSDIR under SHAREDDIR ($WORKSPACE/$BUILD_ID), not directly
+    # under WORKSPACE: WORKSPACE is shared across builds and never cleaned up,
+    # so a fixed $WORKSPACE/plugins collided across runs ('destination path
+    # already exists') for anything that reuses a WORKSPACE, e.g. local runs.
+    # Jenkins was unaffected as it provides a fresh workspace per build, but
+    # SHAREDDIR is already the established per-build scratch convention (see
+    # AGENTS.md), so this avoids the collision for every caller instead of
+    # just Jenkins.
+    PLUGINSDIR="${PLUGINSDIR:-${SHAREDDIR}/plugins}"
 }
 
 # Plugins module setup, download all the requested plugins to workspace area.
