@@ -78,16 +78,20 @@ MoodleResult(JMeterContext ctx) {
         sessUnit = sessUnit.trim();
 
         // Normalise to KB for consistent comparison.
+        // Note: String.format(String, double) cannot be resolved by BeanShell
+        // (varargs + primitive boxing fails with "Static method format(...) not
+        // found"), which aborts the recorder and drops the sample entirely.
+        // Round to 3 decimals arithmetically instead.
         if (sessUnit.equalsIgnoreCase("bytes")) {
-            // Convert bytes to KB (e.g. 569 bytes → 0.569 KB stored as "0.569").
+            // Convert bytes to KB (e.g. 569 bytes → 0.556 KB stored as "0.556").
             double bytesVal = Double.parseDouble(sessValue);
-            sessionsize = String.format("%.3f", bytesVal / 1024.0);
+            sessionsize = String.valueOf(Math.round(bytesVal / 1024.0 * 1000.0) / 1000.0);
         } else if (sessUnit.equalsIgnoreCase("MB")) {
             double mbVal = Double.parseDouble(sessValue);
-            sessionsize = String.format("%.3f", mbVal * 1024.0);
+            sessionsize = String.valueOf(Math.round(mbVal * 1024.0 * 1000.0) / 1000.0);
         } else if (sessUnit.equalsIgnoreCase("GB")) {
             double gbVal = Double.parseDouble(sessValue);
-            sessionsize = String.format("%.3f", gbVal * 1024.0 * 1024.0);
+            sessionsize = String.valueOf(Math.round(gbVal * 1024.0 * 1024.0 * 1000.0) / 1000.0);
         } else {
             // Already KB or no unit — just the numeric value.
             sessionsize = sessValue.trim();
