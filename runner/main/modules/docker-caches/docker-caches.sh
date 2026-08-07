@@ -22,6 +22,9 @@ function docker-caches_env() {
     env=(
         REDISTESTNAME
         REDISTAG
+        REDISCLUSTERSEEDS
+        REDISCLUSTERAUTH
+        REDISCLUSTERCAFILE
         MEMCACHED1TESTURL
         MEMCACHED2TESTURL
         MONGODBTESTURL
@@ -45,6 +48,11 @@ function docker-caches_config() {
     # Redis image tag. Pinned to a major version (rather than "latest") to keep runs
     # reproducible. Override to test against a different server version.
     REDISTAG="${REDISTAG:-8}"
+    # Redis cluster seeds (host:port,...), auth and CA file. Empty unless a cluster
+    # is provisioned; the cluster test suites skip themselves when unset.
+    REDISCLUSTERSEEDS="${REDISCLUSTERSEEDS:-}"
+    REDISCLUSTERAUTH="${REDISCLUSTERAUTH:-}"
+    REDISCLUSTERCAFILE="${REDISCLUSTERCAFILE:-}"
     MEMCACHED1TESTURL=memcached1"${UUID}"
     MEMCACHED2TESTURL=memcached2"${UUID}"
     MONGODB=mongodb"${UUID}"
