@@ -21,6 +21,7 @@
 function docker-caches_env() {
     env=(
         REDISTESTNAME
+        REDISTAG
         MEMCACHED1TESTURL
         MEMCACHED2TESTURL
         MONGODBTESTURL
@@ -41,6 +42,9 @@ function docker-caches_check() {
 function docker-caches_config() {
     # Apply some defaults.
     REDISTESTNAME=redis"${UUID}"
+    # Redis image tag. Pinned to a major version (rather than "latest") to keep runs
+    # reproducible. Override to test against a different server version.
+    REDISTAG="${REDISTAG:-8}"
     MEMCACHED1TESTURL=memcached1"${UUID}"
     MEMCACHED2TESTURL=memcached2"${UUID}"
     MONGODB=mongodb"${UUID}"
@@ -58,8 +62,8 @@ function docker-caches_setup() {
         --detach \
         --name "${REDISTESTNAME}" \
         --network "${NETWORK}" \
-    redis:5
-    echo "Redis URL: ${REDISTESTNAME}"
+    redis:"${REDISTAG}"
+    echo "Redis URL: ${REDISTESTNAME} (redis:${REDISTAG})"
     echo "Redis logs:"
     docker logs "${REDISTESTNAME}"
 
