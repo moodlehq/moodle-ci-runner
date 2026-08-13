@@ -60,10 +60,14 @@ function moodle-core-copy_setup() {
     # update refs (in case the repo was cloned with --branch or --single-branch) and
     # un-shallow if needed to. Only if it's a git repository.
     if [[ -n "$FULLGIT" ]] && [[ -d "${CODEDIR}/.git" ]]; then
-        # Before anything else, we only support https public repos, not ssh+git ones, coz we would need
-        # to play with ssh keys / known hosts or disable strict host checking, and that's not good.
-        if (! docker exec -u www-data "${WEBSERVER}" git config --get remote.origin.url | grep -q '^https'); then
-            exit_error "Only https public repositories are supported for this job, not ssh+git ones."
+        # Before anything else, we only support anonymous public repos (https:// and git://), not
+        # ssh+git ones, coz we would need to play with ssh keys / known hosts or disable strict host
+        # checking, and that's not good. Note that git:// is anonymous and read-only, so it doesn't
+        # need any credential at all, same as https://.
+        remoteurl=$(docker exec -u www-data "${WEBSERVER}" git config --get remote.origin.url)
+        if [[ ! "${remoteurl}" =~ ^(https|git):// ]]; then
+            exit_error "Only https:// and git:// public repositories are supported for this job," \
+                "not ssh+git ones. Found: ${remoteurl:-none}"
         fi
 
         # If the repository was cloned shallow (--depth), un-shallow it.
