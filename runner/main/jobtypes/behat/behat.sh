@@ -197,10 +197,21 @@ function behat_config() {
         BEHAT_RERUNS=0
         BEHAT_TIMING_FILENAME=
     fi
+
+    # The classic theme is being removed (starting from main). "ALL" (boost + classic) has
+    # nothing extra to add when this checkout doesn't have it, so fall back to the default suite.
+    if [[ "${BEHAT_SUITE}" == "ALL" ]] && [[ -z "${MOODLE_HAS_CLASSIC_THEME}" ]]; then
+        BEHAT_SUITE=""
+    fi
 }
 
 # Behat job type setup.
 function behat_setup() {
+    # Nothing to set up: BEHAT_SUITE=classic was requested but this checkout has no classic theme.
+    if [[ "${BEHAT_SUITE}" == "classic" ]] && [[ -z "${MOODLE_HAS_CLASSIC_THEME}" ]]; then
+        return
+    fi
+
     # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
     # (for bisect sessions we don't have to setup the environment).
     if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
@@ -261,6 +272,12 @@ function behat_initcmd() {
 
 # Behat job type run.
 function behat_run() {
+    # Nothing to run: BEHAT_SUITE=classic was requested but this checkout has no classic theme.
+    if [[ "${BEHAT_SUITE}" == "classic" ]] && [[ -z "${MOODLE_HAS_CLASSIC_THEME}" ]]; then
+        print_warning "BEHAT_SUITE=classic requested but this checkout has no classic theme, skipping."
+        return
+    fi
+
     # If both GOOD_COMMIT and BAD_COMMIT are not set, we are going to run a normal session.
     if [[ -z "${GOOD_COMMIT}" ]] && [[ -z "${BAD_COMMIT}" ]]; then
         behat_run_normal
