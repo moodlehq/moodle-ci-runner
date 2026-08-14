@@ -21,6 +21,7 @@
 function moodle-branch_env() {
     env=(
         MOODLE_BRANCH
+        MOODLE_HAS_CLASSIC_THEME
     )
     echo "${env[@]}"
 }
@@ -34,9 +35,19 @@ function moodle-branch_check() {
 # Moodle core copy module config.
 function moodle-branch_config() {
     # Get the Moodle branch from code, so we can make decisions based on it.
+    local classicthemedir
     if [[ -d "${CODEDIR}/public" ]]; then
         MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/public/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
+        classicthemedir="${CODEDIR}/public/theme/classic"
     else
         MOODLE_BRANCH=$(grep "\$branch" "${CODEDIR}"/version.php | sed "s/';.*//" | sed "s/^\$.*'//")
+        classicthemedir="${CODEDIR}/theme/classic"
+    fi
+
+    # The classic theme is being removed (starting from main), so callers can no
+    # longer assume it's there just because of the branch name being tested.
+    MOODLE_HAS_CLASSIC_THEME=
+    if [[ -f "${classicthemedir}/version.php" ]]; then
+        MOODLE_HAS_CLASSIC_THEME="yes"
     fi
 }
