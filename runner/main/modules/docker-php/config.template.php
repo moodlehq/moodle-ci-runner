@@ -129,6 +129,27 @@ if ($redistestname = getenv('REDISTESTNAME')) {
     define('TEST_CACHESTORE_REDIS_TESTSERVERS', $redistestname);
 }
 
+if ($redisclusterseeds = getenv('REDISCLUSTERSEEDS')) {
+    // Comma-separated list of host:port seeds for the Redis cluster.
+    define('TEST_SESSION_REDIS_HOSTCLUSTER', $redisclusterseeds);
+    define('TEST_CACHESTORE_REDIS_SERVERSCLUSTER', $redisclusterseeds);
+
+    if ($redisclusterauth = getenv('REDISCLUSTERAUTH')) {
+        define('TEST_SESSION_REDIS_AUTHCLUSTER', $redisclusterauth);
+        define('TEST_CACHESTORE_REDIS_AUTHCLUSTER', $redisclusterauth);
+    }
+
+    // The cluster is TLS-only. When a CA file is available we verify against it,
+    // otherwise fall back to an unverified TLS connection.
+    if ($redisclusterca = getenv('REDISCLUSTERCAFILE')) {
+        define('TEST_SESSION_REDIS_ENCRYPTCLUSTER', ['cafile' => $redisclusterca]);
+        define('TEST_CACHESTORE_REDIS_CASCLUSTER', $redisclusterca);
+    } else {
+        define('TEST_SESSION_REDIS_ENCRYPTCLUSTER', ['verify_peer' => false, 'verify_peer_name' => false]);
+    }
+    define('TEST_CACHESTORE_REDIS_ENCRYPTCLUSTER', true);
+}
+
 if ($memcached1testurl = getenv('MEMCACHED1TESTURL')) {
     if ($memcached2testurl = getenv('MEMCACHED2TESTURL')) {
         define('TEST_CACHESTORE_MEMCACHED_TESTSERVERS', $memcached1testurl. "\n" . $memcached2testurl);
