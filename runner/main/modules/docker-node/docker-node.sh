@@ -53,6 +53,7 @@ function docker-node_setup() {
       --network "${NETWORK}" \
       --name "${NODESERVER}" \
       --detach \
+      --env-file "${ENVIROPATH}" \
       --workdir /app \
       -v "${SHAREDDIR}":/shared \
       "${DOCKER_NODE}" \
