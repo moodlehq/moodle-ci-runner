@@ -65,6 +65,7 @@ function phpunit_to_summary() {
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
+    echo "== PHPUNIT_ARGS: ${PHPUNIT_ARGS}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== PHPWORKINGDIR: ${PHPWORKINGDIR}"
     echo "== COMPOSERINSTALL: ${COMPOSERINSTALL}"
@@ -80,6 +81,7 @@ function phpunit_env() {
         RUNCOUNT
         PHPUNIT_FILTER
         PHPUNIT_TESTSUITE
+        PHPUNIT_ARGS
         EXITCODE
     )
     echo "${env[@]}"
@@ -127,6 +129,7 @@ function phpunit_config() {
     RUNCOUNT="${RUNCOUNT:-1}"
     PHPUNIT_FILTER="${PHPUNIT_FILTER:-}"
     PHPUNIT_TESTSUITE="${PHPUNIT_TESTSUITE:-}"
+    PHPUNIT_ARGS="${PHPUNIT_ARGS:-}"
     EXITCODE=0
 
     # If GOOD_COMMIT and BAD_COMMIT are set, it means that we are going to run a bisect
@@ -277,5 +280,8 @@ function phpunit_runcmd() {
     fi
     if [[ -n "${PHPUNIT_TESTSUITE}" ]]; then
         cmd+=(--testsuite "${PHPUNIT_TESTSUITE}")
+    fi
+    if [[ -n "${PHPUNIT_ARGS}" ]]; then
+        cmd+=( ${PHPUNIT_ARGS})
     fi
 }
