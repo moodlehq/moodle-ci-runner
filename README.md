@@ -32,6 +32,7 @@ You also need to set several environment variables, depending on your testing re
 | `BUILD_ID`             | STRING (e.g. 26736)                                     | process id          | Used to create a folder and store the output from your run. Recommend using an integer. |
 | `DBTYPE`               | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`             | The database to run. Note that `mssql` is only for PHP 5.6. |
 | `PHP_VERSION`          | The PHP version                                         | `8.0`               | The PHP version to run. |
+| `REDISTAG`             | A `redis` image tag (e.g. `8`, `7`)                     | `8`                 | The Redis server version used by the Redis session and cache store tests. |
 | `JOBTYPE`              | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which job will be run. |
 | `PHPUNIT_FILTER`       | A valid phpunit filter                                  | Optional            | A valid argument to the phpunit `--filter`. |
 | `PHPUNIT_TESTSUITE`    | A valid phpunit testsuite                               | Optional            | A valid argument to the phpunit `--testsuite`. |
