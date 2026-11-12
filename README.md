@@ -32,7 +32,7 @@ You also need to set several environment variables, depending on your testing re
 | `BUILD_ID`             | STRING (e.g. 26736)                                     | process id          | Used to create a folder and store the output from your run. Recommend using an integer. |
 | `DBTYPE`               | `pgsql`, `mysqli`, `mariadb`, `oci`, `mssql`, `sqlsrv`  | `pgsql`             | The database to run. Note that `mssql` is only for PHP 5.6. |
 | `PHP_VERSION`          | The PHP version                                         | `8.0`               | The PHP version to run. |
-| `JOBTYPE`              | `phpunit` or `behat`                                    | `phpunit`           | Used to determine which job will be run. |
+| `JOBTYPE`              | `phpunit`, `behat`, `jest`, `rector`, ...               | `phpunit`           | Used to determine which job will be run (any directory in `runner/main/jobtypes`). |
 | `PHPUNIT_FILTER`       | A valid phpunit filter                                  | Optional            | A valid argument to the phpunit `--filter`. |
 | `PHPUNIT_TESTSUITE`    | A valid phpunit testsuite                               | Optional            | A valid argument to the phpunit `--testsuite`. |
 | `BEHAT_TAGS`           | A behat tags arg                                        | Optional            | A valid argument to the behat `--tags`. |
@@ -46,6 +46,8 @@ You also need to set several environment variables, depending on your testing re
 | `BEHAT_RERUNS`         | INTEGER                                                 | 1                   | For behat, the number reruns to perform for failed runs. 0 disables reruns. |
 | `BEHAT_SUITE`          | A behat suite, usually pointing to a Moodle theme       | Empty               | The theme to test with Behat. Valid options are `default` (meaning site default), and `classic` for 3.7 upwards. |
 | `RUNCOUNT`             | INTEGER                                                 | 1                   | Used to perform tests in a loop. Use with caution and always with tags. |
+| `RECTOR_PATHS`         | Comma or space separated paths                          | Optional            | For rector, the paths to check, relative to the Moodle root. Defaults to the paths in Moodle's `rector.php` (the whole codebase). |
+| `RECTOR_MAX_PROCS`     | INTEGER                                                 | Optional            | For rector, the number of parallel processes. Defaults to the value in Moodle's `rector.php`. |
 |`MOODLE_CONFIG`         | JSON STRING                                             | Empty               | Custom Modle config to use during the execution. For example, if you want to set `$CFG->noreplyaddress = 'campus@example.com';`, the value of this variable should be `{"noreplyaddress":"campus@example.com"}`. |
 | `GOOD_COMMIT` and `BAD_COMMIT`       | A couple of git references (commits, tags, branches supported) | Empty               | When both are defined, both the `phpunit` and the `behat` jobs will run an automated `git bisect` session to determine which commit broke the test. Note that, when running bisect sessions it's highly recommended to restrict the tests by some criteria (filter, tag, name, ...)|
 | `MOBILE_VERSION`       | `latest`, `next`                                        | Empty               | The Moodle app version to use when executing behat @app tests. |

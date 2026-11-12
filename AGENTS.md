@@ -4,7 +4,7 @@
 
 This is a **Bash-based CI orchestrator** that runs PHPUnit and Behat tests for Moodle inside Docker containers. It uses a `jobs → modules → stages` model:
 
-- **Jobs** (`runner/main/jobtypes/`): Top-level test types (`phpunit`, `behat`, `jest`, `performance`, `postjobs`). Each declares which modules it needs and in what order, then implements `_run`.
+- **Jobs** (`runner/main/jobtypes/`): Top-level test types (`phpunit`, `behat`, `jest`, `performance`, `postjobs`, `rector`). Each declares which modules it needs and in what order, then implements `_run`.
 - **Modules** (`runner/main/modules/`): Reusable units (e.g., `docker`, `docker-php`, `docker-database`, `env`, `git`, `browser`). Like mini-jobs but without `_run` or `_modules`.
 - **Stages**: Executed in a fixed order by `run()` in `runner/main/lib.sh` — see [Stage Order](#stage-order).
 
@@ -79,6 +79,7 @@ bats test/runner_test.bats          # runner/orchestration tests
 bats test/phpunit_test.bats         # PHPUnit job integration tests
 bats test/behat_test.bats           # Behat job integration tests
 bats test/jest_test.bats            # Jest job
+bats test/rector_test.bats          # Rector job
 bats test/postjobs_test.bats        # postjobs job
 bats test/phpunit_bisect_test.bats  # PHPUnit git-bisect mode
 bats test/behat_bisect_test.bats    # Behat git-bisect mode
