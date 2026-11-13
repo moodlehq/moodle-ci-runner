@@ -49,6 +49,8 @@ function docker-php_setup() {
     echo ">>> startsection Starting web server <<<"
     echo "============================================================================"
 
+    mkdir -p "${SHAREDDIR}/rectorcache"
+
     docker run \
       --network "${NETWORK}" \
       --name "${WEBSERVER}" \
@@ -58,6 +60,7 @@ function docker-php_setup() {
       -e "APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT}" \
       -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
       -v "${SHAREDDIR}":/shared \
+      -v "${SHAREDDIR}/rectorcache":/var/www/.rector/cache:rw \
       -v "${BASEDIR}/modules/docker-php/entrypoint":/docker-entrypoint.d \
       "${DOCKER_PHP}"
 
