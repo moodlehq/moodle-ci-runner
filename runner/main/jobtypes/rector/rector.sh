@@ -78,7 +78,7 @@ function rector_check() {
     verify_modules $(rector_modules)
 
     # These env variables must be set for the job to work.
-    verify_env UUID WEBSERVER CODEDIR
+    verify_env UUID WEBSERVER CODEDIR WORKSPACE
 
     # Rector is only available in Moodle 6.0 and up (MDL-84204). Stop early
     # with a clear message if the checkout does not ship its configuration.
@@ -126,6 +126,10 @@ function rector_setup() {
         exit_error "Rector was not installed at ${RECTOR_BIN} by composer install."
     fi
 
+    mkdir -p "${WORKSPACE}/rectorcache"
+    docker cp "${WORKSPACE}/rectorcache/." "${WEBSERVER}":"${RECTOR_CODEROOT}/.rector/cache"
+    docker exec "${WEBSERVER}" chown -R www-data "${RECTOR_CODEROOT}/.rector/cache"
+
     echo "============================================================================"
     echo ">>> stopsection <<<"
 }
@@ -152,6 +156,8 @@ function rector_run() {
     # (the ${envopts[@]+...} form avoids "unbound variable" for empty arrays with set -u on bash < 4.4).
     docker exec -t -u www-data -w "${RECTOR_CODEROOT}" ${envopts[@]+"${envopts[@]}"} "${WEBSERVER}" "${runcmd[@]}"
     EXITCODE=$?
+
+    docker cp "${WEBSERVER}":"${RECTOR_CODEROOT}/.rector/cache/." "${WORKSPACE}/rectorcache"
 
     echo "============================================================================"
     echo ">>> stopsection <<<"
