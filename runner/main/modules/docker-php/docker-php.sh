@@ -60,7 +60,7 @@ function docker-php_setup() {
       -e "APACHE_DOCUMENT_ROOT=${APACHE_DOCUMENT_ROOT}" \
       -v "${COMPOSERCACHE}:/var/www/.composer:rw" \
       -v "${SHAREDDIR}":/shared \
-      -v "${SHAREDDIR}/rectorcache":/var/www/.rector/cache:rw \
+      -v "${SHAREDDIR}/rectorcache":/var/www/html/.rector/cache:rw \
       -v "${BASEDIR}/modules/docker-php/entrypoint":/docker-entrypoint.d \
       "${DOCKER_PHP}"
 
