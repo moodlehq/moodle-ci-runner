@@ -146,3 +146,20 @@ teardown() {
     assert_output --partial "== DBREPLICAS: 0"
     assert_output --partial "== Exit code: 0"
 }
+
+@test "Behat tests: the job stops when the branch has no classic theme" {
+    # Set all the required variables.
+    JOBTYPE="behat"
+    CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
+    BEHAT_SUITE="classic"
+
+    # Checkout main, which no longer ships the classic theme.
+    run git_moodle_checkout main
+    assert_success
+
+    # Run the job
+    run launch_runner
+    assert_failure
+    assert_output --partial "BEHAT_SUITE=classic was requested, but there is no classic theme in ${CODEDIR}"
+    assert_output --partial "It was removed from Moodle 5.3 onwards"
+}
