@@ -79,16 +79,20 @@ function rector_check() {
 
     # These env variables must be set for the job to work.
     verify_env UUID WEBSERVER CODEDIR WORKSPACE
-
-    # Rector is only available in Moodle 6.0 and up (MDL-84204). Stop early
-    # with a clear message if the checkout does not ship its configuration.
-    if [[ ! -f "${CODEDIR}/rector.php" ]]; then
-        exit_error "No rector.php found in ${CODEDIR}. Rector is only supported in Moodle 6.0 and up (MDL-84204)."
-    fi
 }
 
 # Rector job type config.
 function rector_config() {
+    # Rector is only available in Moodle 6.0 and up, where MDL-84204 added its
+    # configuration. A branch based on an older stable, or cut from main before
+    # MDL-84204 landed, doesn't ship rector.php and there is nothing to run here.
+    # This lives in _config, rather than in _check, because MOODLE_BRANCH is only
+    # set by the moodle-branch module config, which runs before this one.
+    if [[ ! -f "${CODEDIR}/rector.php" ]]; then
+        exit_error "No rector.php found in ${CODEDIR}, which is Moodle ${MOODLE_BRANCH:-unknown}." \
+            "Rector needs Moodle 600 or up: rebase this branch onto current main and try again."
+    fi
+
     # Apply some defaults.
     # Empty RECTOR_PATHS means the paths defined in the rector.php config (the whole checkout).
     RECTOR_PATHS="${RECTOR_PATHS:-}"
