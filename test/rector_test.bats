@@ -99,8 +99,10 @@ teardown() {
     # Run the job
     run launch_runner
     assert_failure
-    assert_output --partial "No rector.php found in ${CODEDIR}"
-    assert_output --partial "Rector is only supported in Moodle 6.0 and up (MDL-84204)."
+    # The message must name the branch being tested and what to do about it, so a
+    # developer running the job on a stale branch isn't left thinking Rector is broken.
+    assert_output --partial "No rector.php found in ${CODEDIR}, which is Moodle 501."
+    assert_output --partial "Rector needs Moodle 600 or up: rebase this branch onto current main and try again."
 }
 
 @test "Rector tests: the job stops with an invalid RECTOR_MAX_PROCS" {
