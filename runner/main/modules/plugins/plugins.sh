@@ -41,14 +41,19 @@ function plugins_check() {
     verify_modules docker git
 
     # These env variables must be set for the module to work.
-    verify_env WORKSPACE PLUGINSDIR
+    verify_env SHAREDDIR PLUGINSDIR
 }
 
 # Plugins module config.
 function plugins_config() {
     # Apply some defaults.
     PLUGINSTOINSTALL="${PLUGINSTOINSTALL:-}"
-    PLUGINSDIR="${PLUGINSDIR:-${WORKSPACE}/plugins}"
+
+    # Default PLUGINSDIR under SHAREDDIR (the established per-build scratch
+    # dir, see AGENTS.md) rather than WORKSPACE, which persists across builds
+    # and caused 'destination path already exists' errors when a WORKSPACE
+    # was reused, e.g. local runs.
+    PLUGINSDIR="${PLUGINSDIR:-${SHAREDDIR}/plugins}"
 }
 
 # Plugins module setup, download all the requested plugins to workspace area.
