@@ -65,6 +65,7 @@ function phpunit_to_summary() {
     echo "== RUNCOUNT: ${RUNCOUNT}"
     echo "== PHPUNIT_FILTER: ${PHPUNIT_FILTER}"
     echo "== PHPUNIT_TESTSUITE: ${PHPUNIT_TESTSUITE}"
+    echo "== PHPUNIT_ARGS: ${PHPUNIT_ARGS}"
     echo "== MOODLE_CONFIG: ${MOODLE_CONFIG}"
     echo "== PHPWORKINGDIR: ${PHPWORKINGDIR}"
     echo "== COMPOSERINSTALL: ${COMPOSERINSTALL}"
@@ -80,6 +81,7 @@ function phpunit_env() {
         RUNCOUNT
         PHPUNIT_FILTER
         PHPUNIT_TESTSUITE
+        PHPUNIT_ARGS
         EXITCODE
     )
     echo "${env[@]}"
@@ -127,6 +129,7 @@ function phpunit_config() {
     RUNCOUNT="${RUNCOUNT:-1}"
     PHPUNIT_FILTER="${PHPUNIT_FILTER:-}"
     PHPUNIT_TESTSUITE="${PHPUNIT_TESTSUITE:-}"
+    PHPUNIT_ARGS="${PHPUNIT_ARGS:-}"
     EXITCODE=0
 
     # If GOOD_COMMIT and BAD_COMMIT are set, it means that we are going to run a bisect
@@ -230,12 +233,19 @@ function phpunit_run_bisect() {
     local runcmd
     phpunit_runcmd runcmd # By nameref.
 
+    # Quote every argument for the generated shell script. Unquoted array
+    # expansion would otherwise interpret PHPUNIT_ARGS as shell syntax.
+    local initcmd_quoted
+    local runcmd_quoted
+    printf -v initcmd_quoted '%q ' "${initcmd[@]}"
+    printf -v runcmd_quoted '%q ' "${runcmd[@]}"
+
     # Generate the bisect.sh script that we are going to use to run the phpunit bisect session.
     # (it runs both init and run commands together).
     docker exec -i -u www-data "${WEBSERVER}" \
         bash -c "cat > bisect.sh" <<- EOF
 			#!/bin/bash
-			${initcmd[@]} >/dev/null 2>&1; ${runcmd[@]}
+			${initcmd_quoted}>/dev/null 2>&1; ${runcmd_quoted}
 			exitcode=\$?
 			echo "============================================================================"
 			exit \$exitcode
@@ -277,5 +287,10 @@ function phpunit_runcmd() {
     fi
     if [[ -n "${PHPUNIT_TESTSUITE}" ]]; then
         cmd+=(--testsuite "${PHPUNIT_TESTSUITE}")
+    fi
+    if [[ -n "${PHPUNIT_ARGS}" ]]; then
+        local -a extra_args=()
+        read -r -a extra_args <<< "${PHPUNIT_ARGS}"
+        cmd+=("${extra_args[@]}")
     fi
 }
