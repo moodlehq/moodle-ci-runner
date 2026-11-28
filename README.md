@@ -35,6 +35,7 @@ You also need to set several environment variables, depending on your testing re
 | `JOBTYPE`              | `phpunit`, `behat`, `jest`, `rector`, ...               | `phpunit`           | Used to determine which job will be run (any directory in `runner/main/jobtypes`). |
 | `PHPUNIT_FILTER`       | A valid phpunit filter                                  | Optional            | A valid argument to the phpunit `--filter`. |
 | `PHPUNIT_TESTSUITE`    | A valid phpunit testsuite                               | Optional            | A valid argument to the phpunit `--testsuite`. |
+| `PHPUNIT_ARGS`         | Space-separated phpunit arguments                       | Optional            | Additional arguments to pass to phpunit. Arguments containing spaces are not supported. Avoid flags the runner already sets: `--log-junit`, `--filter`, and `--testsuite`. |
 | `BEHAT_TAGS`           | A behat tags arg                                        | Optional            | A valid argument to the behat `--tags`. |
 | `BEHAT_NAME`           | A behat name arg.                                       | Optional            | A valid argument to the behat `--name`. |
 | `BROWSER`              | `firefox`, `chrome`, `browserkit`, `goutte` (deprecated)| `chrome`            | The browser to use for behat tests. |

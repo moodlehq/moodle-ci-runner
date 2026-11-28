@@ -64,6 +64,7 @@ teardown() {
     DBTYPE="mysqli"
     CODEDIR="${MOODLE_CI_RUNNER_GITDIR}"
     PHPUNIT_FILTER="label"
+    PHPUNIT_ARGS="--group foo"
     MOODLE_CONFIG='{"test": "test"}'
 
     # Checkout main
@@ -79,8 +80,9 @@ teardown() {
     assert_output --partial "== PHPUNIT_FILTER: label"
     assert_output --partial "== DBREPLICAS: 0"
     assert_output --partial "== MOODLE_CONFIG: {\"test\": \"test\"}"
+    assert_output --partial "== PHPUNIT_ARGS: --group foo"
     assert_output --partial "PHPUnit test environment setup complete"
-    assert_output --partial "Running: php vendor/bin/phpunit"
+    assert_output --partial "Running: php vendor/bin/phpunit --disallow-test-output --fail-on-risky --log-junit /shared/log.junit --filter label --group foo"
     assert_output --partial "== Exit code: 0"
 }
 

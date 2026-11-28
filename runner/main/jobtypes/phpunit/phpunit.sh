@@ -233,12 +233,19 @@ function phpunit_run_bisect() {
     local runcmd
     phpunit_runcmd runcmd # By nameref.
 
+    # Quote every argument for the generated shell script. Unquoted array
+    # expansion would otherwise interpret PHPUNIT_ARGS as shell syntax.
+    local initcmd_quoted
+    local runcmd_quoted
+    printf -v initcmd_quoted '%q ' "${initcmd[@]}"
+    printf -v runcmd_quoted '%q ' "${runcmd[@]}"
+
     # Generate the bisect.sh script that we are going to use to run the phpunit bisect session.
     # (it runs both init and run commands together).
     docker exec -i -u www-data "${WEBSERVER}" \
         bash -c "cat > bisect.sh" <<- EOF
 			#!/bin/bash
-			${initcmd[@]} >/dev/null 2>&1; ${runcmd[@]}
+			${initcmd_quoted}>/dev/null 2>&1; ${runcmd_quoted}
 			exitcode=\$?
 			echo "============================================================================"
 			exit \$exitcode
@@ -282,6 +289,8 @@ function phpunit_runcmd() {
         cmd+=(--testsuite "${PHPUNIT_TESTSUITE}")
     fi
     if [[ -n "${PHPUNIT_ARGS}" ]]; then
-        cmd+=( ${PHPUNIT_ARGS})
+        local -a extra_args=()
+        read -r -a extra_args <<< "${PHPUNIT_ARGS}"
+        cmd+=("${extra_args[@]}")
     fi
 }
